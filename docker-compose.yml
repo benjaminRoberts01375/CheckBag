@@ -1,0 +1,93 @@
+networks:
+  network:
+    driver: bridge
+    internal: false
+
+services:
+  nginx:
+    build:
+      context: . # Allow NGINX to access the Frontend directory
+      dockerfile: ./router/Dockerfile
+    container_name: nginx
+    restart: unless-stopped
+    networks:
+      - network
+    ports:
+      - "8080:80"
+
+  postgres:
+    image: postgres:17.4-alpine
+    container_name: postgres
+    restart: unless-stopped
+    user: postgres:postgres
+    networks:
+      - network
+    env_file:
+      - ./database/db.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+
+  valkey:
+    image: valkey/valkey:8.1.2-alpine
+    container_name: valkey
+    restart: unless-stopped
+    networks:
+      - network
+    volumes:
+      - valkey_data:/data
+    secrets:
+      - valkey_config
+    command: valkey-server /run/secrets/valkey_config
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      secrets:
+        - source: git_env
+    container_name: backend
+    restart: unless-stopped
+    networks:
+      - network
+    hostname: backend
+    environment:
+      - GOPRIVATE=github.com/benjaminRoberts01375
+      - ROLE=DB
+      - COLOR=blue
+      - PORT=9001
+      - DB_PORT=5432
+      - DB_CONTAINER_NAME=postgres
+      - CACHE_PORT=6379
+      - CACHE_CONTAINER_NAME=valkey
+      - CACHE_ID_LENGTH=15
+      - DEV_MODE=false
+    secrets:
+      - source: db_coms
+        target: config.json
+      - source: db
+        target: db.json
+      - source: valkey_backend
+        target: valkey.json
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend:/app
+
+volumes:
+  postgres_data:
+    name: postgres-data
+  valkey_data:
+    name: valkey-data
+
+secrets:
+  git_env:
+    file: ./.secrets/go_build.env
+  db_coms:
+    file: ./.secrets/dbcoms.json
+  db:
+    file: ./.secrets/db.json
+  valkey_backend:
+    file: ./.secrets/valkey.json
+  valkey_config:
+    file: ./.secrets/valkey.conf

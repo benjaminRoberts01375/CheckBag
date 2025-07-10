@@ -1,0 +1,26 @@
+{
+	"language": "en",
+	"ignorePaths": [
+		"bun.lock",
+		"/frontend/node_modules",
+		".gitignore",
+		"go.sum",
+		"go.mod",
+		"Dockerfile",
+		".env"
+	],
+	"words": [
+		"uuid-ossp",
+		"initdb",
+		"benlab.us",
+		"sslmode",
+		"GOPRIVATE",
+		"dbcoms",
+		"nosniff",
+		"SAMEORIGIN",
+		"fsnotify",
+		"abcdefghijkmnopqrstuvwxyz",
+		"ABCDEFGHJKLMNPQRSTUVWXYZ"
+	],
+	"flagWords": ["hte"]
+}

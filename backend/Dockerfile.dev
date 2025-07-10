@@ -1,0 +1,39 @@
+FROM golang:alpine
+
+# Install git
+RUN apk add --no-cache git
+
+# Set working directory
+WORKDIR /app
+
+# Copy go mod and sum files
+COPY go.mod go.sum ./
+
+# Mount GitHub token at build time
+RUN --mount=type=secret,id=git_env \
+    if [ -f "/run/secrets/git_env" ]; then \
+    TOKEN=$(cat /run/secrets/git_env) && \
+    git config --global url."https://${TOKEN}@github.com/".insteadOf "https://github.com/"; \
+    fi
+
+# Download dependencies
+RUN go mod download && go mod tidy
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN go build -o main .
+
+# Clean up git config after build
+RUN --mount=type=secret,id=git_env \
+    if [ -f "/run/secrets/git_env" ]; then \
+    TOKEN=$(cat /run/secrets/git_env) && \
+    git config --global --unset url."https://${TOKEN}@github.com/".insteadOf; \
+    fi || true
+
+RUN go install github.com/air-verse/air@latest
+
+EXPOSE 9001
+
+CMD ["air", "-c", ".air.toml"]

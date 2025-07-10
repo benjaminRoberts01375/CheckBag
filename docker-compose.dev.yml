@@ -1,0 +1,113 @@
+networks:
+  network:
+    driver: bridge
+
+services:
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile.dev
+    container_name: frontend
+    restart: unless-stopped
+    networks:
+      - network
+    hostname: frontend
+    volumes:
+      - ./Frontend:/app
+      - node-modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+
+  nginx:
+    build:
+      context: ./Nginx
+      dockerfile: Dockerfile.dev
+    container_name: nginx
+    restart: unless-stopped
+    networks:
+      - network
+    ports:
+      - "8080:80"
+    depends_on:
+      - frontend
+
+  postgres:
+    image: postgres:17.4-alpine
+    container_name: postgres
+    restart: unless-stopped
+    user: postgres:postgres
+    networks:
+      - network
+    ports:
+      - "5432:5432"
+    env_file:
+      - ./Postgres/db.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./Postgres/init:/docker-entrypoint-initdb.d
+
+  valkey:
+    image: valkey/valkey:8.1.2-alpine
+    container_name: valkey
+    restart: unless-stopped
+    networks:
+      - network
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey_data:/data
+    secrets:
+      - valkey_config
+    command: valkey-server /run/secrets/valkey_config
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+      secrets:
+        - source: git_env
+    container_name: backend
+    restart: unless-stopped
+    networks:
+      - network
+    hostname: backend
+    environment:
+      - GOPRIVATE=github.com/benjaminRoberts01375
+      - ROLE=DB
+      - COLOR=blue
+      - PORT=9001
+      - DB_PORT=5432
+      - DB_CONTAINER_NAME=postgres
+      - CACHE_PORT=6379
+      - CACHE_CONTAINER_NAME=valkey
+      - CACHE_ID_LENGTH=15
+      - ALLOW_SENDING_EMAILS=false
+      - DEV_MODE=true
+
+    secrets:
+      - source: db_coms
+        target: config.json
+      - source: db
+        target: db.json
+    depends_on:
+      - postgres
+    volumes:
+      - ./DB:/app
+
+volumes:
+  postgres_data:
+    name: postgres-data-dev
+  node-modules:
+    name: frontend-node-modules
+  valkey_data:
+    name: valkey-data
+
+secrets:
+  git_env:
+    file: ./.secrets/go_build.env
+  db_coms:
+    file: ./.secrets/dbcoms.json
+  db:
+    file: ./.secrets/db.json
+  valkey_config:
+    file: ./.secrets/valkey.conf
