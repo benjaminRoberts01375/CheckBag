@@ -3,7 +3,7 @@ body {
 	width: 100vw;
 	margin: 0pt;
 	padding: 0pt;
-	background: #df6666;
+	background: #eee;
 }
 
 .primary,
@@ -23,20 +23,11 @@ dialog h2 {
 	color: black;
 }
 
-a,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p,
-textarea,
-input,
-label {
+* {
 	padding: 0pt;
 	margin: 0pt;
 	font-family: "Arial Rounded MT Bold", "Arial", sans-serif;
+	box-sizing: border-box;
 }
 
 a {
@@ -47,6 +38,7 @@ a {
 button {
 	cursor: pointer;
 	color: black;
+	border: none;
 }
 
 h1 {
