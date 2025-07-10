@@ -8,7 +8,7 @@ import (
 
 // Reset the user's password. Authentication is done with the JWT.
 func userResetPassword(w http.ResponseWriter, r *http.Request) {
-	_, userID, password, err := checkUserRequest[string](r)
+	_, password, err := checkUserRequest[string](r)
 	if err != nil {
 		Coms.ExternalPostRespondCode(http.StatusInternalServerError, w)
 		return
@@ -18,6 +18,6 @@ func userResetPassword(w http.ResponseWriter, r *http.Request) {
 		Coms.ExternalPostRespondCode(http.StatusInternalServerError, w)
 		return
 	}
-	database.SetUserPassword(userID, newPasswordHash)
+	fileSystem.SetUserData(string(newPasswordHash))
 	Coms.ExternalPostRespondCode(http.StatusOK, w)
 }

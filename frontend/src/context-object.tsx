@@ -12,10 +12,6 @@ export interface ContextType {
 	userRequestData: () => void;
 	cookieGet: (key: CookieKeys) => string | undefined;
 	passwordReset: (newPassword: string) => void;
-	emailResetRequest: (newEmail: string) => void;
-	forgotPasswordRequest: (email: string) => void;
-	forgotPasswordCheckValid: (token: string) => void;
-	forgotPasswordConfirmation: (token: string) => void;
 }
 
 // Create the context with a default value
