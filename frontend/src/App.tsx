@@ -16,6 +16,7 @@ createRoot(document.getElementById("root")!).render(
 					<Route path="/signup" element={<SignUp />} />
 					<Route path="/dashboard" element={<Dashboard />}>
 						<Route path="/dashboard/home" element={<h1>Home</h1>} />
+						<Route path="/dashboard/services" element={<h1>Services</h1>} />
 					</Route>
 				</Routes>
 			</ContextProvider>
