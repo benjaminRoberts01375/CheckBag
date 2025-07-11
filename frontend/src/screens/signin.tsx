@@ -24,7 +24,6 @@ const SignInScreen = () => {
 					throw new Error("Failed to check if user exists: " + response.status);
 				}
 				console.log("User exists");
-				navigate("/dashboard");
 			} catch (error) {
 				console.error("Error checking if user exists:", error);
 			}
