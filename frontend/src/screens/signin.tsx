@@ -13,9 +13,6 @@ const SignInScreen = () => {
 			try {
 				const response = await fetch("/api/user-exists", {
 					method: "GET",
-					headers: {
-						"Content-Type": "application/json",
-					},
 					credentials: "include",
 				});
 
