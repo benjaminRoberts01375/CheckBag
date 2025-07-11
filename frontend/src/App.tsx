@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ContextProvider } from "./context";
 import SignIn from "./screens/signin";
 import SignUp from "./screens/signup";
+import Dashboard from "./components/dashboard";
 
 createRoot(document.getElementById("root")!).render(
 	<StrictMode>
@@ -13,6 +14,9 @@ createRoot(document.getElementById("root")!).render(
 					<Route path="/" element={<h1>Hello, React!</h1>} />
 					<Route path="/signin" element={<SignIn />} />
 					<Route path="/signup" element={<SignUp />} />
+					<Route path="/dashboard" element={<Dashboard />}>
+						<Route path="/dashboard/home" element={<h1>Home</h1>} />
+					</Route>
 				</Routes>
 			</ContextProvider>
 		</BrowserRouter>
