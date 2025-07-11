@@ -2,10 +2,12 @@ import "../styles.css";
 import PasswordScreen from "../components/password";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useList } from "../context-hook";
 
 const SignInScreen = () => {
 	const [error, setError] = useState<string>("");
 	const navigate = useNavigate();
+	const { cookieGet } = useList();
 
 	function userExists() {
 		console.log("Checking if user exists");
@@ -30,7 +32,30 @@ const SignInScreen = () => {
 		})();
 	}
 
+	function jwtSignIn() {
+		console.log("Signing in with JWT");
+		(async () => {
+			try {
+				const response = await fetch("/api/user-sign-in-jwt", {
+					method: "POST",
+					credentials: "include",
+				});
+
+				if (!response.ok) {
+					throw new Error("Failed to sign in user: " + response.status);
+				}
+				console.log("Successfully signed in user");
+				navigate("/dashboard");
+			} catch (error) {
+				console.error("Error signing in user:", error);
+			}
+		})();
+	}
+
 	useEffect(() => {
+		if (cookieGet("session-token")) {
+			jwtSignIn();
+		}
 		userExists();
 	}, []);
 
