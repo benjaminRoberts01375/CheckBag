@@ -20,13 +20,17 @@ func main() {
 	defer cache.raw.Close()
 	// Setup endpoints
 	setupEndpoints()
-
+	if models.Config.DevMode {
+		Coms.Println("Running in dev mode")
+	}
+	Coms.Println("Listening on port " + Coms.GetLaunchPort())
 	http.ListenAndServe(Coms.GetLaunchPort(), nil)
 }
 
 func setupEndpoints() {
+	http.HandleFunc("POST /api/user-exists", userExists)
 	http.HandleFunc("POST /api/user-sign-up", newUser)
-	http.HandleFunc("POST /api/user-sign-in", newUserSignIn)
+	http.HandleFunc("POST /api/user-sign-in", userSignIn)
 	http.HandleFunc("POST /api/user-sign-in-jwt", userJWTSignIn)
 	http.HandleFunc("POST /api/user-logout", userLogout)
 	http.HandleFunc("POST /api/user-reset-password", userResetPassword)

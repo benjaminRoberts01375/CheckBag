@@ -1,12 +1,20 @@
 import "../styles.css";
 import PasswordStyles from "./password.module.css";
+import { FormEvent } from "react";
 
 interface PasswordScreenProps {
 	buttonText: string;
-	onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+	passwordSubmit: (password: string) => void;
+	error: string;
 }
 
-const PasswordScreen = ({ buttonText, onSubmit }: PasswordScreenProps) => {
+const PasswordScreen = ({ buttonText, passwordSubmit, error }: PasswordScreenProps) => {
+	function onSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+		const formData = new FormData(event.currentTarget);
+		passwordSubmit(formData.get("password") as string);
+	}
+
 	return (
 		<div id={PasswordStyles["container"]}>
 			<div id={PasswordStyles["wrapper"]}>
@@ -21,7 +29,7 @@ const PasswordScreen = ({ buttonText, onSubmit }: PasswordScreenProps) => {
 						{buttonText}
 					</button>
 				</form>
-				{/* </div> */}
+				<p>{error}</p>
 			</div>
 		</div>
 	);

@@ -56,33 +56,6 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		})();
 	}
 
-	function userLogin(username: string, password: string): void {
-		(async () => {
-			try {
-				const response = await fetch("/api/user-sign-in", {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						username: username,
-						password: password,
-					}),
-					credentials: "include",
-				});
-
-				if (!response.ok) {
-					throw new Error("Failed to log in user");
-				}
-				const rawData = await response.json();
-				setUser(rawData.user);
-				console.log("Successfully logged in user");
-			} catch (error) {
-				console.error("Error logging in user:", error);
-			}
-		})();
-	}
-
 	function userLoginJWT(): void {
 		(async () => {
 			try {
@@ -177,7 +150,6 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		user,
 		cookieGet,
 		userSignUp,
-		userLogin,
 		userLoginJWT,
 		userLogout,
 		userRequestData,

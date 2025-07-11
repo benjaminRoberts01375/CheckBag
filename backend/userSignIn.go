@@ -10,19 +10,23 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func newUserSignIn(w http.ResponseWriter, r *http.Request) {
+func userSignIn(w http.ResponseWriter, r *http.Request) {
+	Coms.Println("Hitting userSignIn")
 	rawPassword, err := Coms.ExternalPostReceived[string](r)
 	if err != nil {
+		Coms.PrintErrStr("Could not get password from request: ", err.Error())
 		Coms.ExternalPostRespondCode(http.StatusBadRequest, w)
 		return
 	}
 	passwordHash, err := fileSystem.GetUserData()
 	if err != nil {
+		Coms.PrintErrStr("Could not get user data from file system: ", err.Error())
 		Coms.ExternalPostRespondCode(http.StatusBadRequest, w)
 		return
 	}
 	// Compare the password with the hash
 	if err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(*rawPassword)); err != nil {
+		Coms.PrintErrStr("Passwords do not match: ", err.Error())
 		Coms.ExternalPostRespondCode(http.StatusBadRequest, w) // Intentionally obscure the error to prevent username guessing
 		return
 	}
@@ -30,6 +34,7 @@ func newUserSignIn(w http.ResponseWriter, r *http.Request) {
 	// If the password is correct, generate a JWT
 	token, err := jwt.GenerateJWT(jwt.LoginDuration)
 	if err != nil {
+		Coms.PrintErrStr("Could not generate JWT: ", err.Error())
 		Coms.ExternalPostRespondCode(http.StatusInternalServerError, w)
 		return
 	}
