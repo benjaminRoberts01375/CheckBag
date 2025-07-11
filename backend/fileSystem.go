@@ -39,17 +39,14 @@ func (fs *FileSystem) Write(path string, data string) error {
 	return nil
 }
 
-func (fs *FileSystem) GetUserDataPath() string {
-	return filepath.Join(fs.BasePath, fs.UserData)
-}
-
 func (fs *FileSystem) GetUserData() (string, error) {
 	data, err := os.ReadFile(fs.GetUserDataPath())
+	data, err := os.ReadFile(filepath.Join(fs.BasePath, fs.UserData))
 	return string(data), err
 }
 
 func (fs *FileSystem) SetUserData(data string) error {
-	return fs.Write(fs.GetUserDataPath(), data)
+	return fs.Write(filepath.Join(fs.BasePath, fs.UserData), data)
 }
 	if err != nil {
 		return errors.New("Could not write to file: " + err.Error())
