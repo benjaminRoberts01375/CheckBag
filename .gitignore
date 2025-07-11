@@ -148,3 +148,6 @@ ConfigsWriter/dbConfig.go
 
 # Blender files
 *.blend[0-9]*
+
+# Temp files
+tmp/
