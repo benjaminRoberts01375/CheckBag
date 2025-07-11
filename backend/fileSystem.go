@@ -38,9 +38,12 @@ func (fs *FileSystem) GetUserData() (string, error) {
 func (fs *FileSystem) SetUserData(data string) error {
 	newFile, err := os.Create(fs.GetUserDataPath())
 	if err != nil {
-		return err
+		return errors.New("Could not create file: " + err.Error())
 	}
 	defer newFile.Close()
 	_, err = newFile.WriteString(data)
-	return err
+	if err != nil {
+		return errors.New("Could not write to file: " + err.Error())
+	}
+	return nil
 }
