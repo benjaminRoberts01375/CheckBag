@@ -1,9 +1,14 @@
 package main
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 )
+
+func init() {
+	fileSystem.Setup()
+}
 
 var fileSystem = FileSystem{
 	BasePath: "/CheckBag",
@@ -13,6 +18,12 @@ var fileSystem = FileSystem{
 type FileSystem struct {
 	BasePath string `json:"base_path"`
 	UserData string `json:"user_data"`
+}
+
+func (fs *FileSystem) Setup() {
+	if err := os.MkdirAll(fs.BasePath, os.ModePerm); err != nil {
+		panic(err)
+	}
 }
 
 func (fs *FileSystem) GetUserDataPath() string {
