@@ -18,7 +18,12 @@ func newUser(w http.ResponseWriter, r *http.Request) {
 		Coms.ExternalPostRespondCode(http.StatusBadRequest, w)
 		return
 	}
-	fileSystem.SetUserData(string(userPasswordHash))
+	err = fileSystem.SetUserData(string(userPasswordHash))
+	if err != nil {
+		Coms.PrintErrStr("Could not set user data in file system: ", err.Error())
+		Coms.ExternalPostRespondCode(http.StatusInternalServerError, w)
+		return
+	}
 }
 
 func createPasswordHash(password string) ([]byte, error) {
