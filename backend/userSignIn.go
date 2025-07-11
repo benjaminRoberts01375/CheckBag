@@ -11,7 +11,6 @@ import (
 )
 
 func userSignIn(w http.ResponseWriter, r *http.Request) {
-	Coms.Println("Hitting userSignIn")
 	rawPassword, err := Coms.ExternalPostReceived[string](r)
 	if err != nil {
 		Coms.PrintErrStr("Could not get password from request: ", err.Error())
