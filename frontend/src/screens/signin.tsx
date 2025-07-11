@@ -1,11 +1,42 @@
 import "../styles.css";
 import PasswordScreen from "../components/password";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const SignInScreen = () => {
 	const [error, setError] = useState<string>("");
 	const navigate = useNavigate();
+
+	function userExists() {
+		console.log("Checking if user exists");
+		(async () => {
+			try {
+				const response = await fetch("/api/user-exists", {
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					credentials: "include",
+				});
+
+				if (response.status === 410) {
+					console.log("User does not exist");
+					navigate("/signup");
+					return;
+				} else if (!response.ok) {
+					throw new Error("Failed to check if user exists: " + response.status);
+				}
+				console.log("User exists");
+				navigate("/dashboard");
+			} catch (error) {
+				console.error("Error checking if user exists:", error);
+			}
+		})();
+	}
+
+	useEffect(() => {
+		userExists();
+	}, []);
 
 	function onSubmit(password: string) {
 		console.log("Submitted");
