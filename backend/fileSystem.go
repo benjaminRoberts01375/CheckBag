@@ -26,6 +26,19 @@ func (fs *FileSystem) Setup() {
 	}
 }
 
+func (fs *FileSystem) Write(path string, data string) error {
+	newFile, err := os.Create(path)
+	if err != nil {
+		return errors.New("Could not create file: " + err.Error())
+	}
+	defer newFile.Close()
+	_, err = newFile.WriteString(data)
+	if err != nil {
+		return errors.New("Could not write to file: " + err.Error())
+	}
+	return nil
+}
+
 func (fs *FileSystem) GetUserDataPath() string {
 	return filepath.Join(fs.BasePath, fs.UserData)
 }
@@ -36,12 +49,8 @@ func (fs *FileSystem) GetUserData() (string, error) {
 }
 
 func (fs *FileSystem) SetUserData(data string) error {
-	newFile, err := os.Create(fs.GetUserDataPath())
-	if err != nil {
-		return errors.New("Could not create file: " + err.Error())
-	}
-	defer newFile.Close()
-	_, err = newFile.WriteString(data)
+	return fs.Write(fs.GetUserDataPath(), data)
+}
 	if err != nil {
 		return errors.New("Could not write to file: " + err.Error())
 	}
