@@ -28,7 +28,7 @@ func main() {
 }
 
 func setupEndpoints() {
-	http.HandleFunc("POST /api/user-exists", userExists)
+	http.HandleFunc("GET /api/user-exists", userExists)
 	http.HandleFunc("POST /api/user-sign-up", newUser)
 	http.HandleFunc("POST /api/user-sign-in", userSignIn)
 	http.HandleFunc("POST /api/user-sign-in-jwt", userJWTSignIn)
