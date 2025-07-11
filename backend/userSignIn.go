@@ -10,36 +10,34 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserSignIn struct {
-	Email    string `json:"username"`
-	Password string `json:"password"`
-}
-
-func newUserSignIn(w http.ResponseWriter, r *http.Request) {
-	userRequest, err := Coms.ExternalPostReceived[UserSignIn](r)
+func userSignIn(w http.ResponseWriter, r *http.Request) {
+	rawPassword, err := Coms.ExternalPostReceived[string](r)
 	if err != nil {
+		Coms.PrintErrStr("Could not get password from request: ", err.Error())
 		Coms.ExternalPostRespondCode(http.StatusBadRequest, w)
 		return
 	}
-	dbPasswordHash, userID, err := database.GetUserPasswordAndID(userRequest.Email)
+	passwordHash, err := fileSystem.GetUserData()
 	if err != nil {
+		Coms.PrintErrStr("Could not get user data from file system: ", err.Error())
 		Coms.ExternalPostRespondCode(http.StatusBadRequest, w)
 		return
 	}
 	// Compare the password with the hash
-	if err := bcrypt.CompareHashAndPassword(dbPasswordHash, []byte(userRequest.Password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(*rawPassword)); err != nil {
+		Coms.PrintErrStr("Passwords do not match: ", err.Error())
 		Coms.ExternalPostRespondCode(http.StatusBadRequest, w) // Intentionally obscure the error to prevent username guessing
 		return
 	}
 
 	// If the password is correct, generate a JWT
-	token, err := jwt.GenerateJWT(userRequest.Email, jwt.LoginDuration)
+	token, err := jwt.GenerateJWT(jwt.LoginDuration)
 	if err != nil {
+		Coms.PrintErrStr("Could not generate JWT: ", err.Error())
 		Coms.ExternalPostRespondCode(http.StatusInternalServerError, w)
 		return
 	}
-	go database.SetUserHasLoggedIn(userID)
-	go cache.setUserSignIn(token, userID)
+	go cache.setUserSignIn(token)
 
 	if models.Config.DevMode {
 		http.SetCookie(w, &http.Cookie{
@@ -48,7 +46,7 @@ func newUserSignIn(w http.ResponseWriter, r *http.Request) {
 			HttpOnly: false,
 			Secure:   false,
 			SameSite: http.SameSiteStrictMode,
-			Expires:  time.Now().Add(time.Hour * 24 * 30), // One month
+			Expires:  time.Now().Add(jwt.LoginDuration),
 			Path:     "/",
 		})
 	} else {

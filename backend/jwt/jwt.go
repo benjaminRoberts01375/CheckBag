@@ -9,10 +9,8 @@ import (
 const CookieName = "session-token"
 const LoginDuration = time.Hour*24*6 + time.Hour*12 // 6 + 0.5 days
 
-func GenerateJWT(username string, duration time.Duration) (string, error) {
-	claims := Claims{
-		Username: username,
-	}
+func GenerateJWT(duration time.Duration) (string, error) {
+	claims := Claims{}
 	claims.ExpiresAt = jwt.NewNumericDate(time.Now().Add(duration))
 	claims.IssuedAt = jwt.NewNumericDate(time.Now())
 	claims.NotBefore = jwt.NewNumericDate(time.Now())

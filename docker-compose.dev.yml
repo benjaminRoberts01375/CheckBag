@@ -5,7 +5,7 @@ networks:
 services:
   frontend:
     build:
-      context: ./Frontend
+      context: ./frontend
       dockerfile: Dockerfile.dev
     container_name: frontend
     restart: unless-stopped
@@ -13,14 +13,14 @@ services:
       - network
     hostname: frontend
     volumes:
-      - ./Frontend:/app
+      - ./frontend:/app
       - node-modules:/app/node_modules
     environment:
       - NODE_ENV=development
 
   nginx:
     build:
-      context: ./Nginx
+      context: ./router
       dockerfile: Dockerfile.dev
     container_name: nginx
     restart: unless-stopped
@@ -41,10 +41,10 @@ services:
     ports:
       - "5432:5432"
     env_file:
-      - ./Postgres/db.env
+      - ./.secrets/postgres.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./Postgres/init:/docker-entrypoint-initdb.d
+      - ./database/init:/docker-entrypoint-initdb.d
 
   valkey:
     image: valkey/valkey:8.1.2-alpine
@@ -83,24 +83,27 @@ services:
       - CACHE_ID_LENGTH=15
       - ALLOW_SENDING_EMAILS=false
       - DEV_MODE=true
-
+    ports:
+      - "9001:9001"
     secrets:
       - source: db_coms
         target: config.json
       - source: db
         target: db.json
+      - source: valkey_backend
+        target: valkey.json
     depends_on:
       - postgres
     volumes:
-      - ./DB:/app
+      - ./backend:/app
 
 volumes:
   postgres_data:
-    name: postgres-data-dev
-  node-modules:
-    name: frontend-node-modules
+    name: postgres-data
   valkey_data:
     name: valkey-data
+  node-modules:
+    name: frontend-node-modules
 
 secrets:
   git_env:
@@ -109,5 +112,7 @@ secrets:
     file: ./.secrets/dbcoms.json
   db:
     file: ./.secrets/db.json
+  valkey_backend:
+    file: ./.secrets/valkey.json
   valkey_config:
     file: ./.secrets/valkey.conf

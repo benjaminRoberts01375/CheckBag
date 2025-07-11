@@ -4,10 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/rand"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	JWT "github.com/benjaminRoberts01375/Web-Tech-Stack/jwt"
@@ -54,7 +52,7 @@ var (
 	cacheUserSignIn    CacheType = CacheType{duration: JWT.LoginDuration, purpose: "User Sign In"}
 )
 
-const cacheKeyLength = 16
+const cacheDataValid = "valid"
 
 // Basic cache functions
 
@@ -154,28 +152,8 @@ func (cache CacheLayer) SetHash(key string, values map[string]string, duration C
 
 // Higher-level cache functions
 
-func (cache *CacheClient[client]) setNewUser(email string) (string, error) {
-	id := generateRandomString(cacheKeyLength)
-	return id, cache.raw.Set(id, email, cacheNewUserSignUp)
-}
-
-func (cache *CacheClient[client]) getAndDeleteNewUser(id string) (string, error) {
-	email, cacheType, err := cache.raw.Get(id)
-	if err != nil {
-		return "", err
-	}
-	if cacheType != cacheNewUserSignUp {
-		return "", errors.New("invalid cache type")
-	}
-	err = cache.raw.Delete(id)
-	if err != nil {
-		return "", err
-	}
-	return email, nil
-}
-
-func (cache *CacheClient[client]) setUserSignIn(JWT string, userID string) error {
-	err := cache.raw.Set(JWT, userID, cacheUserSignIn)
+func (cache *CacheClient[client]) setUserSignIn(JWT string) error {
+	err := cache.raw.Set(JWT, "valid", cacheUserSignIn)
 	if err != nil {
 		Coms.PrintErrStr("Valkey Set Error: " + err.Error())
 		return err
@@ -184,83 +162,21 @@ func (cache *CacheClient[client]) setUserSignIn(JWT string, userID string) error
 }
 
 func (cache *CacheClient[client]) getUserSignIn(JWT string) (string, error) {
-	userID, cacheType, err := cache.raw.Get(JWT)
+	userData, cacheType, err := cache.raw.Get(JWT)
 	if err != nil {
 		return "", errors.New("failed to get user ID from JWT: " + err.Error())
 	}
 	if cacheType != cacheUserSignIn {
 		return "", errors.New("invalid cache type")
 	}
-	return userID, nil
+	return userData, nil
 }
 
 func (cache *CacheClient[client]) deleteUserSignIn(JWT string) error {
 	return cache.raw.Delete(JWT)
 }
 
-func (cache *CacheClient[client]) setChangeEmail(userID string, newEmail string) (string, error) {
-	id := generateRandomString(cacheKeyLength)
-	return id, cache.raw.Set(id, userID+":"+newEmail, cacheChangeEmail)
-}
-
-func (cache *CacheClient[client]) getAndDeleteChangeEmail(id string) (string, string, error) {
-	userIDEmail, cacheType, err := cache.raw.Get(id)
-	if err != nil {
-		return "", "", err
-	}
-	if cacheType != cacheChangeEmail {
-		return "", "", errors.New("invalid cache type")
-	}
-	err = cache.raw.Delete(id)
-	if err != nil {
-		return "", "", err
-	}
-	return userIDEmail, strings.Split(userIDEmail, ":")[1], nil
-}
-
-func (cache *CacheClient[client]) setForgotPassword(email string) (string, error) {
-	id := generateRandomString(cacheKeyLength)
-	return id, cache.raw.Set(id, email, cachePasswordSet)
-}
-
-func (cache *CacheClient[client]) getForgotPassword(id string) (string, error) {
-	email, cacheType, err := cache.raw.Get(id)
-	if err != nil {
-		return "", err
-	}
-	if cacheType != cachePasswordSet {
-		return "", errors.New("invalid cache type")
-	}
-	return email, nil
-}
-
-func (cache *CacheClient[client]) getAndDeleteResetPassword(id string) (string, error) {
-	email, cacheType, err := cache.raw.Get(id)
-	if err != nil {
-		return "", err
-	}
-	if cacheType != cachePasswordSet {
-		return "", errors.New("invalid cache type")
-	}
-	err = cache.raw.Delete(id)
-	if err != nil {
-		return "", err
-	}
-	return email, nil
-}
-
 // Utilities
-
-func generateRandomString(length int) string {
-	// Charset is URL safe and easy to read
-	const charset = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789"
-
-	stringBase := make([]byte, length)
-	for i := range stringBase {
-		stringBase[i] = charset[rand.Intn(len(charset))]
-	}
-	return string(stringBase)
-}
 
 func (cache CacheLayer) getCacheType(purpose string) (CacheType, error) {
 	switch purpose {

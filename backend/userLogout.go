@@ -8,7 +8,7 @@ import (
 )
 
 func userLogout(w http.ResponseWriter, r *http.Request) {
-	_, _, _, err := checkUserRequest[any](r)
+	_, _, err := checkUserRequest[any](r)
 	if err != nil {
 		Coms.PrintErrStr("Could not log out user: " + err.Error())
 		Coms.ExternalPostRespondCode(http.StatusInternalServerError, w)
