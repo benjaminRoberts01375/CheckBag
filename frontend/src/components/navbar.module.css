@@ -1,4 +1,44 @@
 #navbar-container {
 	display: flex;
 	flex-direction: column;
+	background: #343031;
+	width: 150pt;
+	height: 100vh;
+}
+
+#title {
+	height: 50pt;
+	width: 100%;
+	padding: 5pt 5pt;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #ffd20a;
+}
+
+.entry {
+	padding: 5pt 5pt;
+	background: none;
+	text-align: left;
+	font-size: 13pt;
+	width: 100%;
+}
+
+.entry:hover {
+	background: #575052;
+}
+
+.active {
+	background: #464142;
+}
+
+#divider {
+	height: 2pt;
+	width: 100%;
+	background: white;
+}
+
+.entry,
+#navbar-container {
+	color: white;
 }
