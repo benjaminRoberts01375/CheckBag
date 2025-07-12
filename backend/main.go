@@ -18,6 +18,8 @@ func main() {
 	cache.raw = &CacheLayer{}
 	cache.raw.Setup()
 	defer cache.raw.Close()
+	// Services setup
+	serviceLinks.Setup()
 	// Setup endpoints
 	setupEndpoints()
 	if models.Config.DevMode {
@@ -34,5 +36,5 @@ func setupEndpoints() {
 	http.HandleFunc("POST /api/user-sign-in-jwt", userJWTSignIn)
 	http.HandleFunc("POST /api/user-logout", userLogout)
 	http.HandleFunc("POST /api/user-reset-password", userResetPassword)
-	http.HandleFunc("POST /api/user-get-data", userRequestData)
+	http.HandleFunc("POST /api/services-set", servicesSet)
 }
