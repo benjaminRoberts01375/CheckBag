@@ -1,9 +1,10 @@
 import { createContext } from "react";
+import Service from "./types/service.tsx";
 
 export type CookieKeys = "session-token";
 
 export interface ContextType {
-	userRequestData: () => void;
+	services: Service[];
 	cookieGet: (key: CookieKeys) => string | undefined;
 	passwordReset: (newPassword: string) => void;
 }
