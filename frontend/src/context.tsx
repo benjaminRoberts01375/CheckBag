@@ -8,6 +8,7 @@ interface Props {
 }
 
 export const ContextProvider: React.FC<Props> = ({ children }) => {
+	const [services, setServices] = useState<Service[]>(new Array<Service>());
 
 	function cookieGet(key: CookieKeys): string | undefined {
 		const cookieString = document.cookie.split("; ").find(cookie => cookie.startsWith(`${key}=`));
@@ -69,12 +70,8 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 	}
 
 	const contextShape: ContextType = {
-		user,
+		services,
 		cookieGet,
-		userSignUp,
-		userLoginJWT,
-		userLogout,
-		userRequestData,
 		passwordReset,
 	};
 
