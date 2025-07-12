@@ -9,8 +9,9 @@ import (
 type ServiceLinks []ServiceLink
 
 type ServiceLink struct {
-	InternalAddress string `json:"internal_address"`
-	ExternalAddress string `json:"external_address"`
+	InternalAddress string   `json:"internal_address"`
+	ExternalAddress []string `json:"external_address"`
+	Title           string   `json:"title"`
 }
 
 func (serviceLinks *ServiceLinks) Setup() {
