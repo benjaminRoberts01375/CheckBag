@@ -200,3 +200,8 @@ dialog #buttons {
 		padding: 15pt 0pt;
 	}
 }
+
+button:disabled {
+	opacity: 50%;
+	cursor: not-allowed;
+}
