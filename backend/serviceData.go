@@ -17,7 +17,7 @@ func getServiceData(w http.ResponseWriter, r *http.Request) {
 		Coms.ExternalPostRespondCode(http.StatusInternalServerError, w)
 		return
 	}
-	requestedService := r.PathValue("service")
+	requestedService := r.PathValue("services")
 	if requestedService == "" {
 		Coms.ExternalPostRespond(getAnalyticDashboard(), w)
 		return
