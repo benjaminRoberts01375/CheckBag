@@ -47,6 +47,34 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		})();
 	}
 
+	function serviceAdd(service: Service): void {
+		const updatedServices = [...services, service];
+		setServices(updatedServices);
+		serverUpdateServices(updatedServices);
+	}
+
+	/**A helper function to set the services on the server. */
+	async function serverUpdateServices(servicesToSend: Service[] = services) {
+		console.log("Sending: " + JSON.stringify(servicesToSend));
+		try {
+			const response = await fetch("/api/services-set", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(servicesToSend),
+				credentials: "include",
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to add service");
+			}
+			console.log("Successfully added service");
+		} catch (error) {
+			console.error("Error adding service:", error);
+		}
+	}
+
 	function passwordReset(newPassword: string): void {
 		(async () => {
 			try {
@@ -71,7 +99,9 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 
 	const contextShape: ContextType = {
 		services,
+		serviceAdd,
 		cookieGet,
+		requestServiceData,
 		passwordReset,
 	};
 

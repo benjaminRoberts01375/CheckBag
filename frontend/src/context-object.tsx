@@ -5,6 +5,8 @@ export type CookieKeys = "session-token";
 
 export interface ContextType {
 	services: Service[];
+	serviceAdd: (service: Service) => void;
+	requestServiceData: (service: string) => void;
 	cookieGet: (key: CookieKeys) => string | undefined;
 	passwordReset: (newPassword: string) => void;
 }
