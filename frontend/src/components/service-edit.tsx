@@ -56,6 +56,7 @@ const ServiceEdit = ({ service }: ServiceAddScreenProps) => {
 						onClick={() => {
 							console.log("Service exists");
 						}}
+						title={"ClientID: " + service.clientID + ", ID: " + service.id}
 					>
 						Exists
 					</button>
