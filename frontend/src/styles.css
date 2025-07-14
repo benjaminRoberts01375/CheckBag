@@ -49,159 +49,19 @@ h2 {
 	font-size: 18pt;
 }
 
-dialog {
-	border: none;
-	border-radius: 12pt;
-	padding: 0pt;
-	max-width: 500pt;
-	box-shadow: 0pt 0pt 50pt #0007;
-	background: #eee;
-}
-dialog::backdrop {
-	background: rgba(0, 0, 0, 0.4);
-}
-dialog h2 {
-	padding: 5pt;
-	width: calc(100% - 10pt);
-	text-align: center;
-}
-dialog p {
-	text-align: center;
-	padding: 15pt;
-	width: calc(100% - 30pt);
-}
-dialog #buttons {
-	display: flex;
-	justify-content: space-between;
-	padding: 10pt;
-}
-
-.main_content {
-	width: calc(100% - 180pt);
-	height: calc(100% - 80pt);
-	margin: 20pt;
-	padding: 20pt;
-	border-radius: 10pt;
-	flex: 1;
-	overflow: hidden;
-}
-
-.container {
-	display: flex;
-	height: 100vh;
-}
-
-.input {
-	padding: 10pt;
-	border-width: 2pt;
-	border-color: #ddd;
-	border-radius: 7pt;
-	border-style: solid;
-}
-
-.flavor-button-distant,
-.flavor-button,
-.flavor-icon {
-	color: black;
-	background: #fff;
-	height: 25pt;
-	border: none;
-	border: solid 2pt #0000;
-	border-radius: 20pt;
-	font-size: 20px;
-	font-weight: 700;
-	padding: 0 5pt;
-	text-wrap: none;
-	line-clamp: 1;
-	box-shadow: 0pt 0pt 10pt #0005;
-	transition-duration: 0.25s;
-	justify-content: center;
-	display: flex;
-	align-items: center;
-}
-
-.flavor-button-distant:hover,
-.flavor-button:hover,
-.flavor-icon:hover {
-	box-shadow: 0pt 0pt 0pt #005;
-	border: solid 2pt #0005;
-	transition-duration: 0.25s;
-}
-
-.flavor-button-distant:active,
-.flavor-button:active,
-.flavor-icon:active {
-	background: #ff000040;
-	box-shadow: 0pt 0pt 0pt #005;
-	border: solid 2pt #0005;
-}
-
-.flavor-icon {
-	color: black;
-	background: #fff;
-	height: 25pt;
-	margin: 0pt 0pt 0pt 3pt;
-	display: flex;
-	align-items: center;
-}
-
-.flavor-button-distant {
-	margin: 0pt 0pt 0pt auto;
-}
-
-.edit-name {
-	max-width: 200pt;
-	border-width: 0pt;
-	border-radius: 5pt;
-	margin: 3pt 3pt 0pt 5pt;
-	padding: 5pt 0pt 5pt 5pt;
-}
-
-.edit-name-container {
-	display: flex;
-}
-.edit-name-container > button {
-	margin-left: 5pt;
-}
-
-@media (max-width: 700px) {
-	.flavor-button-distant,
-	.flavor-button {
-		transition-duration: 0.25s;
-		width: 100%;
-		font-size: 14pt;
-		flex: 1;
-	}
-	.flavor-icon {
-		flex: 0;
-	}
-	.flavor-button,
-	.flavor-icon,
-	.flavor-button-distant {
-		height: 35px;
-		min-width: 35px;
-		/* margin: 7pt 0pt 0pt 3pt; */
-	}
-	h1,
-	h2 {
-		margin-bottom: 7pt;
-	}
-	/* h1 {
-		font-size: 18pt;
-	}
-	h2 {
-		font-size: 16pt;
-	} */
-	dialog #buttons {
-		padding: 20pt;
-	}
-	dialog #buttons > * {
-		margin: 0pt 10pt;
-		padding: 15pt 0pt;
-	}
-}
-
 button:disabled {
 	opacity: 50%;
 	cursor: not-allowed;
+}
+
+tr {
+	display: flex;
+}
+td,
+th {
+	flex: 1;
+}
+
+th {
+	text-align: left;
 }
