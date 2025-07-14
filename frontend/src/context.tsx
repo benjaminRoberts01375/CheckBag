@@ -19,15 +19,15 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		return undefined;
 	}
 
-	function requestInitialData(): void {
+	/**Get a specific service's data from the backend.
+	Overwrites the service's data if it already exists while maintaining the client ID.
+	Creates a new service if it doesn't exist.
+	*/
+	function requestServiceData(service: string): void {
 		(async () => {
 			try {
-
-	function userRequestData(): void {
-		(async () => {
-			try {
-				const response = await fetch("/api/user-get-data", {
-					method: "POST",
+				const response = await fetch("/api/service-data/" + service, {
+					method: "GET",
 					headers: {
 						"Content-Type": "application/json",
 					},
@@ -35,12 +35,25 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 				});
 
 				if (!response.ok) {
-					throw new Error("Failed to fetch user data");
+					throw new Error("Failed to fetch initial data");
 				}
-				const rawData = await response.json();
-				setUser(rawData.user);
-				console.log("Successfully fetched user data:");
-				setServices(rawData.services);
+				const rawData: Service[] = await response.json();
+				setServices(oldServices => {
+					const originalUniqueServices = oldServices.filter(existingService => {
+						// Remove duplicate services, maintaining client ID
+						for (let i = 0; i < rawData.length; i++) {
+							if (existingService.id === rawData[i].id) {
+								rawData[i].clientID = existingService.clientID; // Maintain client ID
+								return false;
+							}
+							rawData[i].clientID = crypto.randomUUID(); // Generate new client ID
+						}
+						return true;
+					});
+					return [...originalUniqueServices, ...rawData]; // Add new services
+				});
+
+				console.log("Successfully fetched initial data:");
 			} catch (error) {
 				console.error("Error fetching initial data:", error);
 			}
