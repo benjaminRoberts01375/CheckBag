@@ -24,6 +24,11 @@ type FileSystem struct {
 }
 
 func (fs *FileSystem) Setup() {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	fs.BasePath = filepath.Join(homeDir, fs.BasePath)
 	if err := os.MkdirAll(fs.BasePath, os.ModePerm); err != nil {
 		panic(err)
 	}
