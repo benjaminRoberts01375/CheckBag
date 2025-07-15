@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"slices"
 
 	Coms "github.com/benjaminRoberts01375/Go-Communicate"
 	"github.com/benjaminRoberts01375/Web-Tech-Stack/models"
@@ -50,4 +51,13 @@ func servicesSet(w http.ResponseWriter, r *http.Request) {
 	}
 	serviceLinks = *newServiceLinks
 	Coms.ExternalPostRespond(serviceLinks, w)
+}
+
+func (services *ServiceLinks) GetServiceFromExternalURL(service string) *ServiceLink {
+	for _, serviceLink := range *services {
+		if slices.Contains(serviceLink.ExternalAddress, service) {
+			return &serviceLink
+		}
+	}
+	return nil
 }
