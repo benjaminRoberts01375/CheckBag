@@ -32,7 +32,6 @@ func requestForwarding(w http.ResponseWriter, r *http.Request) {
 	if websocket.IsWebSocketUpgrade(r) {
 		websocketProxy(w, r, internalAddress)
 	} else {
-		Coms.Println("HTTP request received.")
 		restForwarding(w, r, internalAddress)
 	}
 }
