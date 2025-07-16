@@ -11,9 +11,25 @@ class Service {
 		title: string,
 		id: string = "",
 	) {
-		this.internal_address = internal_address;
+		if (internal_address.substring(0, 4) !== "http") {
+			internal_address = "http://" + internal_address;
+		}
+
+		// Preserve hostname and port for internal address
+		const internalUrl = new URL(internal_address);
+		this.internal_address = internalUrl.port
+			? `${internalUrl.hostname}:${internalUrl.port}`
+			: internalUrl.hostname;
+
+		// Handle external addresses similarly
 		external_address.forEach((address, index) => {
-			external_address[index] = new URL(address).hostname;
+			if (address.substring(0, 4) !== "http") {
+				address = "http://" + address;
+			}
+			const externalUrl = new URL(address);
+			external_address[index] = externalUrl.port
+				? `${externalUrl.hostname}:${externalUrl.port}`
+				: externalUrl.hostname;
 		});
 
 		this.external_address = external_address;
