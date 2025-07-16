@@ -38,7 +38,12 @@ WORKDIR /home/appuser
 # Copy the binary from builder
 COPY --from=builder --chown=appuser:appgroup /app/main /home/appuser/main
 
-# Create configs directory and set permissions
+# Create the CheckBag directory and set proper permissions
+RUN mkdir -p /home/appuser/CheckBag && \
+    chown -R appuser:appgroup /home/appuser/CheckBag
+
+# Switch to non-root user
 USER appuser
+
 # Run the binary
 CMD ["./main"]
