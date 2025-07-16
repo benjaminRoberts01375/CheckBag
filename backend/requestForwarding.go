@@ -31,8 +31,14 @@ func requestForwarding(w http.ResponseWriter, r *http.Request) {
 	// Check for WebSocket upgrade
 	if websocket.IsWebSocketUpgrade(r) {
 		websocketProxy(w, r, internalAddress)
-		return
+	} else {
+		Coms.Println("HTTP request received.")
+		restForwarding(w, r, internalAddress)
 	}
+}
+
+// Handles typical HTTP requests like GET, POST, etc.
+func restForwarding(w http.ResponseWriter, r *http.Request, internalAddress string) {
 
 	internalAddress = "http://" + internalAddress
 
