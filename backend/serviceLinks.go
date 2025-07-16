@@ -24,6 +24,7 @@ func (serviceLinks *ServiceLinks) Setup() {
 		return
 	}
 	*serviceLinks = diskServices
+	Coms.Println("Loaded services: " + serviceLinks.String())
 }
 
 var serviceLinks = ServiceLinks{}
