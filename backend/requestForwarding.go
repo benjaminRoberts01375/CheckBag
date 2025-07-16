@@ -28,16 +28,10 @@ func requestForwarding(w http.ResponseWriter, r *http.Request) {
 	}
 	internalAddress += path
 
-	// Check for WebSocket upgrade, but exclude Socket.IO requests
+	// Check for WebSocket upgrade
 	if websocket.IsWebSocketUpgrade(r) {
-		// Socket.IO requests should be handled as HTTP, not raw WebSocket
-		if strings.Contains(r.URL.Path, "socket.io") {
-			Coms.Println("Socket.IO request detected, handling as HTTP")
-		} else {
-			Coms.Println("WebSocket upgrade request received.")
-			websocketProxy(w, r, internalAddress)
-			return
-		}
+		websocketProxy(w, r, internalAddress)
+		return
 	}
 
 	internalAddress = "http://" + internalAddress
