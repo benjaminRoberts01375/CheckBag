@@ -74,12 +74,15 @@ services:
       - postgres
     volumes:
       - ./backend:/app
+      - backend-data:/home/appuser/CheckBag
 
 volumes:
   postgres_data:
     name: postgres-data
   valkey_data:
     name: valkey-data
+  backend-data:
+    name: backend-data
 
 secrets:
   git_env:

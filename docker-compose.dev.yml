@@ -97,6 +97,7 @@ services:
       - postgres
     volumes:
       - ./backend:/app
+      - backend-data:/root/CheckBag
 
 volumes:
   postgres_data:
@@ -105,6 +106,8 @@ volumes:
     name: valkey-data
   node-modules:
     name: frontend-node-modules
+  backend-data:
+    name: backend-data
 
 secrets:
   git_env:
