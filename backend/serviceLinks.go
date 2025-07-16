@@ -24,7 +24,15 @@ func (serviceLinks *ServiceLinks) Setup() {
 		return
 	}
 	*serviceLinks = diskServices
-	Coms.Println("Loaded services: " + serviceLinks.String())
+	Coms.Println("Loaded services: ", serviceLinks)
+}
+
+func (serviceLinks *ServiceLinks) String() string {
+	var retVal string
+	for _, serviceLink := range *serviceLinks {
+		retVal += serviceLink.ExternalAddress[0] + " → " + serviceLink.InternalAddress + "\n"
+	}
+	return retVal
 }
 
 var serviceLinks = ServiceLinks{}
