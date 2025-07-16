@@ -104,8 +104,11 @@ func requestForwarding(w http.ResponseWriter, r *http.Request) {
 // w and r are the original HTTP request and response writers
 // baseInternalURL is the URL of the internal service to forward the request to. Ex. `192.168.0.50:8154/my/stuff`. Note that the path is preserved, and the protocol is assumed to be HTTP.
 func websocketProxy(w http.ResponseWriter, r *http.Request, baseInternalURL string) {
-	Coms.Println("Original request path: " + r.URL.Path)
-	Coms.Println("Query parameters: " + r.URL.RawQuery)
+	// Convert HTTP URL to WebSocket URL and preserve query parameters
+	wsURL := "ws://" + baseInternalURL
+	if r.URL.RawQuery != "" {
+		wsURL += "?" + r.URL.RawQuery
+	}
 
 	// Create upgrader for client connection
 	upgrader := websocket.Upgrader{
@@ -122,22 +125,15 @@ func websocketProxy(w http.ResponseWriter, r *http.Request, baseInternalURL stri
 	}
 	defer clientConn.Close()
 
-	// Convert HTTP URL to WebSocket URL and preserve query parameters
-	wsURL := "ws://" + baseInternalURL
-	if r.URL.RawQuery != "" {
-		wsURL += "?" + r.URL.RawQuery
-	}
-	Coms.Println("WebSocket URL: " + wsURL)
-
 	// Forward original headers to internal service
 	headers := http.Header{}
 	for name, values := range r.Header {
 		// Skip connection-specific headers that shouldn't be forwarded
-		if name == "Connection" || name == "Upgrade" || name == "Sec-Websocket-Key" ||
-			name == "Sec-Websocket-Version" || name == "Sec-Websocket-Extensions" {
+		switch name {
+		case "Connection", "Upgrade", "Sec-Websocket-Key", "Sec-Websocket-Version", "Sec-Websocket-Extensions":
 			continue
 		}
-		for _, value := range values {
+		for _, value := range values { // Copy all other headers
 			headers.Add(name, value)
 		}
 	}
@@ -166,50 +162,31 @@ func websocketProxy(w http.ResponseWriter, r *http.Request, baseInternalURL stri
 
 	// Channel to signal when either connection closes
 	done := make(chan struct{})
-
-	// Forward messages from client to internal service
-	go func() {
-		defer close(done)
-		for {
-			messageType, message, err := clientConn.ReadMessage()
-			if err != nil {
-				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-					Coms.PrintErrStr("Client WebSocket read error: " + err.Error())
-				}
-				return
-			}
-
-			err = internalConn.WriteMessage(messageType, message)
-			if err != nil {
-				Coms.PrintErrStr("Error writing to internal WebSocket: " + err.Error())
-				return
-			}
-		}
-	}()
-
-	// Forward messages from internal service to client
-	go func() {
-		defer close(done)
-		for {
-			messageType, message, err := internalConn.ReadMessage()
-			if err != nil {
-				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-					Coms.PrintErrStr("Internal WebSocket read error: " + err.Error())
-				}
-				return
-			}
-
-			err = clientConn.WriteMessage(messageType, message)
-			if err != nil {
-				Coms.PrintErrStr("Error writing to client WebSocket: " + err.Error())
-				return
-			}
-		}
-	}()
+	go forwardSocketMessage(internalConn, clientConn, done)
+	go forwardSocketMessage(clientConn, internalConn, done)
 
 	// Wait for either connection to close
 	<-done
 	Coms.Println("WebSocket proxy connection closed")
+}
+
+func forwardSocketMessage(incoming *websocket.Conn, outgoing *websocket.Conn, done chan struct{}) {
+	defer close(done)
+	for {
+		messageType, message, err := incoming.ReadMessage()
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				Coms.PrintErrStr("Client WebSocket read error: " + err.Error())
+			}
+			return
+		}
+
+		err = outgoing.WriteMessage(messageType, message)
+		if err != nil {
+			Coms.PrintErrStr("Error writing to internal WebSocket: " + err.Error())
+			return
+		}
+	}
 }
 
 func requestRespond(w http.ResponseWriter, data []byte, headers ...http.Header) error {
