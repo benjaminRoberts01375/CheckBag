@@ -26,7 +26,16 @@ func requestForwarding(w http.ResponseWriter, r *http.Request) {
 		requestRespondCode(w, http.StatusNotFound)
 		return
 	}
-	internalAddress := requestedService.InternalAddress + "/" + r.PathValue("path") // Ex. 192.168.0.50:8154
+	internalAddress := requestedService.InternalAddress
+	if internalAddress[len(internalAddress)-1] == '/' { // Remove trailing slash
+		internalAddress = internalAddress[:len(internalAddress)-1]
+	}
+	path := r.PathValue("path")
+	if len(path) > 0 && path[0] != '/' { // Add leading slash
+		path = "/" + path
+	}
+	internalAddress += path
+
 	if internalAddress[len(internalAddress)-1] == '/' {
 		internalAddress = internalAddress[:len(internalAddress)-1]
 	}
