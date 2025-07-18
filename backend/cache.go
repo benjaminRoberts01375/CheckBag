@@ -49,10 +49,20 @@ type CacheType struct {
 }
 
 var (
-	cachePasswordSet   CacheType = CacheType{duration: time.Minute * 15, purpose: "Set Password"}
-	cacheChangeEmail   CacheType = CacheType{duration: time.Minute * 15, purpose: "Change Email"}
-	cacheNewUserSignUp CacheType = CacheType{duration: time.Minute * 15, purpose: "User Sign Up"}
-	cacheUserSignIn    CacheType = CacheType{duration: JWT.LoginDuration, purpose: "User Sign In"}
+	cachePasswordSet   CacheType           = CacheType{duration: time.Minute * 15, purpose: "Set Password"}
+	cacheChangeEmail   CacheType           = CacheType{duration: time.Minute * 15, purpose: "Change Email"}
+	cacheNewUserSignUp CacheType           = CacheType{duration: time.Minute * 15, purpose: "User Sign Up"}
+	cacheUserSignIn    CacheType           = CacheType{duration: JWT.LoginDuration, purpose: "User Sign In"}
+	cacheAnalyticsTime []AnalyticsTimeStep = []AnalyticsTimeStep{cacheAnalyticsMinute, cacheAnalyticsHour, cacheAnalyticsDay, cacheAnalyticsMonth}
+)
+
+type AnalyticsTimeStep string
+
+const (
+	cacheAnalyticsMinute AnalyticsTimeStep = "Minute"
+	cacheAnalyticsHour   AnalyticsTimeStep = "Hour"
+	cacheAnalyticsDay    AnalyticsTimeStep = "Day"
+	cacheAnalyticsMonth  AnalyticsTimeStep = "Month"
 )
 
 const cacheDataValid = "valid"
@@ -190,30 +200,28 @@ func (cache *CacheClient[client]) deleteUserSignIn(JWT string) error {
 }
 
 func (cache *CacheClient[client]) incrementAnalytics(serviceID string, resource string, country string, ip string, responseCode int) error {
-	timeSteps := []string{"minute", "hour", "day", "month"}
-
-	for _, timeStep := range timeSteps {
-		err := cache.raw.IncrementKey("Analytics:" + serviceID + ":" + timeStep + ":" + "quantity")
+	for _, timeStep := range cacheAnalyticsTime {
+		err := cache.raw.IncrementKey("Analytics:" + serviceID + ":" + string(timeStep) + ":" + "quantity")
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics key: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+timeStep+":"+"country", country, 1)
+		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+string(timeStep)+":"+"country", country, 1)
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics country: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+timeStep+":"+"ip", ip, 1)
+		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+string(timeStep)+":"+"ip", ip, 1)
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics ip: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+timeStep+":"+"resource", resource, 1)
+		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+string(timeStep)+":"+"resource", resource, 1)
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics resource: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+timeStep+":"+"response_code", strconv.Itoa(responseCode), 1)
+		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+string(timeStep)+":"+"response_code", strconv.Itoa(responseCode), 1)
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics response code: " + err.Error())
 			return err
