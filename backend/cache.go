@@ -27,6 +27,9 @@ type CacheSpec interface {
 	SetHash(key string, values map[string]string, duration CacheType) error
 	GetHash(key string) (map[string]string, CacheType, error)
 	DeleteHash(key string) error
+
+	IncrementHashField(key string, field string, amount int) error
+	IncrementKey(key string) error
 }
 
 type CacheLayer struct { // Implements main 5 functions
@@ -148,6 +151,16 @@ func (cache CacheLayer) SetHash(key string, values map[string]string, duration C
 		return err
 	}
 	return cache.DB.Do(ctx, cache.DB.B().Expire().Key(key).Seconds(int64(duration.duration.Seconds())).Build()).Error()
+}
+
+func (cache CacheLayer) IncrementHashField(key string, field string, amount int) error {
+	ctx := context.Background()
+	return cache.DB.Do(ctx, cache.DB.B().Hincrby().Key(key).Field(field).Increment(int64(amount)).Build()).Error()
+}
+
+func (cache CacheLayer) IncrementKey(key string) error {
+	ctx := context.Background()
+	return cache.DB.Do(ctx, cache.DB.B().Incr().Key(key).Build()).Error()
 }
 
 // Higher-level cache functions
