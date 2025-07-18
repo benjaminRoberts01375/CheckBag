@@ -49,8 +49,9 @@ type CacheType struct {
 }
 
 type AnalyticsTimeStep struct {
-	duration time.Duration
-	key      string
+	duration     time.Duration
+	key          string
+	maximumUnits int
 }
 
 var (
@@ -58,10 +59,10 @@ var (
 	cacheChangeEmail     = CacheType{duration: time.Minute * 15, purpose: "Change Email"}
 	cacheNewUserSignUp   = CacheType{duration: time.Minute * 15, purpose: "User Sign Up"}
 	cacheUserSignIn      = CacheType{duration: JWT.LoginDuration, purpose: "User Sign In"}
-	cacheAnalyticsMinute = AnalyticsTimeStep{duration: time.Minute, key: "Minute"}
-	cacheAnalyticsHour   = AnalyticsTimeStep{duration: time.Hour, key: "Hour"}
-	cacheAnalyticsDay    = AnalyticsTimeStep{duration: time.Hour * 24, key: "Day"}
-	cacheAnalyticsMonth  = AnalyticsTimeStep{duration: time.Hour * 24 * 30, key: "Month"}
+	cacheAnalyticsMinute = AnalyticsTimeStep{duration: time.Minute, key: "Minute", maximumUnits: 60}
+	cacheAnalyticsHour   = AnalyticsTimeStep{duration: time.Hour, key: "Hour", maximumUnits: 24}
+	cacheAnalyticsDay    = AnalyticsTimeStep{duration: time.Hour * 24, key: "Day", maximumUnits: 30}
+	cacheAnalyticsMonth  = AnalyticsTimeStep{duration: time.Hour * 24 * 30, key: "Month", maximumUnits: 12}
 	cacheAnalyticsTime   = []AnalyticsTimeStep{cacheAnalyticsMinute, cacheAnalyticsHour, cacheAnalyticsDay, cacheAnalyticsMonth}
 )
 
