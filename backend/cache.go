@@ -238,6 +238,47 @@ func (cache *CacheClient[client]) incrementAnalytics(serviceID string, resource 
 	return nil
 }
 
+func (cache *CacheClient[client]) advanceAnalytics(timeStep AnalyticsTimeStep, services []ServiceLink) error {
+	for _, service := range services {
+		// Remove last unit
+		err := cache.raw.Delete("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timeStep.maximumUnits) + ":quantity")
+		if err != nil {
+			Coms.PrintErrStr("Could not remove last " + timeStep.key + " analytics quantity for service " + service.Title + ": " + err.Error())
+			return err
+		}
+		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timeStep.maximumUnits) + ":country")
+		if err != nil {
+			Coms.PrintErrStr("Could not remove last " + timeStep.key + " analytics country for service " + service.Title + ": " + err.Error())
+			return err
+		}
+		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timeStep.maximumUnits) + ":ip")
+		if err != nil {
+			Coms.PrintErrStr("Could not remove last " + timeStep.key + " analytics ip for service " + service.Title + ": " + err.Error())
+			return err
+		}
+		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timeStep.maximumUnits) + ":resource")
+		if err != nil {
+			Coms.PrintErrStr("Could not remove last " + timeStep.key + " analytics resource for service " + service.Title + ": " + err.Error())
+			return err
+		}
+		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timeStep.maximumUnits) + ":response_code")
+		if err != nil {
+			Coms.PrintErrStr("Could not remove last " + timeStep.key + " analytics response code for service " + service.Title + ": " + err.Error())
+			return err
+		}
+		// Advance current analytics to next time step unit
+		for i := timeStep.maximumUnits - 1; i > 0; i-- {
+			cache.raw.RenameKey("Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i)+":quantity", "Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i+1)+":quantity")
+			cache.raw.RenameKey("Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i)+":country", "Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i+1)+":country")
+			cache.raw.RenameKey("Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i)+":ip", "Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i+1)+":ip")
+			cache.raw.RenameKey("Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i)+":resource", "Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i+1)+":resource")
+			cache.raw.RenameKey("Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i)+":response_code", "Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i+1)+":response_code")
+
+		}
+	}
+	return nil
+}
+
 // Utilities
 
 func (cache CacheLayer) getCacheType(purpose string) (CacheType, error) {
