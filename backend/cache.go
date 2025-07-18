@@ -193,27 +193,27 @@ func (cache *CacheClient[client]) incrementAnalytics(serviceID string, resource 
 	timeSteps := []string{"minute", "hour", "day", "month"}
 
 	for _, timeStep := range timeSteps {
-		err := cache.raw.IncrementKey(serviceID + ":" + timeStep + ":" + "quantity")
+		err := cache.raw.IncrementKey("Analytics:" + serviceID + ":" + timeStep + ":" + "quantity")
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics key: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField(serviceID+":"+timeStep+":"+"country", country, 1)
+		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+timeStep+":"+"country", country, 1)
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics country: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField(serviceID+":"+timeStep+":"+"ip", ip, 1)
+		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+timeStep+":"+"ip", ip, 1)
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics ip: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField(serviceID+":"+timeStep+":"+"resource", resource, 1)
+		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+timeStep+":"+"resource", resource, 1)
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics resource: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField(serviceID+":"+timeStep+":"+"response_code", strconv.Itoa(responseCode), 1)
+		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+timeStep+":"+"response_code", strconv.Itoa(responseCode), 1)
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics response code: " + err.Error())
 			return err
