@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
-	"strconv"
+	"net/url"
 	"strings"
 
 	Coms "github.com/benjaminRoberts01375/Go-Communicate"
@@ -20,9 +20,6 @@ func requestForwarding(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	internalAddress := requestedService.InternalAddress
-	if internalAddress[len(internalAddress)-1] == '/' { // Remove trailing slash
-		internalAddress = internalAddress[:len(internalAddress)-1]
-	}
 	path := r.PathValue("path")
 	if len(path) > 0 && path[0] != '/' { // Add leading slash
 		path = "/" + path
@@ -58,10 +55,6 @@ func restForwarding(w http.ResponseWriter, r *http.Request, internalAddress stri
 		}
 	}
 
-	if internalAddress[len(internalAddress)-1] == '/' {
-		internalAddress = internalAddress[:len(internalAddress)-1]
-	}
-
 	if strings.Contains(r.URL.Path, "socket.io") {
 		Coms.Println("Socket.IO request - URL: " + r.URL.String())
 		Coms.Println("Socket.IO request - Query: " + r.URL.RawQuery)
@@ -94,7 +87,6 @@ func restForwarding(w http.ResponseWriter, r *http.Request, internalAddress stri
 		return
 	}
 	// Print the response status code
-	Coms.Println("Response Status Code: " + strconv.Itoa(proxyResponse.StatusCode) + " from " + internalAddress)
 	defer proxyResponse.Body.Close()
 	responseBytes, err := io.ReadAll(proxyResponse.Body)
 	if err != nil {
@@ -105,18 +97,29 @@ func restForwarding(w http.ResponseWriter, r *http.Request, internalAddress stri
 	for name, values := range proxyResponse.Header {
 		for _, value := range values {
 			w.Header().Add(name, value)
-			Coms.Println("Response Header: " + name + ": " + value)
 		}
 	}
 	if proxyResponse.StatusCode >= 300 && proxyResponse.StatusCode < 400 {
 		newPath := proxyResponse.Header.Get("Location")
-		if newPath[0] == '/' {
-			newPath = newPath[1:]
-		} else if newPath[len(newPath)-1] == '/' {
-			newPath = newPath[:len(newPath)-1]
+		if strings.HasPrefix(newPath, "http://") {
+			fullURL, err := url.Parse(newPath)
+			if err != nil {
+				Coms.PrintErrStr("Error parsing redirect URL: " + err.Error())
+				requestRespondCode(w, http.StatusInternalServerError)
+				return
+			}
+			newPath = fullURL.Path
 		}
-		Coms.Println("Redirect to: " + newPath)
-		w.Header().Set("Location", r.Host+"/"+newPath)
+
+		if len(newPath) > 0 {
+			if newPath[0] == '/' {
+				newPath = newPath[1:]
+			}
+			if newPath[len(newPath)-1] == '/' {
+				newPath = newPath[:len(newPath)-1]
+			}
+		}
+		w.Header().Set("Location", "https://"+r.Host+"/"+newPath+"/")
 	}
 	w.WriteHeader(proxyResponse.StatusCode)
 	w.Write(responseBytes)
