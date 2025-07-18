@@ -79,6 +79,7 @@ func restForwarding(w http.ResponseWriter, r *http.Request, internalAddress stri
 		requestRespondCode(w, http.StatusInternalServerError)
 		return
 	}
+	go analytics(r, proxyResponse.StatusCode)
 	// Read proxy response
 	defer proxyResponse.Body.Close()
 	responseBytes, err := io.ReadAll(proxyResponse.Body)
