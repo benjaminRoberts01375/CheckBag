@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"io"
 	"net/http"
-	"net/url"
 	"strings"
 
 	Coms "github.com/benjaminRoberts01375/Go-Communicate"
@@ -99,18 +98,9 @@ func restForwarding(w http.ResponseWriter, r *http.Request, internalAddress stri
 			w.Header().Add(name, value)
 		}
 	}
+	// Handle redirects
 	if proxyResponse.StatusCode >= 300 && proxyResponse.StatusCode < 400 {
 		newPath := proxyResponse.Header.Get("Location")
-		if strings.HasPrefix(newPath, "http://") {
-			fullURL, err := url.Parse(newPath)
-			if err != nil {
-				Coms.PrintErrStr("Error parsing redirect URL: " + err.Error())
-				requestRespondCode(w, http.StatusInternalServerError)
-				return
-			}
-			newPath = fullURL.Path
-		}
-
 		if len(newPath) > 0 {
 			if newPath[0] != '/' {
 				newPath = "/" + newPath
