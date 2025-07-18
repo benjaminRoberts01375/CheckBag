@@ -112,14 +112,14 @@ func restForwarding(w http.ResponseWriter, r *http.Request, internalAddress stri
 		}
 
 		if len(newPath) > 0 {
-			if newPath[0] == '/' {
-				newPath = newPath[1:]
+			if newPath[0] != '/' {
+				newPath = "/" + newPath
 			}
-			if newPath[len(newPath)-1] == '/' {
-				newPath = newPath[:len(newPath)-1]
+			if newPath[len(newPath)-1] != '/' {
+				newPath += "/"
 			}
 		}
-		w.Header().Set("Location", "https://"+r.Host+"/"+newPath+"/")
+		w.Header().Set("Location", "https://"+r.Host+newPath)
 	}
 	w.WriteHeader(proxyResponse.StatusCode)
 	w.Write(responseBytes)
