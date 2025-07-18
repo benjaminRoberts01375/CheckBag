@@ -96,13 +96,8 @@ func restForwarding(w http.ResponseWriter, r *http.Request, internalAddress stri
 	if proxyResponse.StatusCode >= 300 && proxyResponse.StatusCode < 400 {
 		newPath := proxyResponse.Header.Get("Location")
 		// Add leading and trailing slashes
-		if len(newPath) > 0 {
-			if newPath[0] != '/' {
-				newPath = "/" + newPath
-			}
-			if newPath[len(newPath)-1] != '/' {
-				newPath += "/"
-			}
+		if len(newPath) > 0 && newPath[0] != '/' {
+			newPath = "/" + newPath
 		}
 		w.Header().Set("Location", "https://"+r.Host+newPath)
 	}
