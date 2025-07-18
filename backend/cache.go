@@ -189,6 +189,39 @@ func (cache *CacheClient[client]) deleteUserSignIn(JWT string) error {
 	return cache.raw.Delete(JWT)
 }
 
+func (cache *CacheClient[client]) incrementAnalytics(serviceID string, resource string, country string, ip string, responseCode int) error {
+	timeSteps := []string{"minute", "hour", "day", "month"}
+
+	for _, timeStep := range timeSteps {
+		err := cache.raw.IncrementKey(serviceID + ":" + timeStep + ":" + "quantity")
+		if err != nil {
+			Coms.PrintErrStr("Could not increment minute analytics key: " + err.Error())
+			return err
+		}
+		err = cache.raw.IncrementHashField(serviceID+":"+timeStep+":"+"country", country, 1)
+		if err != nil {
+			Coms.PrintErrStr("Could not increment minute analytics country: " + err.Error())
+			return err
+		}
+		err = cache.raw.IncrementHashField(serviceID+":"+timeStep+":"+"ip", ip, 1)
+		if err != nil {
+			Coms.PrintErrStr("Could not increment minute analytics ip: " + err.Error())
+			return err
+		}
+		err = cache.raw.IncrementHashField(serviceID+":"+timeStep+":"+"resource", resource, 1)
+		if err != nil {
+			Coms.PrintErrStr("Could not increment minute analytics resource: " + err.Error())
+			return err
+		}
+		err = cache.raw.IncrementHashField(serviceID+":"+timeStep+":"+"response_code", strconv.Itoa(responseCode), 1)
+		if err != nil {
+			Coms.PrintErrStr("Could not increment minute analytics response code: " + err.Error())
+			return err
+		}
+	}
+	return nil
+}
+
 // Utilities
 
 func (cache CacheLayer) getCacheType(purpose string) (CacheType, error) {
