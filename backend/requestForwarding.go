@@ -11,9 +11,9 @@ import (
 
 // Attempts act as a proxy server for external requests to internal services. Ex. dev.benlab.us/my/stuff -> 192.168.0.50:8154/my/stuff
 func requestForwarding(w http.ResponseWriter, r *http.Request) {
-	requestedService := serviceLinks.GetServiceFromExternalURL(r.Host)
-	if requestedService == nil {
-		Coms.PrintErrStr("No service found for external URL: " + r.Host)
+	requestedService, err := serviceLinks.GetServiceFromExternalURL(r.Host)
+	if err != nil {
+		Coms.PrintErrStr("No service found for external URL \"" + r.Host + "\": " + err.Error())
 		requestRespondCode(w, http.StatusNotFound)
 		return
 	}
