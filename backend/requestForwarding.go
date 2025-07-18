@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"io"
 	"net/http"
-	"strings"
 
 	Coms "github.com/benjaminRoberts01375/Go-Communicate"
 	"github.com/gorilla/websocket"
@@ -35,7 +34,6 @@ func requestForwarding(w http.ResponseWriter, r *http.Request) {
 
 // Handles typical HTTP requests like GET, POST, etc.
 func restForwarding(w http.ResponseWriter, r *http.Request, internalAddress string) {
-
 	internalAddress = "http://" + internalAddress
 
 	// Preserve query parameters for HTTP requests
@@ -43,6 +41,7 @@ func restForwarding(w http.ResponseWriter, r *http.Request, internalAddress stri
 		internalAddress += "?" + r.URL.RawQuery
 	}
 
+	// Read request body
 	var bodyBytes []byte
 	var err error
 	if r.Body != nil {
@@ -54,20 +53,14 @@ func restForwarding(w http.ResponseWriter, r *http.Request, internalAddress stri
 		}
 	}
 
-	if strings.Contains(r.URL.Path, "socket.io") {
-		Coms.Println("Socket.IO request - URL: " + r.URL.String())
-		Coms.Println("Socket.IO request - Query: " + r.URL.RawQuery)
-		Coms.Println("Socket.IO request - Internal URL: " + internalAddress)
-	}
-
-	Coms.Println("Sending " + r.Method + " request to: " + internalAddress)
+	Coms.Println("Creating " + r.Method + " request to: " + internalAddress)
 	proxyRequest, err := http.NewRequest(r.Method, internalAddress, bytes.NewBuffer(bodyBytes))
 	if err != nil {
 		Coms.PrintErrStr("Error creating new request: " + err.Error())
 		requestRespondCode(w, http.StatusInternalServerError)
 		return
 	}
-
+	// Add headers to proxy request
 	for name, values := range r.Header {
 		for _, value := range values {
 			proxyRequest.Header.Add(name, value)
@@ -85,7 +78,7 @@ func restForwarding(w http.ResponseWriter, r *http.Request, internalAddress stri
 		requestRespondCode(w, http.StatusInternalServerError)
 		return
 	}
-	// Print the response status code
+	// Read proxy response
 	defer proxyResponse.Body.Close()
 	responseBytes, err := io.ReadAll(proxyResponse.Body)
 	if err != nil {
@@ -93,14 +86,16 @@ func restForwarding(w http.ResponseWriter, r *http.Request, internalAddress stri
 		requestRespondCode(w, http.StatusInternalServerError)
 		return
 	}
+	// Add proxy response headers to client response
 	for name, values := range proxyResponse.Header {
 		for _, value := range values {
 			w.Header().Add(name, value)
 		}
 	}
-	// Handle redirects
+	// Handle redirects for client response
 	if proxyResponse.StatusCode >= 300 && proxyResponse.StatusCode < 400 {
 		newPath := proxyResponse.Header.Get("Location")
+		// Add leading and trailing slashes
 		if len(newPath) > 0 {
 			if newPath[0] != '/' {
 				newPath = "/" + newPath
