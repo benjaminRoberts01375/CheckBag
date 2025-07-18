@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"net/http"
 
@@ -165,19 +166,25 @@ func websocketProxy(w http.ResponseWriter, r *http.Request, baseInternalURL stri
 
 	Coms.Println("WebSocket proxy established between client and " + wsURL)
 
-	// Channel to signal when either connection closes
-	done := make(chan struct{})
-	go forwardSocketMessage(internalConn, clientConn, done)
-	go forwardSocketMessage(clientConn, internalConn, done)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	// Wait for either connection to close
-	<-done
+	go forwardSocketMessage(ctx, internalConn, clientConn, cancel)
+	go forwardSocketMessage(ctx, clientConn, internalConn, cancel)
+
+	<-ctx.Done()
 	Coms.Println("WebSocket proxy connection closed")
 }
 
-func forwardSocketMessage(incoming *websocket.Conn, outgoing *websocket.Conn, done chan struct{}) {
-	defer close(done)
+func forwardSocketMessage(ctx context.Context, incoming *websocket.Conn, outgoing *websocket.Conn, cancel context.CancelFunc) {
+	defer cancel()
 	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
 		messageType, message, err := incoming.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
