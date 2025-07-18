@@ -20,6 +20,8 @@ func main() {
 	defer cache.raw.Close()
 	// Services setup
 	serviceLinks.Setup()
+	// Analytics setup
+	go startAnalyticsAdvance()
 	// Setup endpoints
 	setupEndpoints()
 	if models.Config.DevMode {
