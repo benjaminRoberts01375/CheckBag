@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 	"slices"
 
@@ -62,11 +63,11 @@ func servicesSet(w http.ResponseWriter, r *http.Request) {
 	Coms.ExternalPostRespond(serviceLinks, w)
 }
 
-func (services *ServiceLinks) GetServiceFromExternalURL(service string) *ServiceLink {
+func (services *ServiceLinks) GetServiceFromExternalURL(service string) (*ServiceLink, error) {
 	for _, serviceLink := range *services {
 		if slices.Contains(serviceLink.ExternalAddress, service) {
-			return &serviceLink
+			return &serviceLink, nil
 		}
 	}
-	return nil
+	return nil, errors.New("no service found")
 }
