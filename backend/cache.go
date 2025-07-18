@@ -54,15 +54,15 @@ type AnalyticsTimeStep struct {
 }
 
 var (
-	cachePasswordSet     CacheType           = CacheType{duration: time.Minute * 15, purpose: "Set Password"}
-	cacheChangeEmail     CacheType           = CacheType{duration: time.Minute * 15, purpose: "Change Email"}
-	cacheNewUserSignUp   CacheType           = CacheType{duration: time.Minute * 15, purpose: "User Sign Up"}
-	cacheUserSignIn      CacheType           = CacheType{duration: JWT.LoginDuration, purpose: "User Sign In"}
-	cacheAnalyticsMinute AnalyticsTimeStep   = AnalyticsTimeStep{duration: time.Minute, key: "Minute"}
-	cacheAnalyticsHour   AnalyticsTimeStep   = AnalyticsTimeStep{duration: time.Hour, key: "Hour"}
-	cacheAnalyticsDay    AnalyticsTimeStep   = AnalyticsTimeStep{duration: time.Hour * 24, key: "Day"}
-	cacheAnalyticsMonth  AnalyticsTimeStep   = AnalyticsTimeStep{duration: time.Hour * 24 * 30, key: "Month"}
-	cacheAnalyticsTime   []AnalyticsTimeStep = []AnalyticsTimeStep{cacheAnalyticsMinute, cacheAnalyticsHour, cacheAnalyticsDay, cacheAnalyticsMonth}
+	cachePasswordSet     = CacheType{duration: time.Minute * 15, purpose: "Set Password"}
+	cacheChangeEmail     = CacheType{duration: time.Minute * 15, purpose: "Change Email"}
+	cacheNewUserSignUp   = CacheType{duration: time.Minute * 15, purpose: "User Sign Up"}
+	cacheUserSignIn      = CacheType{duration: JWT.LoginDuration, purpose: "User Sign In"}
+	cacheAnalyticsMinute = AnalyticsTimeStep{duration: time.Minute, key: "Minute"}
+	cacheAnalyticsHour   = AnalyticsTimeStep{duration: time.Hour, key: "Hour"}
+	cacheAnalyticsDay    = AnalyticsTimeStep{duration: time.Hour * 24, key: "Day"}
+	cacheAnalyticsMonth  = AnalyticsTimeStep{duration: time.Hour * 24 * 30, key: "Month"}
+	cacheAnalyticsTime   = []AnalyticsTimeStep{cacheAnalyticsMinute, cacheAnalyticsHour, cacheAnalyticsDay, cacheAnalyticsMonth}
 )
 
 const cacheDataValid = "valid"
