@@ -3,6 +3,9 @@ package main
 import (
 	"net/http"
 	"strings"
+	"time"
+
+	Coms "github.com/benjaminRoberts01375/Go-Communicate"
 )
 
 func analytics(r *http.Request, responseCode int) {
@@ -28,4 +31,26 @@ func analytics(r *http.Request, responseCode int) {
 		}
 	}
 	cache.incrementAnalytics(serviceID, resource, country, ip, responseCode)
+}
+
+func startAnalyticsAdvance() {
+	Coms.Println("Starting analytics advance")
+	triggerChan := make(chan AnalyticsTimeStep, len(cacheAnalyticsTime))
+
+	for _, timeStep := range cacheAnalyticsTime {
+		go func(timeStep AnalyticsTimeStep) {
+			ticker := time.NewTicker(timeStep.duration)
+			defer ticker.Stop()
+
+			for range ticker.C {
+				triggerChan <- timeStep
+			}
+		}(timeStep)
+	}
+
+	for source := range triggerChan {
+		Coms.Println("Analytics advance triggered for " + source.key)
+		cache.advanceAnalytics(source, serviceLinks)
+	}
+	Coms.Println("Finished analytics advance")
 }
