@@ -48,21 +48,21 @@ type CacheType struct {
 	purpose  string
 }
 
+type AnalyticsTimeStep struct {
+	duration time.Duration
+	key      string
+}
+
 var (
-	cachePasswordSet   CacheType           = CacheType{duration: time.Minute * 15, purpose: "Set Password"}
-	cacheChangeEmail   CacheType           = CacheType{duration: time.Minute * 15, purpose: "Change Email"}
-	cacheNewUserSignUp CacheType           = CacheType{duration: time.Minute * 15, purpose: "User Sign Up"}
-	cacheUserSignIn    CacheType           = CacheType{duration: JWT.LoginDuration, purpose: "User Sign In"}
-	cacheAnalyticsTime []AnalyticsTimeStep = []AnalyticsTimeStep{cacheAnalyticsMinute, cacheAnalyticsHour, cacheAnalyticsDay, cacheAnalyticsMonth}
-)
-
-type AnalyticsTimeStep string
-
-const (
-	cacheAnalyticsMinute AnalyticsTimeStep = "Minute"
-	cacheAnalyticsHour   AnalyticsTimeStep = "Hour"
-	cacheAnalyticsDay    AnalyticsTimeStep = "Day"
-	cacheAnalyticsMonth  AnalyticsTimeStep = "Month"
+	cachePasswordSet     CacheType           = CacheType{duration: time.Minute * 15, purpose: "Set Password"}
+	cacheChangeEmail     CacheType           = CacheType{duration: time.Minute * 15, purpose: "Change Email"}
+	cacheNewUserSignUp   CacheType           = CacheType{duration: time.Minute * 15, purpose: "User Sign Up"}
+	cacheUserSignIn      CacheType           = CacheType{duration: JWT.LoginDuration, purpose: "User Sign In"}
+	cacheAnalyticsMinute AnalyticsTimeStep   = AnalyticsTimeStep{duration: time.Minute, key: "Minute"}
+	cacheAnalyticsHour   AnalyticsTimeStep   = AnalyticsTimeStep{duration: time.Hour, key: "Hour"}
+	cacheAnalyticsDay    AnalyticsTimeStep   = AnalyticsTimeStep{duration: time.Hour * 24, key: "Day"}
+	cacheAnalyticsMonth  AnalyticsTimeStep   = AnalyticsTimeStep{duration: time.Hour * 24 * 30, key: "Month"}
+	cacheAnalyticsTime   []AnalyticsTimeStep = []AnalyticsTimeStep{cacheAnalyticsMinute, cacheAnalyticsHour, cacheAnalyticsDay, cacheAnalyticsMonth}
 )
 
 const cacheDataValid = "valid"
@@ -201,27 +201,27 @@ func (cache *CacheClient[client]) deleteUserSignIn(JWT string) error {
 
 func (cache *CacheClient[client]) incrementAnalytics(serviceID string, resource string, country string, ip string, responseCode int) error {
 	for _, timeStep := range cacheAnalyticsTime {
-		err := cache.raw.IncrementKey("Analytics:" + serviceID + ":" + string(timeStep) + ":" + "quantity")
+		err := cache.raw.IncrementKey("Analytics:" + serviceID + ":" + timeStep.key + ":quantity")
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics key: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+string(timeStep)+":"+"country", country, 1)
+		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+timeStep.key+":country", country, 1)
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics country: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+string(timeStep)+":"+"ip", ip, 1)
+		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+timeStep.key+":ip", ip, 1)
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics ip: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+string(timeStep)+":"+"resource", resource, 1)
+		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+timeStep.key+":resource", resource, 1)
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics resource: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+string(timeStep)+":"+"response_code", strconv.Itoa(responseCode), 1)
+		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+timeStep.key+":response_code", strconv.Itoa(responseCode), 1)
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics response code: " + err.Error())
 			return err
