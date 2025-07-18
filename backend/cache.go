@@ -28,6 +28,8 @@ type CacheSpec interface {
 	GetHash(key string) (map[string]string, CacheType, error)
 	DeleteHash(key string) error
 
+	RenameKey(oldKey string, newKey string) error
+
 	IncrementHashField(key string, field string, amount int) error
 	IncrementKey(key string) error
 }
@@ -162,6 +164,11 @@ func (cache CacheLayer) SetHash(key string, values map[string]string, duration C
 		return err
 	}
 	return cache.DB.Do(ctx, cache.DB.B().Expire().Key(key).Seconds(int64(duration.duration.Seconds())).Build()).Error()
+}
+
+func (cache CacheLayer) RenameKey(oldKey string, newKey string) error {
+	ctx := context.Background()
+	return cache.DB.Do(ctx, cache.DB.B().Rename().Key(oldKey).Newkey(newKey).Build()).Error()
 }
 
 func (cache CacheLayer) IncrementHashField(key string, field string, amount int) error {
