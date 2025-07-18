@@ -132,7 +132,7 @@ func (cache CacheLayer) GetHash(key string) (map[string]string, CacheType, error
 }
 
 func (cache CacheLayer) Delete(key string) error {
-	return cache.DB.Do(context.Background(), cache.DB.B().Hdel().Key(key).Field("value").Field("purpose").Build()).Error()
+	return cache.DB.Do(context.Background(), cache.DB.B().Del().Key(key).Build()).Error()
 }
 
 func (cache CacheLayer) DeleteHash(key string) error {
