@@ -55,6 +55,7 @@ type AnalyticsTimeStep struct {
 	maximumUnits int
 }
 
+// timeToNextStep returns the time until the next step of the analytics in UTC
 func (timeStep AnalyticsTimeStep) timeToNextStep() time.Duration {
 	now := time.Now()
 	switch timeStep.key {
