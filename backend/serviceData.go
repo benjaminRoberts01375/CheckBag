@@ -8,9 +8,10 @@ import (
 )
 
 type ServiceData struct {
-	Hour  map[int]Analytic `json:"hour"`
-	Day   map[int]Analytic `json:"day"`
-	Month map[int]Analytic `json:"month"`
+	Minute map[int]Analytic `json:"minute"`
+	Hour   map[int]Analytic `json:"hour"`
+	Day    map[int]Analytic `json:"day"`
+	Month  map[int]Analytic `json:"month"`
 	ServiceLink
 }
 
@@ -48,9 +49,13 @@ func getServiceData(w http.ResponseWriter, r *http.Request) {
 			for i, service := range serviceData {
 				serviceData[i].Month = cache.getAnalyticsService(service, cacheAnalyticsMonth)
 			}
-		default: // Hour
+		case "hour":
 			for i, service := range serviceData {
 				serviceData[i].Hour = cache.getAnalyticsService(service, cacheAnalyticsHour)
+			}
+		default: // minute
+			for i, service := range serviceData {
+				serviceData[i].Minute = cache.getAnalyticsService(service, cacheAnalyticsMinute)
 			}
 		}
 	}
@@ -74,6 +79,7 @@ func getServiceData(w http.ResponseWriter, r *http.Request) {
 		serviceData[requestedServiceIndex].Hour = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsHour)
 		serviceData[requestedServiceIndex].Day = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsDay)
 		serviceData[requestedServiceIndex].Month = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsMonth)
+		serviceData[requestedServiceIndex].Minute = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsMinute)
 	}
 
 	Coms.ExternalPostRespond(serviceData, w)
