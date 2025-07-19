@@ -51,9 +51,29 @@ type CacheType struct {
 }
 
 type AnalyticsTimeStep struct {
-	duration     time.Duration
 	key          string
 	maximumUnits int
+}
+
+func (timeStep AnalyticsTimeStep) timeToNextStep() time.Duration {
+	now := time.Now()
+	switch timeStep.key {
+	case "Minute":
+		nextMinute := now.Local().Truncate(time.Minute).Add(time.Minute)
+		return nextMinute.Sub(now)
+	case "Hour":
+		nextHour := now.Local().Add(time.Hour).Truncate(time.Hour)
+		return nextHour.Sub(now)
+	case "Day":
+		midnightTonight := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, now.Location())
+		return midnightTonight.Sub(now)
+	case "Month":
+		nextMonth := now.AddDate(0, 1, 0)
+		beginningOfNextMonth := time.Date(nextMonth.Year(), nextMonth.Month(), 1, 0, 0, 0, 0, now.Location())
+		return beginningOfNextMonth.Sub(now)
+	default:
+		return time.Duration(0)
+	}
 }
 
 var (
@@ -61,10 +81,10 @@ var (
 	cacheChangeEmail     = CacheType{duration: time.Minute * 15, purpose: "Change Email"}
 	cacheNewUserSignUp   = CacheType{duration: time.Minute * 15, purpose: "User Sign Up"}
 	cacheUserSignIn      = CacheType{duration: JWT.LoginDuration, purpose: "User Sign In"}
-	cacheAnalyticsMinute = AnalyticsTimeStep{duration: time.Minute, key: "Minute", maximumUnits: 60}
-	cacheAnalyticsHour   = AnalyticsTimeStep{duration: time.Hour, key: "Hour", maximumUnits: 24}
-	cacheAnalyticsDay    = AnalyticsTimeStep{duration: time.Hour * 24, key: "Day", maximumUnits: 30}
-	cacheAnalyticsMonth  = AnalyticsTimeStep{duration: time.Hour * 24 * 30, key: "Month", maximumUnits: 12}
+	cacheAnalyticsMinute = AnalyticsTimeStep{key: "Minute", maximumUnits: 60}
+	cacheAnalyticsHour   = AnalyticsTimeStep{key: "Hour", maximumUnits: 24}
+	cacheAnalyticsDay    = AnalyticsTimeStep{key: "Day", maximumUnits: 30}
+	cacheAnalyticsMonth  = AnalyticsTimeStep{key: "Month", maximumUnits: 12}
 	cacheAnalyticsTime   = []AnalyticsTimeStep{cacheAnalyticsMinute, cacheAnalyticsHour, cacheAnalyticsDay, cacheAnalyticsMonth}
 )
 
