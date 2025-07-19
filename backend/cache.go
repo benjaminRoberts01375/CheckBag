@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -20,12 +19,12 @@ type CacheSpec interface {
 	Close()
 
 	// Basic cache functions
-	Set(key string, value string, duration CacheType) error
-	Get(key string) (string, CacheType, error)
+	Set(key string, value string, duration time.Duration) error
+	Get(key string) (string, error)
 	Delete(key string) error
 
-	SetHash(key string, values map[string]string, duration CacheType) error
-	GetHash(key string) (map[string]string, CacheType, error)
+	SetHash(key string, values map[string]string, duration time.Duration) error
+	GetHash(key string) (map[string]string, error)
 	DeleteHash(key string) error
 
 	RenameKey(oldKey string, newKey string) error
@@ -43,11 +42,6 @@ type CacheLayer struct { // Implements main 5 functions
 
 type CacheClient[client CacheSpec] struct { // Holds some DB that satisfies the CacheSpec interface. Action functions here
 	raw client
-}
-
-type CacheType struct {
-	duration time.Duration
-	purpose  string
 }
 
 type AnalyticsTimeStep struct {
@@ -77,11 +71,11 @@ func (timeStep AnalyticsTimeStep) timeToNextStep() time.Duration {
 	}
 }
 
+const (
+	cacheUserSignIn = JWT.LoginDuration
+)
+
 var (
-	cachePasswordSet     = CacheType{duration: time.Minute * 15, purpose: "Set Password"}
-	cacheChangeEmail     = CacheType{duration: time.Minute * 15, purpose: "Change Email"}
-	cacheNewUserSignUp   = CacheType{duration: time.Minute * 15, purpose: "User Sign Up"}
-	cacheUserSignIn      = CacheType{duration: JWT.LoginDuration, purpose: "User Sign In"}
 	cacheAnalyticsMinute = AnalyticsTimeStep{key: "Minute", maximumUnits: 60}
 	cacheAnalyticsHour   = AnalyticsTimeStep{key: "Hour", maximumUnits: 24}
 	cacheAnalyticsDay    = AnalyticsTimeStep{key: "Day", maximumUnits: 30}
@@ -132,27 +126,14 @@ func (cache *CacheLayer) Close() {
 	cache.DB.Close()
 }
 
-func (cache CacheLayer) Get(key string) (string, CacheType, error) {
+func (cache CacheLayer) Get(key string) (string, error) {
 	ctx := context.Background()
-	rawResult, err := cache.DB.Do(ctx, cache.DB.B().Hgetall().Key(key).Build()).AsStrMap()
-	if err != nil {
-		return "", CacheType{}, errors.New("failed to get value from cache: " + err.Error())
-	}
-	value := rawResult["value"]
-	cacheType, err := cache.getCacheType(rawResult["purpose"])
-
-	return value, cacheType, err
+	return cache.DB.Do(ctx, cache.DB.B().Get().Key(key).Build()).ToString()
 }
 
-func (cache CacheLayer) GetHash(key string) (map[string]string, CacheType, error) {
+func (cache CacheLayer) GetHash(key string) (map[string]string, error) {
 	ctx := context.Background()
-	rawResult, err := cache.DB.Do(ctx, cache.DB.B().Hgetall().Key(key).Build()).AsStrMap()
-	if err != nil {
-		return nil, CacheType{}, err
-	}
-	cacheType, err := cache.getCacheType(rawResult["purpose"])
-
-	return rawResult, cacheType, err
+	return cache.DB.Do(ctx, cache.DB.B().Hgetall().Key(key).Build()).AsStrMap()
 }
 
 func (cache CacheLayer) Delete(key string) error {
@@ -163,20 +144,14 @@ func (cache CacheLayer) DeleteHash(key string) error {
 	return cache.DB.Do(context.Background(), cache.DB.B().Hdel().Key(key).Field("purpose").Build()).Error()
 }
 
-func (cache CacheLayer) Set(key string, value string, cacheType CacheType) error {
+func (cache CacheLayer) Set(key string, value string, duration time.Duration) error {
 	ctx := context.Background()
-	Coms.Println("Valkey Set with type: " + cacheType.purpose)
-	err := cache.DB.Do(ctx, cache.DB.B().Hset().Key(key).FieldValue().FieldValue("value", value).FieldValue("purpose", cacheType.purpose).Build()).Error()
-	if err != nil {
-		Coms.PrintErrStr("Valkey Set Error: " + err.Error())
-		return err
-	}
-	return cache.DB.Do(ctx, cache.DB.B().Expire().Key(key).Seconds(int64(cacheType.duration.Seconds())).Build()).Error()
+	return cache.DB.Do(ctx, cache.DB.B().Set().Key(key).Value(value).Ex(duration).Build()).Error()
 }
 
-func (cache CacheLayer) SetHash(key string, values map[string]string, duration CacheType) error {
+func (cache CacheLayer) SetHash(key string, values map[string]string, duration time.Duration) error {
 	ctx := context.Background()
-	hash := cache.DB.B().Hset().Key(key).FieldValue().FieldValue("purpose", duration.purpose)
+	hash := cache.DB.B().Hset().Key(key).FieldValue()
 	for field, value := range values {
 		hash = hash.FieldValue(field, value)
 	}
@@ -184,7 +159,7 @@ func (cache CacheLayer) SetHash(key string, values map[string]string, duration C
 	if err != nil {
 		return err
 	}
-	return cache.DB.Do(ctx, cache.DB.B().Expire().Key(key).Seconds(int64(duration.duration.Seconds())).Build()).Error()
+	return cache.DB.Do(ctx, cache.DB.B().Expire().Key(key).Seconds(int64(duration.Seconds())).Build()).Error()
 }
 
 func (cache CacheLayer) RenameKey(oldKey string, newKey string) error {
@@ -205,7 +180,7 @@ func (cache CacheLayer) IncrementKey(key string) error {
 // Higher-level cache functions
 
 func (cache *CacheClient[client]) setUserSignIn(JWT string) error {
-	err := cache.raw.Set(JWT, "valid", cacheUserSignIn)
+	err := cache.raw.Set("JWT:"+JWT, "valid", cacheUserSignIn)
 	if err != nil {
 		Coms.PrintErrStr("Valkey Set Error: " + err.Error())
 		return err
@@ -214,14 +189,7 @@ func (cache *CacheClient[client]) setUserSignIn(JWT string) error {
 }
 
 func (cache *CacheClient[client]) getUserSignIn(JWT string) (string, error) {
-	userData, cacheType, err := cache.raw.Get(JWT)
-	if err != nil {
-		return "", errors.New("failed to get user ID from JWT: " + err.Error())
-	}
-	if cacheType != cacheUserSignIn {
-		return "", errors.New("invalid cache type")
-	}
-	return userData, nil
+	return cache.raw.Get("JWT:" + JWT)
 }
 
 func (cache *CacheClient[client]) deleteUserSignIn(JWT string) error {
@@ -298,21 +266,4 @@ func (cache *CacheClient[client]) advanceAnalytics(timeStep AnalyticsTimeStep, s
 		}
 	}
 	return nil
-}
-
-// Utilities
-
-func (cache CacheLayer) getCacheType(purpose string) (CacheType, error) {
-	switch purpose {
-	case cachePasswordSet.purpose:
-		return cachePasswordSet, nil
-	case cacheChangeEmail.purpose:
-		return cacheChangeEmail, nil
-	case cacheNewUserSignUp.purpose:
-		return cacheNewUserSignUp, nil
-	case cacheUserSignIn.purpose:
-		return cacheUserSignIn, nil
-	default:
-		return CacheType{}, errors.New("invalid cache type")
-	}
 }
