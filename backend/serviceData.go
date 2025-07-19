@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strings"
 
 	Coms "github.com/benjaminRoberts01375/Go-Communicate"
 )
@@ -27,13 +28,32 @@ func getServiceData(w http.ResponseWriter, r *http.Request) {
 		Coms.ExternalPostRespondCode(http.StatusInternalServerError, w)
 		return
 	}
-	requestedService := r.PathValue("services")
-	if requestedService == "" {
-		Coms.ExternalPostRespond(getAnalyticDashboard(), w)
-		return
-	} else {
-		Coms.ExternalPostRespond(getAnalyticData(), w)
+	queryParams := r.URL.Query()
+	serviceData := []ServiceData{}
+
+	// Handle time step requests
+	// If there's a request for time steps, we're going to return a list of all services
+	if len(queryParams["time-step"]) > 0 {
+		serviceData = make([]ServiceData, len(serviceLinks))
+		for i, service := range serviceLinks {
+			serviceData[i] = ServiceData{ServiceLink: service, Hour: map[int]Analytic{}, Day: map[int]Analytic{}, Month: map[int]Analytic{}}
+		}
 	}
+
+	for _, timeStepQuery := range queryParams["time-step"] {
+		var timeStep AnalyticsTimeStep
+		switch strings.ToLower(timeStepQuery) {
+		case "day":
+			timeStep = cacheAnalyticsDay
+		case "month":
+			timeStep = cacheAnalyticsMonth
+		default:
+			timeStep = cacheAnalyticsHour
+		}
+		cache.getAnalyticsTimeStep(timeStep, &serviceData)
+	}
+
+	Coms.ExternalPostRespond(serviceData, w)
 }
 
 func getAnalyticDashboard() []ServiceData {
