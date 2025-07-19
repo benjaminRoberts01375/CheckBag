@@ -7,7 +7,17 @@ import (
 )
 
 type ServiceData struct {
+	Hour  map[int]Analytic `json:"hour"`
+	Day   map[int]Analytic `json:"day"`
+	Month map[int]Analytic `json:"month"`
 	ServiceLink
+}
+
+type Analytic struct {
+	Quantity int            `json:"quantity"`
+	Country  map[string]int `json:"country"`
+	IP       map[string]int `json:"ip"`
+	Resource map[string]int `json:"resource"`
 }
 
 func getServiceData(w http.ResponseWriter, r *http.Request) {
