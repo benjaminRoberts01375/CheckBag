@@ -63,11 +63,50 @@ func servicesSet(w http.ResponseWriter, r *http.Request) {
 	Coms.ExternalPostRespond(serviceLinks, w)
 }
 
+// Search for a service by external URL
 func (services *ServiceLinks) GetServiceFromExternalURL(service string) (*ServiceLink, error) {
 	for _, serviceLink := range *services {
 		if slices.Contains(serviceLink.ExternalAddress, service) {
 			return &serviceLink, nil
 		}
 	}
+	return nil, errors.New("no service found")
+}
+
+// Search for a service by internal URL
+func (services *ServiceLinks) GetServiceFromInternalURL(service string) (*ServiceLink, error) {
+	for _, serviceLink := range *services {
+		if serviceLink.InternalAddress == service {
+			return &serviceLink, nil
+		}
+	}
+	return nil, errors.New("no service found")
+}
+
+// Search for a service by ID
+func (services *ServiceLinks) GetServiceByID(serviceID string) (*ServiceLink, error) {
+	for _, serviceLink := range *services {
+		if serviceLink.ID == serviceID {
+			return &serviceLink, nil
+		}
+	}
+	return nil, errors.New("no service found")
+}
+
+// Widely search for a service. Supports external URLs, internal URLs, and service IDs
+func (services *ServiceLinks) GetService(serviceInfo string) (*ServiceLink, error) {
+	potentialService, _ := services.GetServiceFromExternalURL(serviceInfo)
+	if potentialService != nil {
+		return potentialService, nil
+	}
+	potentialService, _ = services.GetServiceFromInternalURL(serviceInfo)
+	if potentialService != nil {
+		return potentialService, nil
+	}
+	potentialService, _ = services.GetServiceByID(serviceInfo)
+	if potentialService != nil {
+		return potentialService, nil
+	}
+
 	return nil, errors.New("no service found")
 }
