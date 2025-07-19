@@ -36,7 +36,8 @@ func getServiceData(w http.ResponseWriter, r *http.Request) {
 		serviceData[i] = ServiceData{ServiceLink: service, Hour: map[int]Analytic{}, Day: map[int]Analytic{}, Month: map[int]Analytic{}}
 	}
 
-	for _, timeStepQuery := range queryParams["time-step"] { // Handle time step requests
+	// Handle time step requests
+	for _, timeStepQuery := range queryParams["time-step"] {
 		timeStepQuery = strings.ToLower(timeStepQuery)
 		switch timeStepQuery {
 		case "day":
@@ -47,26 +48,33 @@ func getServiceData(w http.ResponseWriter, r *http.Request) {
 			for i, service := range serviceData {
 				serviceData[i].Month = cache.getAnalyticsService(service, cacheAnalyticsMonth)
 			}
-		default:
+		default: // Hour
 			for i, service := range serviceData {
 				serviceData[i].Hour = cache.getAnalyticsService(service, cacheAnalyticsHour)
 			}
 		}
 	}
 
-	Coms.ExternalPostRespond(serviceData, w)
-}
-
-func getAnalyticDashboard() []ServiceData {
-	var serviceData []ServiceData = make([]ServiceData, len(serviceLinks))
-	for i, service := range serviceLinks {
-		serviceData[i] = ServiceData{
-			ServiceLink: service,
+	// Handle service requests
+	for _, requestedServiceString := range queryParams["service"] {
+		// Find the service index of the requested service from the list of all service data
+		requestedServiceLink, _ := serviceLinks.GetService(requestedServiceString)
+		var requestedServiceIndex int = -1
+		for i, service := range serviceData {
+			if service.ServiceLink.ID == requestedServiceLink.ID {
+				requestedServiceIndex = i
+				break
+			}
 		}
+		// Check if the requested service was found
+		if requestedServiceIndex == -1 {
+			continue
+		}
+		// Get the requested service's analytics
+		serviceData[requestedServiceIndex].Hour = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsHour)
+		serviceData[requestedServiceIndex].Day = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsDay)
+		serviceData[requestedServiceIndex].Month = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsMonth)
 	}
-	return serviceData
-}
 
-func getAnalyticData() ServiceData {
-	return ServiceData{}
+	Coms.ExternalPostRespond(serviceData, w)
 }
