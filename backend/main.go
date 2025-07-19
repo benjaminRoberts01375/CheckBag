@@ -39,7 +39,7 @@ func setupEndpoints() {
 	http.HandleFunc("POST /api/user-logout", userLogout)
 	http.HandleFunc("POST /api/user-reset-password", userResetPassword)
 	http.HandleFunc("POST /api/services-set", servicesSet)
-	http.HandleFunc("GET /api/service-data/{service}", getServiceData)
+	http.HandleFunc("GET /api/service-data", getServiceData)
 	http.HandleFunc("/api/service/{path...}", requestForwarding)
 	http.HandleFunc("/", notFound)
 }
