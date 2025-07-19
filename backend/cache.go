@@ -59,10 +59,10 @@ func (timeStep AnalyticsTimeStep) timeToNextStep() time.Duration {
 	now := time.Now()
 	switch timeStep.key {
 	case "Minute":
-		nextMinute := now.Local().Truncate(time.Minute).Add(time.Minute)
+		nextMinute := now.Truncate(time.Minute).Add(time.Minute)
 		return nextMinute.Sub(now)
 	case "Hour":
-		nextHour := now.Local().Add(time.Hour).Truncate(time.Hour)
+		nextHour := now.Add(time.Hour).Truncate(time.Hour)
 		return nextHour.Sub(now)
 	case "Day":
 		midnightTonight := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, now.Location())
