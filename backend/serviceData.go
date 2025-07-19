@@ -29,28 +29,29 @@ func getServiceData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	queryParams := r.URL.Query()
-	serviceData := []ServiceData{}
+	serviceData := make([]ServiceData, len(serviceLinks))
 
-	// Handle time step requests
-	// If there's a request for time steps, we're going to return a list of all services
-	if len(queryParams["time-step"]) > 0 {
-		serviceData = make([]ServiceData, len(serviceLinks))
-		for i, service := range serviceLinks {
-			serviceData[i] = ServiceData{ServiceLink: service, Hour: map[int]Analytic{}, Day: map[int]Analytic{}, Month: map[int]Analytic{}}
-		}
+	// Create a list of all services
+	for i, service := range serviceLinks {
+		serviceData[i] = ServiceData{ServiceLink: service, Hour: map[int]Analytic{}, Day: map[int]Analytic{}, Month: map[int]Analytic{}}
 	}
 
-	for _, timeStepQuery := range queryParams["time-step"] {
-		var timeStep AnalyticsTimeStep
-		switch strings.ToLower(timeStepQuery) {
+	for _, timeStepQuery := range queryParams["time-step"] { // Handle time step requests
+		timeStepQuery = strings.ToLower(timeStepQuery)
+		switch timeStepQuery {
 		case "day":
-			timeStep = cacheAnalyticsDay
+			for i, service := range serviceData {
+				serviceData[i].Day = cache.getAnalyticsService(service, cacheAnalyticsDay)
+			}
 		case "month":
-			timeStep = cacheAnalyticsMonth
+			for i, service := range serviceData {
+				serviceData[i].Month = cache.getAnalyticsService(service, cacheAnalyticsMonth)
+			}
 		default:
-			timeStep = cacheAnalyticsHour
+			for i, service := range serviceData {
+				serviceData[i].Hour = cache.getAnalyticsService(service, cacheAnalyticsHour)
+			}
 		}
-		cache.getAnalyticsTimeStep(timeStep, &serviceData)
 	}
 
 	Coms.ExternalPostRespond(serviceData, w)

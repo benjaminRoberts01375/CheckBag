@@ -268,66 +268,58 @@ func (cache *CacheClient[client]) advanceAnalytics(timeStep AnalyticsTimeStep, s
 	return nil
 }
 
-func (cache *CacheClient[client]) getAnalyticsTimeStep(timeStep AnalyticsTimeStep, services *[]ServiceData) {
-	for serviceIndex, service := range *services {
-		for timePeriod := range timeStep.maximumUnits {
-			quantityRaw, err := cache.raw.Get("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timePeriod) + ":quantity")
+func (cache *CacheClient[client]) getAnalyticsService(service ServiceData, timeStep AnalyticsTimeStep) map[int]Analytic {
+	analytics := map[int]Analytic{}
+	for timePeriod := range timeStep.maximumUnits {
+		quantityRaw, err := cache.raw.Get("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timePeriod) + ":quantity")
+		if err != nil {
+			continue
+		}
+		countryRaw, err := cache.raw.GetHash("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timePeriod) + ":country")
+		if err != nil {
+			continue
+		}
+		ipRaw, err := cache.raw.GetHash("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timePeriod) + ":ip")
+		if err != nil {
+			continue
+		}
+		resourceRaw, err := cache.raw.GetHash("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timePeriod) + ":resource")
+		if err != nil {
+			continue
+		}
+		quantity, err := strconv.Atoi(quantityRaw)
+		if err != nil {
+			continue
+		}
+		country := make(map[string]int)
+		for countryName, countryCount := range countryRaw {
+			country[countryName], err = strconv.Atoi(countryCount)
 			if err != nil {
 				continue
-			}
-			countryRaw, err := cache.raw.GetHash("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timePeriod) + ":country")
-			if err != nil {
-				continue
-			}
-			ipRaw, err := cache.raw.GetHash("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timePeriod) + ":ip")
-			if err != nil {
-				continue
-			}
-			resourceRaw, err := cache.raw.GetHash("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timePeriod) + ":resource")
-			if err != nil {
-				continue
-			}
-			quantity, err := strconv.Atoi(quantityRaw)
-			if err != nil {
-				continue
-			}
-			country := make(map[string]int)
-			for countryName, countryCount := range countryRaw {
-				country[countryName], err = strconv.Atoi(countryCount)
-				if err != nil {
-					continue
-				}
-			}
-			ip := make(map[string]int)
-			for ipAddress, ipCount := range ipRaw {
-				ip[ipAddress], err = strconv.Atoi(ipCount)
-				if err != nil {
-					continue
-				}
-			}
-			resource := make(map[string]int)
-			for resourceName, resourceCount := range resourceRaw {
-				resource[resourceName], err = strconv.Atoi(resourceCount)
-				if err != nil {
-					continue
-				}
-			}
-
-			analytic := Analytic{
-				Quantity: quantity,
-				Country:  country,
-				IP:       ip,
-				Resource: resource,
-			}
-
-			switch timeStep.key {
-			case "Hour":
-				(*services)[serviceIndex].Hour[timePeriod] = analytic
-			case "Day":
-				(*services)[serviceIndex].Day[timePeriod] = analytic
-			case "Month":
-				(*services)[serviceIndex].Month[timePeriod] = analytic
 			}
 		}
+		ip := make(map[string]int)
+		for ipAddress, ipCount := range ipRaw {
+			ip[ipAddress], err = strconv.Atoi(ipCount)
+			if err != nil {
+				continue
+			}
+		}
+		resource := make(map[string]int)
+		for resourceName, resourceCount := range resourceRaw {
+			resource[resourceName], err = strconv.Atoi(resourceCount)
+			if err != nil {
+				continue
+			}
+		}
+
+		analytics[timePeriod] = Analytic{
+			Quantity: quantity,
+			Country:  country,
+			IP:       ip,
+			Resource: resource,
+		}
 	}
+
+	return analytics
 }
