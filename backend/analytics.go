@@ -39,8 +39,7 @@ func startAnalyticsAdvance() {
 
 	for _, timeStep := range cacheAnalyticsTime {
 		go func(timeStep AnalyticsTimeStep) {
-			remainingTime := timeStep.timeToNextStep() // Prevent drift
-			ticker := time.NewTicker(remainingTime)
+			ticker := time.NewTicker(timeStep.timeToNextStep())
 			defer ticker.Stop()
 
 			for range ticker.C {
