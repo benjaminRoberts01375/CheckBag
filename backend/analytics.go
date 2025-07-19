@@ -39,16 +39,18 @@ func startAnalyticsAdvance() {
 
 	for _, timeStep := range cacheAnalyticsTime {
 		go func(timeStep AnalyticsTimeStep) {
+			remainingTime := timeStep.timeToNextStep() // Prevent drift
+			ticker := time.NewTicker(remainingTime)
 			defer ticker.Stop()
 
 			for range ticker.C {
+				ticker.Reset(timeStep.timeToNextStep()) // Prevent drift
 				triggerChan <- timeStep
 			}
 		}(timeStep)
 	}
 
 	for source := range triggerChan {
-		Coms.Println("Analytics advance triggered for " + source.key)
 		cache.advanceAnalytics(source, serviceLinks)
 	}
 	Coms.Println("Finished analytics advance")
