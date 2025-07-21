@@ -23,10 +23,10 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 	Overwrites the service's data if it already exists while maintaining the client ID.
 	Creates a new service if it doesn't exist.
 	*/
-	function requestServiceData(service: string): void {
+	function requestServiceData(): void {
 		(async () => {
 			try {
-				const response = await fetch("/api/service-data/" + service, {
+				const response = await fetch("/api/service-data", {
 					method: "GET",
 					headers: {
 						"Content-Type": "application/json",
