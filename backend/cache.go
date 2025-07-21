@@ -29,8 +29,8 @@ type CacheSpec interface {
 
 	RenameKey(oldKey string, newKey string) error
 
-	IncrementHashField(key string, field string, amount int) error
-	IncrementKey(key string) error
+	IncrementHashField(key string, field string, amount int, expiration time.Time) error
+	IncrementKey(key string, expiration time.Time) error
 }
 
 type CacheLayer struct { // Implements main 5 functions
@@ -45,7 +45,7 @@ type CacheClient[client CacheSpec] struct { // Holds some DB that satisfies the 
 }
 
 type AnalyticsTimeStep struct {
-	key          string
+	key          func(step int) string
 	maximumUnits int
 }
 
@@ -54,11 +54,23 @@ const (
 )
 
 var (
-	cacheAnalyticsMinute = AnalyticsTimeStep{key: "Minute", maximumUnits: 60}
-	cacheAnalyticsHour   = AnalyticsTimeStep{key: "Hour", maximumUnits: 24}
-	cacheAnalyticsDay    = AnalyticsTimeStep{key: "Day", maximumUnits: 30}
-	cacheAnalyticsMonth  = AnalyticsTimeStep{key: "Month", maximumUnits: 12}
-	cacheAnalyticsTime   = []AnalyticsTimeStep{cacheAnalyticsMinute, cacheAnalyticsHour, cacheAnalyticsDay, cacheAnalyticsMonth}
+	cacheAnalyticsMinute = AnalyticsTimeStep{maximumUnits: 60, key: func(step int) string {
+		return time.Now().Truncate(time.Minute).Add(time.Duration(step) * time.Minute).Format(time.RFC3339)
+	}}
+	cacheAnalyticsHour = AnalyticsTimeStep{maximumUnits: 24, key: func(step int) string {
+		return time.Now().Truncate(time.Hour).Add(time.Duration(step) * time.Hour).Format(time.RFC3339)
+	}}
+	cacheAnalyticsDay = AnalyticsTimeStep{maximumUnits: 30, key: func(step int) string {
+		now := time.Now()
+		year, month, day := now.Date()
+		return time.Date(year, month, day, 0, 0, 0, 0, now.Location()).AddDate(0, 0, step).Format(time.RFC3339)
+	}}
+	cacheAnalyticsMonth = AnalyticsTimeStep{maximumUnits: 12, key: func(step int) string {
+		now := time.Now()
+		year, month, _ := now.Date()
+		return time.Date(year, month, 1, 0, 0, 0, 0, now.Location()).AddDate(0, step, 0).Format(time.RFC3339)
+	}}
+	cacheAnalyticsTime = []AnalyticsTimeStep{cacheAnalyticsMinute, cacheAnalyticsHour, cacheAnalyticsDay, cacheAnalyticsMonth}
 )
 
 const cacheDataValid = "valid"
@@ -145,14 +157,24 @@ func (cache CacheLayer) RenameKey(oldKey string, newKey string) error {
 	return cache.DB.Do(ctx, cache.DB.B().Rename().Key(oldKey).Newkey(newKey).Build()).Error()
 }
 
-func (cache CacheLayer) IncrementHashField(key string, field string, amount int) error {
+func (cache CacheLayer) IncrementHashField(key string, field string, amount int, expiration time.Time) error {
 	ctx := context.Background()
-	return cache.DB.Do(ctx, cache.DB.B().Hincrby().Key(key).Field(field).Increment(int64(amount)).Build()).Error()
+	err := cache.DB.Do(ctx, cache.DB.B().Hincrby().Key(key).Field(field).Increment(int64(amount)).Build()).Error()
+	if err != nil {
+		return err
+	}
+	remainingTime := time.Until(expiration)
+	return cache.DB.Do(ctx, cache.DB.B().Expire().Key(key).Seconds(int64(remainingTime.Seconds())).Build()).Error()
 }
 
-func (cache CacheLayer) IncrementKey(key string) error {
+func (cache CacheLayer) IncrementKey(key string, expiration time.Time) error {
 	ctx := context.Background()
-	return cache.DB.Do(ctx, cache.DB.B().Incr().Key(key).Build()).Error()
+	err := cache.DB.Do(ctx, cache.DB.B().Incr().Key(key).Build()).Error()
+	if err != nil {
+		return err
+	}
+	remainingTime := time.Until(expiration)
+	return cache.DB.Do(ctx, cache.DB.B().Expire().Key(key).Seconds(int64(remainingTime.Seconds())).Build()).Error()
 }
 
 // Higher-level cache functions
@@ -176,27 +198,35 @@ func (cache *CacheClient[client]) deleteUserSignIn(JWT string) error {
 
 func (cache *CacheClient[client]) incrementAnalytics(serviceID string, resource string, country string, ip string, responseCode int) error {
 	for _, timeStep := range cacheAnalyticsTime {
-		err := cache.raw.IncrementKey("Analytics:" + serviceID + ":" + timeStep.key + "1:quantity")
+		recordTime := timeStep.key(0)
+		expiration, err := time.Parse(time.RFC3339, timeStep.key(timeStep.maximumUnits))
+		quantity := strconv.Itoa(timeStep.maximumUnits)
+		if err != nil {
+			Coms.PrintErrStr("Could not parse expiration time of " + recordTime + ": " + err.Error())
+			return err
+		}
+
+		err = cache.raw.IncrementKey("Analytics:"+serviceID+":"+quantity+":"+recordTime+":quantity", expiration)
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics key: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+timeStep.key+"1:country", country, 1)
+		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+quantity+":"+recordTime+":country", country, 1, expiration)
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics country: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+timeStep.key+"1:ip", ip, 1)
+		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+quantity+":"+recordTime+":ip", ip, 1, expiration)
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics ip: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+timeStep.key+"1:resource", resource, 1)
+		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+quantity+":"+recordTime+":resource", resource, 1, expiration)
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics resource: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+timeStep.key+"1:response_code", strconv.Itoa(responseCode), 1)
+		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+quantity+":"+recordTime+":response_code", strconv.Itoa(responseCode), 1, expiration)
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics response code: " + err.Error())
 			return err
@@ -207,20 +237,21 @@ func (cache *CacheClient[client]) incrementAnalytics(serviceID string, resource 
 
 func (cache *CacheClient[client]) getAnalyticsService(service ServiceData, timeStep AnalyticsTimeStep) map[int]Analytic {
 	analytics := map[int]Analytic{}
+	quantity := strconv.Itoa(timeStep.maximumUnits)
 	for timePeriod := range timeStep.maximumUnits {
-		quantityRaw, err := cache.raw.Get("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timePeriod) + ":quantity")
+		quantityRaw, err := cache.raw.Get("Analytics:" + service.ID + ":" + quantity + ":" + timeStep.key(-timePeriod) + ":quantity")
 		if err != nil {
 			continue
 		}
-		countryRaw, err := cache.raw.GetHash("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timePeriod) + ":country")
+		countryRaw, err := cache.raw.GetHash("Analytics:" + service.ID + ":" + quantity + ":" + timeStep.key(-timePeriod) + ":country")
 		if err != nil {
 			continue
 		}
-		ipRaw, err := cache.raw.GetHash("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timePeriod) + ":ip")
+		ipRaw, err := cache.raw.GetHash("Analytics:" + service.ID + ":" + quantity + ":" + timeStep.key(-timePeriod) + ":ip")
 		if err != nil {
 			continue
 		}
-		resourceRaw, err := cache.raw.GetHash("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timePeriod) + ":resource")
+		resourceRaw, err := cache.raw.GetHash("Analytics:" + service.ID + ":" + quantity + ":" + timeStep.key(-timePeriod) + ":resource")
 		if err != nil {
 			continue
 		}
