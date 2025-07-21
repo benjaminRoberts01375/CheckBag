@@ -49,28 +49,6 @@ type AnalyticsTimeStep struct {
 	maximumUnits int
 }
 
-// timeToNextStep returns the time until the next step of the analytics in UTC
-func (timeStep AnalyticsTimeStep) timeToNextStep() time.Duration {
-	now := time.Now()
-	switch timeStep.key {
-	case "Minute":
-		nextMinute := now.Truncate(time.Minute).Add(time.Minute)
-		return nextMinute.Sub(now)
-	case "Hour":
-		nextHour := now.Add(time.Hour).Truncate(time.Hour)
-		return nextHour.Sub(now)
-	case "Day":
-		midnightTonight := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, now.Location())
-		return midnightTonight.Sub(now)
-	case "Month":
-		nextMonth := now.AddDate(0, 1, 0)
-		beginningOfNextMonth := time.Date(nextMonth.Year(), nextMonth.Month(), 1, 0, 0, 0, 0, now.Location())
-		return beginningOfNextMonth.Sub(now)
-	default:
-		return time.Duration(0)
-	}
-}
-
 const (
 	cacheUserSignIn = JWT.LoginDuration
 )
@@ -222,47 +200,6 @@ func (cache *CacheClient[client]) incrementAnalytics(serviceID string, resource 
 		if err != nil {
 			Coms.PrintErrStr("Could not increment minute analytics response code: " + err.Error())
 			return err
-		}
-	}
-	return nil
-}
-
-func (cache *CacheClient[client]) advanceAnalytics(timeStep AnalyticsTimeStep, services []ServiceLink) error {
-	for _, service := range services {
-		// Remove last unit
-		err := cache.raw.Delete("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timeStep.maximumUnits) + ":quantity")
-		if err != nil {
-			Coms.PrintErrStr("Could not remove last " + timeStep.key + " analytics quantity for service " + service.Title + ": " + err.Error())
-			return err
-		}
-		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timeStep.maximumUnits) + ":country")
-		if err != nil {
-			Coms.PrintErrStr("Could not remove last " + timeStep.key + " analytics country for service " + service.Title + ": " + err.Error())
-			return err
-		}
-		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timeStep.maximumUnits) + ":ip")
-		if err != nil {
-			Coms.PrintErrStr("Could not remove last " + timeStep.key + " analytics ip for service " + service.Title + ": " + err.Error())
-			return err
-		}
-		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timeStep.maximumUnits) + ":resource")
-		if err != nil {
-			Coms.PrintErrStr("Could not remove last " + timeStep.key + " analytics resource for service " + service.Title + ": " + err.Error())
-			return err
-		}
-		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + timeStep.key + strconv.Itoa(timeStep.maximumUnits) + ":response_code")
-		if err != nil {
-			Coms.PrintErrStr("Could not remove last " + timeStep.key + " analytics response code for service " + service.Title + ": " + err.Error())
-			return err
-		}
-		// Advance current analytics to next time step unit
-		for i := timeStep.maximumUnits - 1; i > 0; i-- {
-			cache.raw.RenameKey("Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i)+":quantity", "Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i+1)+":quantity")
-			cache.raw.RenameKey("Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i)+":country", "Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i+1)+":country")
-			cache.raw.RenameKey("Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i)+":ip", "Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i+1)+":ip")
-			cache.raw.RenameKey("Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i)+":resource", "Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i+1)+":resource")
-			cache.raw.RenameKey("Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i)+":response_code", "Analytics:"+service.ID+":"+timeStep.key+strconv.Itoa(i+1)+":response_code")
-
 		}
 	}
 	return nil
