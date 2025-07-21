@@ -3,9 +3,6 @@ package main
 import (
 	"net/http"
 	"strings"
-	"time"
-
-	Coms "github.com/benjaminRoberts01375/Go-Communicate"
 )
 
 func analytics(r *http.Request, responseCode int) {
@@ -31,28 +28,4 @@ func analytics(r *http.Request, responseCode int) {
 		}
 	}
 	cache.incrementAnalytics(serviceID, resource, country, ip, responseCode)
-}
-
-// Kicks off the analytics advance routine to ensure analytics are labeled
-// correctly for their time step.
-func startAnalyticsAdvance() {
-	Coms.Println("Starting analytics advance")
-	triggerChan := make(chan AnalyticsTimeStep, len(cacheAnalyticsTime))
-
-	for _, timeStep := range cacheAnalyticsTime {
-		go func(timeStep AnalyticsTimeStep) {
-			ticker := time.NewTicker(timeStep.timeToNextStep()) // Docs
-			defer ticker.Stop()
-
-			for range ticker.C {
-				ticker.Reset(timeStep.timeToNextStep()) // Prevent drift
-				triggerChan <- timeStep
-			}
-		}(timeStep)
-	}
-
-	for source := range triggerChan {
-		cache.advanceAnalytics(source, serviceLinks)
-	}
-	Coms.Println("Finished analytics advance")
 }
