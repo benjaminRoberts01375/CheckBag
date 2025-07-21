@@ -7,7 +7,7 @@ import { useEffect } from "react";
 const ServicesScreen = () => {
 	const { services, requestServiceData } = useList();
 	useEffect(() => {
-		requestServiceData("test");
+		requestServiceData();
 	}, []);
 
 	return (
