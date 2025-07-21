@@ -1,15 +1,25 @@
+import Analytic from "./analytic";
+
 class Service {
 	internal_address: string;
 	external_address: string[];
 	title: string;
 	id: string;
 	clientID: string;
+	minute: Map<number, Analytic>;
+	hour: Map<number, Analytic>;
+	day: Map<number, Analytic>;
+	month: Map<number, Analytic>;
 
 	constructor(
 		internal_address: string,
 		external_address: string[],
 		title: string,
 		id: string = "",
+		minute: Map<number, Analytic> = new Map<number, Analytic>(),
+		hour: Map<number, Analytic> = new Map<number, Analytic>(),
+		day: Map<number, Analytic> = new Map<number, Analytic>(),
+		month: Map<number, Analytic> = new Map<number, Analytic>(),
 	) {
 		if (internal_address.substring(0, 4) !== "http") {
 			internal_address = "http://" + internal_address;
@@ -36,6 +46,10 @@ class Service {
 		this.title = title;
 		this.id = id;
 		this.clientID = crypto.randomUUID();
+		this.minute = minute;
+		this.hour = hour;
+		this.day = day;
+		this.month = month;
 	}
 }
 
