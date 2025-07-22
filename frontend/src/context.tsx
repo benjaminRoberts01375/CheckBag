@@ -1,7 +1,8 @@
 import React, { ReactNode } from "react";
-import { Context, ContextType, CookieKeys } from "./context-object";
+import { Context, ContextType } from "./context-object";
 import { useState } from "react";
 import Service from "./types/service.tsx";
+import { CookieKeys } from "./types/strings";
 
 interface Props {
 	children: ReactNode;
