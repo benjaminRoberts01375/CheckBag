@@ -26,7 +26,11 @@ const Navbar = () => {
 			</button>
 			<div id={NavbarStyles["divider"]}></div>
 			{services.map(service => (
-				<button onClick={() => serviceToggle(service.clientID)} key={service.clientID}>
+				<button
+					className={`${NavbarStyles["entry"]}`}
+					onClick={() => serviceToggle(service.clientID)}
+					key={service.clientID}
+				>
 					<p>{service.title}</p>
 				</button>
 			))}
