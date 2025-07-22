@@ -16,7 +16,7 @@ class Service {
 		internal_address: string,
 		external_address: string[],
 		title: string,
-		enabled: boolean = false,
+		enabled: boolean = true,
 		id: string = "",
 		hour: Map<Date, Analytic> = new Map<Date, Analytic>(),
 		day: Map<Date, Analytic> = new Map<Date, Analytic>(),

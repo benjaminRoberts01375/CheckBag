@@ -54,6 +54,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 							// If the service doesn't exist, add it
 							if (finalService === undefined) {
 								newService.clientID = crypto.randomUUID();
+								newService.enabled = true;
 								finalServices.push(newService);
 								break;
 							}
