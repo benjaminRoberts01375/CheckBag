@@ -3,6 +3,7 @@ import NavbarStyles from "./navbar.module.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useList } from "../context-hook";
 import Timescale from "./timescale";
+import { Checkbox } from "@mui/material";
 
 const Navbar = () => {
 	const navigate = useNavigate();
@@ -34,7 +35,25 @@ const Navbar = () => {
 						key={service.clientID}
 					>
 						<div className={NavbarStyles["entryService"]}>
-							<input type="checkbox" checked={service.enabled} disabled />
+							<Checkbox
+								checked={service.enabled || service.enabled === undefined}
+								readOnly={true}
+								sx={{
+									color: "#ffd20a",
+									"&.Mui-checked": {
+										color: "#ffd20a",
+									},
+									"& .MuiSvgIcon-root": {
+										fontSize: "16pt",
+										margin: 0,
+										padding: 0,
+									},
+									"&.MuiCheckbox-root": {
+										padding: 0,
+										margin: 0,
+									},
+								}}
+							/>
 							<p>{service.title}</p>
 						</div>
 					</button>
