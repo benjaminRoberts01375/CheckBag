@@ -12,7 +12,9 @@ const Navbar = () => {
 
 	return (
 		<div id={NavbarStyles["navbar-container"]}>
-			<h1 id={NavbarStyles["title"]}>CheckBag</h1>
+			<h1 id={NavbarStyles["title"]} className="primary">
+				CheckBag
+			</h1>
 			<div id={NavbarStyles["divider"]}></div>
 			<button
 				className={`${NavbarStyles["entry"]} ${location.pathname === "/dashboard/home" ? NavbarStyles["active"] : ""}`}

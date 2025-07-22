@@ -2,7 +2,6 @@
 	display: flex;
 	margin: 10pt 10pt;
 	border-radius: 5pt;
-	background: #4e494a;
 }
 
 #container > button {
@@ -13,12 +12,7 @@
 }
 
 .active {
-	background: #ffd20a;
 	color: black;
-}
-
-.active:hover {
-	background: #ffe989;
 }
 
 .passive {

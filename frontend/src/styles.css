@@ -3,24 +3,25 @@ body {
 	width: 100vw;
 	margin: 0pt;
 	padding: 0pt;
-	background: #eee;
+	background: #1d1a1b;
+}
+
+.secondary-background {
+	background: #343031;
+}
+
+.tertiary-background {
+	background: #4e494a;
 }
 
 .primary,
 flavor-button:active {
-	background: #ebbf;
-	color: black;
+	background: #ffd20a;
+	color: #ffd20a;
 }
 
-.secondary,
-dialog h2 {
-	background: #ec9a9a;
-	color: black;
-}
-
-.tertiary {
-	background: #fff8;
-	color: black;
+.primary:hover {
+	background: #ffe989;
 }
 
 * {
