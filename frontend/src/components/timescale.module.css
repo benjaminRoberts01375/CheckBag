@@ -7,20 +7,26 @@
 
 #container > button {
 	flex-grow: 1;
-	color: white;
 	font-size: 15pt;
 	border-radius: 15%;
 	padding: 5pt 0pt;
 }
 
-#container > button:hover {
-	background: #464142;
+.active {
+	background: #ffd20a;
+	color: black;
 }
 
-.active {
-	background: #6e6669;
+.active:hover {
+	background: #ffe989;
 }
 
 .passive {
 	background: none;
+	color: white;
+}
+
+.passive:hover {
+	background: #686162;
+	color: white;
 }
