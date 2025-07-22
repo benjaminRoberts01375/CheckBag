@@ -1,9 +1,11 @@
 import { createContext } from "react";
 import Service from "./types/service.tsx";
-import { CookieKeys } from "./types/strings";
+import { CookieKeys, Timescale } from "./types/strings";
 
 export interface ContextType {
 	services: Service[];
+	timescale: Timescale;
+	setTimescale: (timescale: Timescale) => void;
 	serviceAdd: (service: Service) => void;
 	requestServiceData: () => void;
 	cookieGet: (key: CookieKeys) => string | undefined;
