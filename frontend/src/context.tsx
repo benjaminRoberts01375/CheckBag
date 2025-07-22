@@ -24,49 +24,55 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 	Creates a new service if it doesn't exist.
 	*/
 	function requestServiceData(): void {
-		(async () => {
-			try {
-				const response = await fetch("/api/service-data", {
-					method: "GET",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					credentials: "include",
-				});
+		const time_steps: string[] = ["hour", "day", "month", "year"];
+		time_steps.forEach(time_step => {
+			async () => {
+				try {
+					const url = new URL("/api/service-data", window.location.origin);
+					url.searchParams.set("time-step", time_step);
+					console.log("Final URL:", url.toString());
+					const response = await fetch(url.toString(), {
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						credentials: "include",
+					});
 
-				if (!response.ok) {
-					throw new Error("Failed to fetch initial data");
-				}
-				const rawData: Service[] = await response.json();
-
-				if (services.length === 0) {
-					for (let i = 0; i < rawData.length; i++) {
-						rawData[i].clientID = crypto.randomUUID(); // Generate new client ID
+					if (!response.ok) {
+						throw new Error("Failed to fetch initial data");
 					}
-					setServices(rawData);
-					return;
-				}
+					const rawData: Service[] = await response.json();
 
-				setServices(oldServices => {
-					const originalUniqueServices = oldServices.filter(existingService => {
-						// Remove duplicate services, maintaining client ID
+					if (services.length === 0) {
 						for (let i = 0; i < rawData.length; i++) {
-							if (existingService.id === rawData[i].id) {
-								rawData[i].clientID = existingService.clientID; // Maintain client ID
-								return false;
-							}
 							rawData[i].clientID = crypto.randomUUID(); // Generate new client ID
 						}
-						return true;
-					});
-					return [...originalUniqueServices, ...rawData]; // Add new services
-				});
+						setServices(rawData);
+						return;
+					}
 
-				console.log("Successfully fetched initial data");
-			} catch (error) {
-				console.error("Error fetching initial data:", error);
-			}
-		})();
+					setServices(oldServices => {
+						const originalUniqueServices = oldServices.filter(existingService => {
+							// Remove duplicate services, maintaining client ID
+							for (let i = 0; i < rawData.length; i++) {
+								if (existingService.id === rawData[i].id) {
+									rawData[i].clientID = existingService.clientID; // Maintain client ID
+									return false;
+								}
+								rawData[i].clientID = crypto.randomUUID(); // Generate new client ID
+							}
+							return true;
+						});
+						return [...originalUniqueServices, ...rawData]; // Add new services
+					});
+
+					console.log("Successfully fetched initial data");
+				} catch (error) {
+					console.error("Error fetching initial data:", error);
+				}
+			};
+		});
 	}
 
 	function serviceAdd(service: Service): void {
