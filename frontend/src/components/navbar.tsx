@@ -6,7 +6,7 @@ import { useList } from "../context-hook";
 const Navbar = () => {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const { services } = useList();
+	const { services, serviceToggle } = useList();
 
 	return (
 		<div id={NavbarStyles["navbar-container"]}>
@@ -26,7 +26,9 @@ const Navbar = () => {
 			</button>
 			<div id={NavbarStyles["divider"]}></div>
 			{services.map(service => (
+				<button onClick={() => serviceToggle(service.clientID)} key={service.clientID}>
 					<p>{service.title}</p>
+				</button>
 			))}
 		</div>
 	);

@@ -9,6 +9,7 @@ export interface ContextType {
 	requestServiceData: () => void;
 	cookieGet: (key: CookieKeys) => string | undefined;
 	passwordReset: (newPassword: string) => void;
+	serviceToggle: (serviceID: string) => void;
 }
 
 // Create the context with a default value

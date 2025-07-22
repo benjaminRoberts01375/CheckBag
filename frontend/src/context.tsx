@@ -134,12 +134,28 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		})();
 	}
 
+	// Toggle the service's enabled state and update setServices
+	function serviceToggle(serviceID: string): void {
+		setServices(services => {
+			const update = services.map(existingService => {
+				if (existingService.clientID === serviceID) {
+					// Create a new object with the toggled enabled value
+					return { ...existingService, enabled: !existingService.enabled };
+				}
+				return existingService;
+			});
+			console.log("Updated services:", update);
+			return update;
+		});
+	}
+
 	const contextShape: ContextType = {
 		services,
 		serviceAdd,
 		cookieGet,
 		requestServiceData,
 		passwordReset,
+		serviceToggle,
 	};
 
 	return <Context.Provider value={contextShape}>{children}</Context.Provider>;
