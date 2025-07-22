@@ -1,0 +1,26 @@
+#container {
+	display: flex;
+	margin: 10pt 10pt;
+	border-radius: 5pt;
+	background: #4e494a;
+}
+
+#container > button {
+	flex-grow: 1;
+	color: white;
+	font-size: 15pt;
+	border-radius: 15%;
+	padding: 5pt 0pt;
+}
+
+#container > button:hover {
+	background: #464142;
+}
+
+.active {
+	background: #6e6669;
+}
+
+.passive {
+	background: none;
+}

@@ -5,8 +5,31 @@ import { useList } from "../context-hook";
 const Timescale = () => {
 	const { timescale, setTimescale } = useList();
 	return (
-		<div>
-			<h1>Timescale</h1>
+		<div id={timescaleStyles["container"]}>
+			<button
+				className={`${timescale === "hour" ? timescaleStyles["active"] : timescaleStyles["passive"]}`}
+				onClick={() => setTimescale("hour")}
+			>
+				H
+			</button>
+			<button
+				className={`${timescale === "day" ? timescaleStyles["active"] : timescaleStyles["passive"]}`}
+				onClick={() => setTimescale("day")}
+			>
+				D
+			</button>
+			<button
+				className={`${timescale === "month" ? timescaleStyles["active"] : timescaleStyles["passive"]}`}
+				onClick={() => setTimescale("month")}
+			>
+				M
+			</button>
+			<button
+				className={`${timescale === "year" ? timescaleStyles["active"] : timescaleStyles["passive"]}`}
+				onClick={() => setTimescale("year")}
+			>
+				Y
+			</button>
 		</div>
 	);
 };
