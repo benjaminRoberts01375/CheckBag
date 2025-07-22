@@ -26,11 +26,11 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 	function requestServiceData(): void {
 		const time_steps: string[] = ["hour", "day", "month", "year"];
 		time_steps.forEach(time_step => {
-			async () => {
+			console.log("Requesting data for time step:", time_step);
+			(async () => {
 				try {
 					const url = new URL("/api/service-data", window.location.origin);
 					url.searchParams.set("time-step", time_step);
-					console.log("Final URL:", url.toString());
 					const response = await fetch(url.toString(), {
 						method: "GET",
 						headers: {
@@ -42,36 +42,50 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 					if (!response.ok) {
 						throw new Error("Failed to fetch initial data");
 					}
-					const rawData: Service[] = await response.json();
+					const newServices: Service[] = (await response.json()) as Service[];
+					console.log("Raw data for + " + time_step + ":", newServices);
+					setServices(existingServices => {
+						var finalServices: Service[] = [];
+						for (const newService of newServices) {
+							var finalService = existingServices.find(
+								existingService => existingService.id === newService.id,
+							);
 
-					if (services.length === 0) {
-						for (let i = 0; i < rawData.length; i++) {
-							rawData[i].clientID = crypto.randomUUID(); // Generate new client ID
-						}
-						setServices(rawData);
-						return;
-					}
-
-					setServices(oldServices => {
-						const originalUniqueServices = oldServices.filter(existingService => {
-							// Remove duplicate services, maintaining client ID
-							for (let i = 0; i < rawData.length; i++) {
-								if (existingService.id === rawData[i].id) {
-									rawData[i].clientID = existingService.clientID; // Maintain client ID
-									return false;
-								}
-								rawData[i].clientID = crypto.randomUUID(); // Generate new client ID
+							// If the service doesn't exist, add it
+							if (finalService === undefined) {
+								newService.clientID = crypto.randomUUID();
+								finalServices.push(newService);
+								break;
 							}
-							return true;
-						});
-						return [...originalUniqueServices, ...rawData]; // Add new services
+							// If the service does exist, update it
+							switch (time_step) {
+								case "hour":
+									finalService.hour = newService.hour;
+									finalServices.push(finalService);
+									break;
+								case "day":
+									finalService.day = newService.day;
+									finalServices.push(finalService);
+									break;
+								case "month":
+									finalService.month = newService.month;
+									finalServices.push(finalService);
+									break;
+								case "year":
+									finalService.year = newService.year;
+									finalServices.push(finalService);
+									break;
+							}
+						}
+						console.log("Final services:", finalServices);
+						return finalServices;
 					});
 
 					console.log("Successfully fetched initial data");
 				} catch (error) {
 					console.error("Error fetching initial data:", error);
 				}
-			};
+			})();
 		});
 	}
 
