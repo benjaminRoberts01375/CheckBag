@@ -6,20 +6,20 @@ class Service {
 	title: string;
 	id: string;
 	clientID: string;
-	minute: Map<string, Analytic>;
-	hour: Map<string, Analytic>;
-	day: Map<string, Analytic>;
-	month: Map<string, Analytic>;
+	hour: Map<Date, Analytic>;
+	day: Map<Date, Analytic>;
+	month: Map<Date, Analytic>;
+	year: Map<Date, Analytic>;
 
 	constructor(
 		internal_address: string,
 		external_address: string[],
 		title: string,
 		id: string = "",
-		minute: Map<string, Analytic> = new Map<string, Analytic>(),
-		hour: Map<string, Analytic> = new Map<string, Analytic>(),
-		day: Map<string, Analytic> = new Map<string, Analytic>(),
-		month: Map<string, Analytic> = new Map<string, Analytic>(),
+		hour: Map<Date, Analytic> = new Map<Date, Analytic>(),
+		day: Map<Date, Analytic> = new Map<Date, Analytic>(),
+		month: Map<Date, Analytic> = new Map<Date, Analytic>(),
+		year: Map<Date, Analytic> = new Map<Date, Analytic>(),
 	) {
 		if (internal_address.substring(0, 4) !== "http") {
 			internal_address = "http://" + internal_address;
@@ -46,10 +46,10 @@ class Service {
 		this.title = title;
 		this.id = id;
 		this.clientID = crypto.randomUUID();
-		this.minute = minute;
 		this.hour = hour;
 		this.day = day;
 		this.month = month;
+		this.year = year;
 	}
 }
 
