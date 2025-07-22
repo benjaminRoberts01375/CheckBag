@@ -10,11 +10,13 @@ class Service {
 	day: Map<Date, Analytic>;
 	month: Map<Date, Analytic>;
 	year: Map<Date, Analytic>;
+	enabled: boolean;
 
 	constructor(
 		internal_address: string,
 		external_address: string[],
 		title: string,
+		enabled: boolean = false,
 		id: string = "",
 		hour: Map<Date, Analytic> = new Map<Date, Analytic>(),
 		day: Map<Date, Analytic> = new Map<Date, Analytic>(),
@@ -44,6 +46,7 @@ class Service {
 
 		this.external_address = external_address;
 		this.title = title;
+		this.enabled = enabled;
 		this.id = id;
 		this.clientID = crypto.randomUUID();
 		this.hour = hour;
