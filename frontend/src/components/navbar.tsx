@@ -2,6 +2,7 @@ import "../styles.css";
 import NavbarStyles from "./navbar.module.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useList } from "../context-hook";
+import Timescale from "./timescale";
 
 const Navbar = () => {
 	const navigate = useNavigate();
@@ -25,18 +26,21 @@ const Navbar = () => {
 				<p>Services</p>
 			</button>
 			<div id={NavbarStyles["divider"]}></div>
-			{services.map(service => (
-				<button
-					className={`${NavbarStyles["entry"]}`}
-					onClick={() => serviceToggle(service.clientID)}
-					key={service.clientID}
-				>
-					<div className={NavbarStyles["entryService"]}>
-						<input type="checkbox" checked={service.enabled} disabled />
-						<p>{service.title}</p>
-					</div>
-				</button>
-			))}
+			<div id={NavbarStyles["services"]}>
+				{services.map(service => (
+					<button
+						className={`${NavbarStyles["entry"]}`}
+						onClick={() => serviceToggle(service.clientID)}
+						key={service.clientID}
+					>
+						<div className={NavbarStyles["entryService"]}>
+							<input type="checkbox" checked={service.enabled} disabled />
+							<p>{service.title}</p>
+						</div>
+					</button>
+				))}
+			</div>
+			<Timescale />
 		</div>
 	);
 };
