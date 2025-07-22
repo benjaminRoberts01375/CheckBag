@@ -28,6 +28,12 @@
 	background: #575052;
 }
 
+.entryService {
+	display: flex;
+	flex-wrap: nowrap;
+	gap: 5pt;
+}
+
 .active {
 	background: #464142;
 }

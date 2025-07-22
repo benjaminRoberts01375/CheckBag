@@ -31,7 +31,10 @@ const Navbar = () => {
 					onClick={() => serviceToggle(service.clientID)}
 					key={service.clientID}
 				>
-					<p>{service.title}</p>
+					<div className={NavbarStyles["entryService"]}>
+						<input type="checkbox" checked={service.enabled} disabled />
+						<p>{service.title}</p>
+					</div>
 				</button>
 			))}
 		</div>
