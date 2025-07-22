@@ -9,10 +9,10 @@ import (
 )
 
 type ServiceData struct {
-	Minute map[time.Time]Analytic `json:"minute"`
-	Hour   map[time.Time]Analytic `json:"hour"`
-	Day    map[time.Time]Analytic `json:"day"`
-	Month  map[time.Time]Analytic `json:"month"`
+	Hour  map[time.Time]Analytic `json:"hour"`
+	Day   map[time.Time]Analytic `json:"day"`
+	Month map[time.Time]Analytic `json:"month"`
+	Year  map[time.Time]Analytic `json:"year"`
 	ServiceLink
 }
 
@@ -35,7 +35,7 @@ func getServiceData(w http.ResponseWriter, r *http.Request) {
 
 	// Create a list of all services
 	for i, service := range serviceLinks {
-		serviceData[i] = ServiceData{ServiceLink: service, Hour: map[time.Time]Analytic{}, Day: map[time.Time]Analytic{}, Month: map[time.Time]Analytic{}}
+		serviceData[i] = ServiceData{ServiceLink: service, Day: map[time.Time]Analytic{}, Month: map[time.Time]Analytic{}, Year: map[time.Time]Analytic{}}
 	}
 
 	// Handle time step requests
@@ -44,19 +44,19 @@ func getServiceData(w http.ResponseWriter, r *http.Request) {
 		switch timeStepQuery {
 		case "day":
 			for i, service := range serviceData {
-				serviceData[i].Day = cache.getAnalyticsService(service, cacheAnalyticsDay)
+				serviceData[i].Month = cache.getAnalyticsService(service, cacheAnalyticsDay)
 			}
 		case "month":
 			for i, service := range serviceData {
-				serviceData[i].Month = cache.getAnalyticsService(service, cacheAnalyticsMonth)
+				serviceData[i].Year = cache.getAnalyticsService(service, cacheAnalyticsMonth)
 			}
 		case "hour":
 			for i, service := range serviceData {
-				serviceData[i].Hour = cache.getAnalyticsService(service, cacheAnalyticsHour)
+				serviceData[i].Day = cache.getAnalyticsService(service, cacheAnalyticsHour)
 			}
 		default: // minute
 			for i, service := range serviceData {
-				serviceData[i].Minute = cache.getAnalyticsService(service, cacheAnalyticsMinute)
+				serviceData[i].Hour = cache.getAnalyticsService(service, cacheAnalyticsMinute)
 			}
 		}
 	}
@@ -77,10 +77,10 @@ func getServiceData(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		// Get the requested service's analytics
-		serviceData[requestedServiceIndex].Hour = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsHour)
-		serviceData[requestedServiceIndex].Day = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsDay)
-		serviceData[requestedServiceIndex].Month = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsMonth)
-		serviceData[requestedServiceIndex].Minute = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsMinute)
+		serviceData[requestedServiceIndex].Day = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsHour)
+		serviceData[requestedServiceIndex].Month = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsDay)
+		serviceData[requestedServiceIndex].Year = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsMonth)
+		serviceData[requestedServiceIndex].Hour = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsMinute)
 	}
 
 	Coms.ExternalPostRespond(serviceData, w)
