@@ -22,6 +22,7 @@
 	text-align: left;
 	font-size: 13pt;
 	width: 100%;
+	height: 25pt;
 }
 
 .entry:hover {
@@ -32,6 +33,8 @@
 	display: flex;
 	flex-wrap: nowrap;
 	gap: 5pt;
+	align-items: center;
+	justify-content: left;
 }
 
 .active {
