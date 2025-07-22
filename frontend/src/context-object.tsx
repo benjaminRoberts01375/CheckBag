@@ -1,7 +1,6 @@
 import { createContext } from "react";
 import Service from "./types/service.tsx";
-
-export type CookieKeys = "session-token";
+import { CookieKeys } from "./types/strings";
 
 export interface ContextType {
 	services: Service[];
