@@ -35,7 +35,7 @@ func getServiceData(w http.ResponseWriter, r *http.Request) {
 
 	// Create a list of all services
 	for i, service := range serviceLinks {
-		serviceData[i] = ServiceData{ServiceLink: service, Day: map[time.Time]Analytic{}, Month: map[time.Time]Analytic{}, Year: map[time.Time]Analytic{}}
+		serviceData[i] = ServiceData{ServiceLink: service, Hour: map[time.Time]Analytic{}, Day: map[time.Time]Analytic{}, Month: map[time.Time]Analytic{}, Year: map[time.Time]Analytic{}}
 	}
 
 	// Handle time step requests
