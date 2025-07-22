@@ -3,15 +3,16 @@ package main
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	Coms "github.com/benjaminRoberts01375/Go-Communicate"
 )
 
 type ServiceData struct {
-	Minute map[int]Analytic `json:"minute"`
-	Hour   map[int]Analytic `json:"hour"`
-	Day    map[int]Analytic `json:"day"`
-	Month  map[int]Analytic `json:"month"`
+	Minute map[time.Time]Analytic `json:"minute"`
+	Hour   map[time.Time]Analytic `json:"hour"`
+	Day    map[time.Time]Analytic `json:"day"`
+	Month  map[time.Time]Analytic `json:"month"`
 	ServiceLink
 }
 
@@ -34,7 +35,7 @@ func getServiceData(w http.ResponseWriter, r *http.Request) {
 
 	// Create a list of all services
 	for i, service := range serviceLinks {
-		serviceData[i] = ServiceData{ServiceLink: service, Hour: map[int]Analytic{}, Day: map[int]Analytic{}, Month: map[int]Analytic{}}
+		serviceData[i] = ServiceData{ServiceLink: service, Hour: map[time.Time]Analytic{}, Day: map[time.Time]Analytic{}, Month: map[time.Time]Analytic{}}
 	}
 
 	// Handle time step requests
