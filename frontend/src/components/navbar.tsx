@@ -1,10 +1,12 @@
 import "../styles.css";
 import NavbarStyles from "./navbar.module.css";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useList } from "../context-hook";
 
 const Navbar = () => {
 	const navigate = useNavigate();
 	const location = useLocation();
+	const { services } = useList();
 
 	return (
 		<div id={NavbarStyles["navbar-container"]}>
@@ -23,6 +25,9 @@ const Navbar = () => {
 				<p>Services</p>
 			</button>
 			<div id={NavbarStyles["divider"]}></div>
+			{services.map(service => (
+					<p>{service.title}</p>
+			))}
 		</div>
 	);
 };
