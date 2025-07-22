@@ -26,7 +26,6 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 	function requestServiceData(): void {
 		const time_steps: string[] = ["hour", "day", "month", "year"];
 		time_steps.forEach(time_step => {
-			console.log("Requesting data for time step:", time_step);
 			(async () => {
 				try {
 					const url = new URL("/api/service-data", window.location.origin);
@@ -43,7 +42,6 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 						throw new Error("Failed to fetch initial data");
 					}
 					const newServices: Service[] = (await response.json()) as Service[];
-					console.log("Raw data for + " + time_step + ":", newServices);
 					setServices(existingServices => {
 						var finalServices: Service[] = [];
 						for (const newService of newServices) {
@@ -77,11 +75,8 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 									break;
 							}
 						}
-						console.log("Final services:", finalServices);
 						return finalServices;
 					});
-
-					console.log("Successfully fetched initial data");
 				} catch (error) {
 					console.error("Error fetching initial data:", error);
 				}
