@@ -6,20 +6,20 @@ class Service {
 	title: string;
 	id: string;
 	clientID: string;
-	minute: Map<number, Analytic>;
-	hour: Map<number, Analytic>;
-	day: Map<number, Analytic>;
-	month: Map<number, Analytic>;
+	minute: Map<string, Analytic>;
+	hour: Map<string, Analytic>;
+	day: Map<string, Analytic>;
+	month: Map<string, Analytic>;
 
 	constructor(
 		internal_address: string,
 		external_address: string[],
 		title: string,
 		id: string = "",
-		minute: Map<number, Analytic> = new Map<number, Analytic>(),
-		hour: Map<number, Analytic> = new Map<number, Analytic>(),
-		day: Map<number, Analytic> = new Map<number, Analytic>(),
-		month: Map<number, Analytic> = new Map<number, Analytic>(),
+		minute: Map<string, Analytic> = new Map<string, Analytic>(),
+		hour: Map<string, Analytic> = new Map<string, Analytic>(),
+		day: Map<string, Analytic> = new Map<string, Analytic>(),
+		month: Map<string, Analytic> = new Map<string, Analytic>(),
 	) {
 		if (internal_address.substring(0, 4) !== "http") {
 			internal_address = "http://" + internal_address;
