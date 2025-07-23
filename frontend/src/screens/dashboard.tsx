@@ -85,7 +85,12 @@ const DashboardScreen = () => {
 
 	return (
 		<div id={servicesStyles["container"]}>
-			<StackedBarChart graphData={quantityData} timescale={timescale} yAxisLabel="Query Quantity" />
+			<StackedBarChart
+				graphData={quantityData}
+				timescale={timescale}
+				yAxisLabel="Query Quantity"
+				title="Query Quantity Per Service"
+			/>
 		</div>
 	);
 };
