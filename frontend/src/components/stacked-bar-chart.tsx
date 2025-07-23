@@ -94,7 +94,7 @@ const StackedBarChart = ({ graphData, timescale, yAxisLabel }: StackedBarChartPr
 					sx={{
 						"& .MuiChartsGrid-line": {
 							stroke: "#000000",
-							strokeDasharray: "2 2",
+							strokeDasharray: "5 5",
 							opacity: 1,
 						},
 					}}
