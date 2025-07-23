@@ -7,6 +7,7 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 interface StackedBarChartProps {
 	graphData: GraphData[];
 	timescale: Timescale;
+	yAxisLabel: string;
 }
 
 const darkTheme = createTheme({
@@ -18,7 +19,7 @@ const darkTheme = createTheme({
 	},
 });
 
-const StackedBarChart = ({ graphData, timescale }: StackedBarChartProps) => {
+const StackedBarChart = ({ graphData, timescale, yAxisLabel }: StackedBarChartProps) => {
 	const uniqueXValues = Array.from(new Set(graphData.map(d => d.xValue.getTime())))
 		.sort((a, b) => a - b)
 		.map(time => new Date(time));
@@ -66,6 +67,12 @@ const StackedBarChart = ({ graphData, timescale }: StackedBarChartProps) => {
 							data: uniqueXValues,
 							valueFormatter: formatXAxis,
 							tickPlacement: "middle",
+							label: "Time",
+						},
+					]}
+					yAxis={[
+						{
+							label: yAxisLabel,
 						},
 					]}
 					series={series}
