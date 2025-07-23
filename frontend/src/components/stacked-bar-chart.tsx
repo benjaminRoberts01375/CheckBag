@@ -1,4 +1,5 @@
 import "../styles.css";
+import graphsStyles from "./graphs.module.css";
 import GraphData from "../types/graph-data";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { Timescale } from "../types/strings";
@@ -8,6 +9,7 @@ interface StackedBarChartProps {
 	graphData: GraphData[];
 	timescale: Timescale;
 	yAxisLabel: string;
+	title: string;
 }
 
 const darkTheme = createTheme({
@@ -19,7 +21,7 @@ const darkTheme = createTheme({
 	},
 });
 
-const StackedBarChart = ({ graphData, timescale, yAxisLabel }: StackedBarChartProps) => {
+const StackedBarChart = ({ graphData, timescale, yAxisLabel, title }: StackedBarChartProps) => {
 	const uniqueXValues = Array.from(new Set(graphData.map(d => d.xValue.getTime())))
 		.sort((a, b) => a - b)
 		.map(time => new Date(time));
@@ -59,6 +61,7 @@ const StackedBarChart = ({ graphData, timescale, yAxisLabel }: StackedBarChartPr
 
 	return (
 		<ThemeProvider theme={darkTheme}>
+			<h2 className={graphsStyles["header"]}>{title}</h2>
 			<BarChart
 				xAxis={[
 					{

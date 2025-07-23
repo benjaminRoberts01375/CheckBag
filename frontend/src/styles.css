@@ -33,12 +33,10 @@ flavor-button:active {
 
 a {
 	text-decoration: none;
-	color: black;
 }
 
 button {
 	cursor: pointer;
-	color: black;
 	border: none;
 }
 
@@ -48,6 +46,17 @@ h1 {
 
 h2 {
 	font-size: 18pt;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button {
+	color: white;
 }
 
 button:disabled {
