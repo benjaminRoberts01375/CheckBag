@@ -1,12 +1,14 @@
 import "../styles.css";
 import GraphData from "../types/graph-data";
 import { BarChart } from "@mui/x-charts/BarChart";
+import { Timescale } from "../types/strings";
 
 interface StackedBarChartProps {
 	graphData: GraphData[];
+	timescale: Timescale;
 }
 
-const StackedBarChart = ({ graphData }: StackedBarChartProps) => {
+const StackedBarChart = ({ graphData, timescale }: StackedBarChartProps) => {
 	const uniqueXValues = Array.from(new Set(graphData.map(d => d.xValue.getTime())))
 		.sort((a, b) => a - b)
 		.map(time => new Date(time));
@@ -27,19 +29,32 @@ const StackedBarChart = ({ graphData }: StackedBarChartProps) => {
 			data: dataForTitle,
 			label: title, // Label for the legend and tooltip
 			stack: "total", // All series with 'total' stack together
-			// color: getColorForTitle(title), // Assign a consistent color to each title
 			type: "bar" as const, // Explicitly declare type for series
 		};
 	});
 
+	const formatXAxis = (date: Date) => {
+		switch (timescale) {
+			case "hour":
+				return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+			case "day":
+				return date.toLocaleTimeString([], { hour: "numeric", hour12: true });
+			case "month":
+				return date.toLocaleString("default", { month: "short", day: "numeric" }); // Changed for Month Day format
+			case "year":
+				return date.toLocaleString("default", { month: "short" });
+			default:
+				return date.toLocaleDateString(); // Default case
+		}
+	};
+
 	return (
 		<div>
 			<BarChart
-				xAxis={[{ scaleType: "band", data: uniqueXValues }]}
+				xAxis={[{ scaleType: "band", data: uniqueXValues, valueFormatter: formatXAxis }]}
 				series={series}
 				height={300} // Set a height for the chart
 				// Adjust margins more for date labels
-				margin={{ left: 60, right: 60, top: 40, bottom: 80 }}
 				grid={{ vertical: true }} // Add vertical grid lines
 			/>
 		</div>
