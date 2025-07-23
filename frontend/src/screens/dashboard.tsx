@@ -85,7 +85,7 @@ const DashboardScreen = () => {
 
 	return (
 		<div id={servicesStyles["container"]}>
-			<StackedBarChart graphData={quantityData} />
+			<StackedBarChart graphData={quantityData} timescale={timescale} />
 		</div>
 	);
 };
