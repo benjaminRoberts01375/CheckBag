@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@mui/x-charts": "^8.9.0"
+  }
+}
