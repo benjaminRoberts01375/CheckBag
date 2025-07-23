@@ -59,47 +59,45 @@ const StackedBarChart = ({ graphData, timescale, yAxisLabel }: StackedBarChartPr
 
 	return (
 		<ThemeProvider theme={darkTheme}>
-			<div>
-				<BarChart
-					xAxis={[
-						{
-							scaleType: "band",
-							data: uniqueXValues,
-							valueFormatter: formatXAxis,
-							tickPlacement: "middle",
-							label: "Time",
-						},
-					]}
-					yAxis={[
-						{
-							label: yAxisLabel,
-						},
-					]}
-					series={series}
-					height={300}
-					grid={{ vertical: true, horizontal: true }}
-					slotProps={{
-						tooltip: {
-							sx: {
-								maxWidth: "700pt",
-								minWidth: "50pt",
-								whiteSpace: "nowrap",
-								"& .MuiPaper-root": {
-									maxWidth: "700px",
-									minWidth: "100px",
-								},
+			<BarChart
+				xAxis={[
+					{
+						scaleType: "band",
+						data: uniqueXValues,
+						valueFormatter: formatXAxis,
+						tickPlacement: "middle",
+						label: "Time",
+					},
+				]}
+				yAxis={[
+					{
+						label: yAxisLabel,
+					},
+				]}
+				series={series}
+				height={300}
+				grid={{ vertical: true, horizontal: true }}
+				slotProps={{
+					tooltip: {
+						sx: {
+							maxWidth: "700pt",
+							minWidth: "50pt",
+							whiteSpace: "nowrap",
+							"& .MuiPaper-root": {
+								maxWidth: "700px",
+								minWidth: "100px",
 							},
 						},
-					}}
-					sx={{
-						"& .MuiChartsGrid-line": {
-							stroke: "#000000",
-							strokeDasharray: "5 5",
-							opacity: 1,
-						},
-					}}
-				/>
-			</div>
+					},
+				}}
+				sx={{
+					"& .MuiChartsGrid-line": {
+						stroke: "#000000",
+						strokeDasharray: "5 5",
+						opacity: 1,
+					},
+				}}
+			/>
 		</ThemeProvider>
 	);
 };
