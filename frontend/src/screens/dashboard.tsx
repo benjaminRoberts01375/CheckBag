@@ -1,34 +1,33 @@
 import "../styles.css";
 import servicesStyles from "./services.module.css";
 import { useList } from "../context-hook";
-import ServiceEdit from "../components/service-edit";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import GraphData from "../types/graph-data";
+import StackedBarChart from "../components/stacked-bar-chart";
 
-// TODO: Temporary dashboard screen
 const DashboardScreen = () => {
-	const { services, requestServiceData } = useList();
+	const { services, requestServiceData, timescale } = useList();
+	const [quantityData, setQuantityData] = useState<GraphData[]>([]);
+
 	useEffect(() => {
 		requestServiceData();
 	}, []);
 
+	useEffect(() => {
+		var graphData: GraphData[] = [];
+
+		for (const service of services.filter(service => service.enabled)) {
+			const analyticsMap = service[timescale]; // Woo bracket notation
+			analyticsMap.forEach((analytic, date) => {
+				graphData.push(new GraphData(analytic.quantity, service.title, date));
+			});
+		}
+		setQuantityData(graphData);
+	}, [timescale, services]);
+
 	return (
 		<div id={servicesStyles["container"]}>
-			<table id={servicesStyles["fancy-table"]}>
-				<thead>
-					<tr>
-						<th>Name</th>
-						<th>External Address</th>
-						<th>Internal Address</th>
-						<th>Actions</th>
-					</tr>
-				</thead>
-				<tbody>
-					{services.map(service => (
-						<ServiceEdit service={service} key={service.clientID} />
-					))}
-					<ServiceEdit service={undefined} key={"new"} />
-				</tbody>
-			</table>
+			<StackedBarChart graphData={quantityData} />
 		</div>
 	);
 };
