@@ -40,11 +40,11 @@ const StackedBarChart = ({ graphData, timescale }: StackedBarChartProps) => {
 			case "day":
 				return date.toLocaleTimeString([], { hour: "numeric", hour12: true });
 			case "month":
-				return date.toLocaleString("default", { month: "short", day: "numeric" }); // Changed for Month Day format
+				return date.toLocaleString("default", { month: "short", day: "numeric" });
 			case "year":
 				return date.toLocaleString("default", { month: "short" });
 			default:
-				return date.toLocaleDateString(); // Default case
+				return date.toLocaleDateString();
 		}
 	};
 
@@ -53,9 +53,8 @@ const StackedBarChart = ({ graphData, timescale }: StackedBarChartProps) => {
 			<BarChart
 				xAxis={[{ scaleType: "band", data: uniqueXValues, valueFormatter: formatXAxis }]}
 				series={series}
-				height={300} // Set a height for the chart
-				// Adjust margins more for date labels
-				grid={{ vertical: true }} // Add vertical grid lines
+				height={300}
+				grid={{ vertical: true }}
 			/>
 		</div>
 	);
