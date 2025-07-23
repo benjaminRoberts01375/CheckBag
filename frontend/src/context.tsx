@@ -43,7 +43,9 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 					if (!response.ok) {
 						throw new Error("Failed to fetch initial data");
 					}
-					const newServices: Service[] = (await response.json()) as Service[];
+					const newServices: Service[] = (await response.json()).map((serviceData: any) =>
+						Service.fromJSON(serviceData),
+					);
 					setServices(existingServices => {
 						var finalServices: Service[] = [];
 						for (const newService of newServices) {
@@ -140,15 +142,12 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 	// Toggle the service's enabled state and update setServices
 	function serviceToggle(serviceID: string): void {
 		setServices(services => {
-			const update = services.map(existingService => {
+			return services.map(existingService => {
 				if (existingService.clientID === serviceID) {
-					// Create a new object with the toggled enabled value
 					return { ...existingService, enabled: !existingService.enabled };
 				}
 				return existingService;
 			});
-			console.log("Updated services:", update);
-			return update;
 		});
 	}
 
