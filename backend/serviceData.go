@@ -39,9 +39,9 @@ func getServiceData(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Handle time step requests
-	for _, timeStepQuery := range queryParams["time-step"] {
-		timeStepQuery = strings.ToLower(timeStepQuery)
-		switch timeStepQuery {
+	for _, timeScaleQuery := range queryParams["time-step"] {
+		timeScaleQuery = strings.ToLower(timeScaleQuery)
+		switch timeScaleQuery {
 		case "month":
 			for i, service := range serviceData {
 				serviceData[i].Month = cache.getAnalyticsService(service, cacheAnalyticsDay)
