@@ -71,6 +71,19 @@ const StackedBarChart = ({ graphData, timescale }: StackedBarChartProps) => {
 					series={series}
 					height={300}
 					grid={{ vertical: true, horizontal: true }}
+					slotProps={{
+						tooltip: {
+							sx: {
+								maxWidth: "700pt",
+								minWidth: "50pt",
+								whiteSpace: "nowrap",
+								"& .MuiPaper-root": {
+									maxWidth: "700px",
+									minWidth: "100px",
+								},
+							},
+						},
+					}}
 					sx={{
 						"& .MuiChartsGrid-line": {
 							stroke: "#000000",
