@@ -6,10 +6,10 @@ class Service {
 	title: string;
 	id: string;
 	clientID: string;
-	hour: Map<Date, Analytic>;
-	day: Map<Date, Analytic>;
-	month: Map<Date, Analytic>;
-	year: Map<Date, Analytic>;
+	hour: Map<string, Analytic>;
+	day: Map<string, Analytic>;
+	month: Map<string, Analytic>;
+	year: Map<string, Analytic>;
 	enabled: boolean;
 
 	constructor(
@@ -17,10 +17,10 @@ class Service {
 		external_address: string[],
 		title: string,
 		id: string = "",
-		hour: Map<Date, Analytic> = new Map<Date, Analytic>(),
-		day: Map<Date, Analytic> = new Map<Date, Analytic>(),
-		month: Map<Date, Analytic> = new Map<Date, Analytic>(),
-		year: Map<Date, Analytic> = new Map<Date, Analytic>(),
+		hour: Map<string, Analytic> = new Map<string, Analytic>(),
+		day: Map<string, Analytic> = new Map<string, Analytic>(),
+		month: Map<string, Analytic> = new Map<string, Analytic>(),
+		year: Map<string, Analytic> = new Map<string, Analytic>(),
 		enabled: boolean = true,
 	) {
 		if (internal_address.substring(0, 4) !== "http") {
@@ -69,12 +69,12 @@ class Service {
 	}
 }
 
-function parseAnalyticMap(data: any): Map<Date, Analytic> {
-	const analyticsMap = new Map<Date, Analytic>();
+function parseAnalyticMap(data: any): Map<string, Analytic> {
+	const analyticsMap = new Map<string, Analytic>();
 	if (data) {
 		for (const key in data) {
 			if (data.hasOwnProperty(key)) {
-				analyticsMap.set(new Date(key), Analytic.fromJSON(data[key]));
+				analyticsMap.set(new Date(key).toISOString(), Analytic.fromJSON(data[key]));
 			}
 		}
 	}
