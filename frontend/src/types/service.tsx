@@ -16,12 +16,12 @@ class Service {
 		internal_address: string,
 		external_address: string[],
 		title: string,
-		enabled: boolean = true,
 		id: string = "",
 		hour: Map<Date, Analytic> = new Map<Date, Analytic>(),
 		day: Map<Date, Analytic> = new Map<Date, Analytic>(),
 		month: Map<Date, Analytic> = new Map<Date, Analytic>(),
 		year: Map<Date, Analytic> = new Map<Date, Analytic>(),
+		enabled: boolean = true,
 	) {
 		if (internal_address.substring(0, 4) !== "http") {
 			internal_address = "http://" + internal_address;
@@ -54,6 +54,31 @@ class Service {
 		this.month = month;
 		this.year = year;
 	}
+
+	static fromJSON(data: any): Service {
+		return new Service(
+			data.internal_address,
+			data.external_address,
+			data.title,
+			data.id || "",
+			parseAnalyticMap(data.hour),
+			parseAnalyticMap(data.day),
+			parseAnalyticMap(data.month),
+			parseAnalyticMap(data.year),
+		);
+	}
+}
+
+function parseAnalyticMap(data: any): Map<Date, Analytic> {
+	const analyticsMap = new Map<Date, Analytic>();
+	if (data) {
+		for (const key in data) {
+			if (data.hasOwnProperty(key)) {
+				analyticsMap.set(new Date(key), Analytic.fromJSON(data[key]));
+			}
+		}
+	}
+	return analyticsMap;
 }
 
 export default Service;

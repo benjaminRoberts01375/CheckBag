@@ -15,6 +15,15 @@ class Analytic {
 		this.ip = ip;
 		this.resource = resource;
 	}
+
+	static fromJSON(data: any): Analytic {
+		return new Analytic(
+			data.quantity,
+			new Map<string, number>(Object.entries(data.country || {})),
+			new Map<string, number>(Object.entries(data.ip || {})),
+			new Map<string, number>(Object.entries(data.resource || {})),
+		);
+	}
 }
 
 export default Analytic;
