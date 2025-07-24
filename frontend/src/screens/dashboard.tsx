@@ -143,12 +143,12 @@ const DashboardScreen = () => {
 				timescale={timescale}
 				yAxisLabel="Query Quantity"
 				title="Query Quantity Per Service"
-				theme={darkTheme}
+				theme={theme}
 			/>
 			<div id={servicesStyles["pie-charts"]}>
-				<PieChartComponent data={responseCodeData} title="Response Codes" />
-				<PieChartComponent data={countryCodeData} title="Countries" />
-				<PieChartComponent data={IPAddressData} title="Top IP Addresses" />
+				<PieChartComponent data={responseCodeData} title="Response Codes" theme={theme} />
+				<PieChartComponent data={countryCodeData} title="Countries" theme={theme} />
+				<PieChartComponent data={IPAddressData} title="Top IP Addresses" theme={theme} />
 			</div>
 		</div>
 	);

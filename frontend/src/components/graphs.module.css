@@ -3,3 +3,8 @@
 	width: 100%;
 	text-align: center;
 }
+
+#container {
+	display: flex;
+	flex-direction: column;
+}
