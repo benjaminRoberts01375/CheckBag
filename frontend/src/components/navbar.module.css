@@ -4,6 +4,7 @@
 	background: #343031;
 	width: 200pt;
 	height: 100vh;
+	position: fixed;
 }
 
 #title {
