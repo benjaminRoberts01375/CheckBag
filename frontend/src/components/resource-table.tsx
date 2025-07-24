@@ -14,18 +14,30 @@ const ResourceTable = ({ data, title }: ResourceTableProps) => {
 			<table>
 				<thead>
 					<tr>
-						<th>Service</th>
-						<th>Resource</th>
-						<th>Quantity</th>
+						<th>
+							<p>Service</p>
+						</th>
+						<th>
+							<p>Resource</p>
+						</th>
+						<th>
+							<p>Quantity</p>
+						</th>
 					</tr>
 				</thead>
 				<tbody>
 					{data.map(resourceUsage => {
 						return (
 							<tr>
-								<td>{resourceUsage.service}</td>
-								<td>{resourceUsage.resource}</td>
-								<td>{resourceUsage.quantity}</td>
+								<td>
+									<p>{resourceUsage.service}</p>
+								</td>
+								<td>
+									<p>{resourceUsage.resource}</p>
+								</td>
+								<td>
+									<p>{resourceUsage.quantity}</p>
+								</td>
 							</tr>
 						);
 					})}
