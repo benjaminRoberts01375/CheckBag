@@ -29,7 +29,7 @@ const ResourceTable = ({ data, title }: ResourceTableProps) => {
 				<tbody>
 					{data.map(resourceUsage => {
 						return (
-							<tr>
+							<tr key={resourceUsage.service + resourceUsage.resource}>
 								<td>
 									<p>{resourceUsage.service}</p>
 								</td>
