@@ -2,12 +2,12 @@
 	display: flex;
 	margin: 10pt 10pt;
 	border-radius: 5pt;
+	overflow: hidden;
 }
 
 #container > button {
 	flex-grow: 1;
 	font-size: 15pt;
-	border-radius: 15%;
 	padding: 5pt 0pt;
 }
 
@@ -18,6 +18,10 @@
 .passive {
 	background: none;
 	color: white;
+}
+
+.passive:not(:first-child) {
+	border-left: 2pt solid #555;
 }
 
 .passive:hover {
