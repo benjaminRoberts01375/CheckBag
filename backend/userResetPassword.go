@@ -10,7 +10,7 @@ import (
 func userResetPassword(w http.ResponseWriter, r *http.Request) {
 	_, password, err := checkUserRequest[string](r)
 	if err != nil {
-		Coms.ExternalPostRespondCode(http.StatusInternalServerError, w)
+		Coms.ExternalPostRespondCode(http.StatusForbidden, w)
 		return
 	}
 	newPasswordHash, err := createPasswordHash(*password)
