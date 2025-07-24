@@ -156,7 +156,7 @@ const DashboardScreen = () => {
 
 	return (
 		<>
-			<AnimatedBackground />
+			<AnimatedBackground nodes={3} speed={0.5} />
 			<div id={servicesStyles["container"]}>
 				<div className={DashboardStyles["graph-group"]}>
 					<StackedBarChart
