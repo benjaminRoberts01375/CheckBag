@@ -85,33 +85,43 @@ const DashboardScreen = () => {
 			for (let i = 0; i < timeStepQuantity; i++) {
 				const date = rollback(-i);
 				var analytic = analyticsMap.get(date.toISOString());
-				// Save per-service query quantity data
 				graphData.push(new GraphData(analytic?.quantity ?? 0, service.title, date));
-				// Save error code data
 				if (analytic !== undefined) {
+					// Count response codes
 					analytic.responseCode.forEach((value, key) => {
 						responseCodesCounter.set(key, responseCodesCounter.get(key) ?? 0 + value);
 					});
+					// Count countries
 					analytic.country.forEach((value, key) => {
 						countryCounter.set(key, countryCounter.get(key) ?? 0 + value);
 					});
+					// Count IP addresses
 					analytic.ip.forEach((value, key) => {
 						ipCounter.set(key, ipCounter.get(key) ?? 0 + value);
 					});
 				}
 			}
+			// Create chart data for response codes
 			const responseCodes = Array.from(responseCodesCounter.entries()).map(([key, value]) => {
 				return new ChartData(value, String(key));
 			});
+			// Create chart data for countries
 			const countries = Array.from(countryCounter.entries()).map(([key, value]) => {
 				return new ChartData(value, key);
 			});
-			const IPs = Array.from(ipCounter.entries()).map(([key, value]) => {
+			// Create chart data for top 10 IP addresses and other
+			const IPs = Array.from(ipCounter.entries()).sort((a, b) => b[1] - a[1]);
+			const topIPs = IPs.slice(0, 10);
+			const otherIPsCount = IPs.slice(10).reduce((sum, current) => sum + current[1], 0);
+			const ipData = topIPs.map(([key, value]) => {
 				return new ChartData(value, key);
 			});
+			ipData.push(new ChartData(otherIPsCount, "Other"));
+
+			// Update state
 			setCountryCodeData(countries);
 			setResponseCodeData(responseCodes);
-			setIPAddressData(IPs);
+			setIPAddressData(ipData);
 		}
 		setQuantityData(graphData);
 	}, [timescale, services]);
@@ -127,7 +137,7 @@ const DashboardScreen = () => {
 			<div id={servicesStyles["pie-charts"]}>
 				<PieChartComponent data={responseCodeData} title="Response Codes" />
 				<PieChartComponent data={countryCodeData} title="Countries" />
-				<PieChartComponent data={IPAddressData} title="IP Addresses" />
+				<PieChartComponent data={IPAddressData} title="Top IP Addresses" />
 			</div>
 		</div>
 	);
