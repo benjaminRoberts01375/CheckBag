@@ -43,7 +43,7 @@ func servicesSet(w http.ResponseWriter, r *http.Request) {
 	_, newServiceLinks, err := checkUserRequest[ServiceLinks](r)
 	if err != nil {
 		Coms.PrintErrStr("Could not add service: " + err.Error())
-		Coms.ExternalPostRespondCode(http.StatusInternalServerError, w)
+		Coms.ExternalPostRespondCode(http.StatusForbidden, w)
 		return
 	}
 
