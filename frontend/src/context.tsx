@@ -82,6 +82,9 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 									break;
 							}
 						}
+						if (finalServices.length === 0) {
+							navigate("/dashboard/services");
+						}
 						return finalServices;
 					});
 				} catch (error) {
