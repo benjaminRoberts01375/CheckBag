@@ -20,6 +20,8 @@ const DashboardScreen = () => {
 	const [IPAddressData, setIPAddressData] = useState<ChartData[]>([]);
 	const [resourceUsage, setResourceUsage] = useState<ResourceUsageData[]>([]);
 
+	const [nodes, setNodes] = useState(services.length);
+
 	const theme = createTheme({
 		palette: {
 			mode: "light",
@@ -154,9 +156,13 @@ const DashboardScreen = () => {
 		setResourceUsage(resourceUsage.sort((a, b) => b.quantity - a.quantity));
 	}, [timescale, services]);
 
+	useEffect(() => {
+		setNodes(services.length);
+	}, [services]);
+
 	return (
 		<>
-			<AnimatedBackground nodes={3} speed={0.5} />
+			<AnimatedBackground nodes={nodes} speed={0.5} />
 			<div id={servicesStyles["container"]}>
 				<div className={DashboardStyles["graph-group"]}>
 					<StackedBarChart
