@@ -39,6 +39,10 @@ const AnimatedBackground = () => {
 		}
 	}, []);
 
+	useEffect(() => {
+		generatePaths();
+	}, [dimensions]);
+
 	// Generate random curved path that goes through center
 	function generatePath(startY: number, endY: number, width: number, height: number): string {
 		const startX = -50; // Start off-screen left
