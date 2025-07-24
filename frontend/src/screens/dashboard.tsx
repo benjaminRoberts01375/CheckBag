@@ -7,6 +7,7 @@ import ChartData from "../types/chart-data";
 import ResourceUsageData from "../types/resource-usage-data";
 import StackedBarChart from "../components/stacked-bar-chart";
 import PieChartComponent from "../components/pie-chart";
+import ResourceTable from "../components/resource-table";
 import { createTheme } from "@mui/material/styles";
 
 const DashboardScreen = () => {
@@ -165,6 +166,7 @@ const DashboardScreen = () => {
 				<PieChartComponent data={countryCodeData} title="Top Countries" theme={theme} />
 				<PieChartComponent data={IPAddressData} title="Top IP Addresses" theme={theme} />
 			</div>
+			<ResourceTable data={resourceUsage} title="Resource Usage" />
 		</div>
 	);
 };
