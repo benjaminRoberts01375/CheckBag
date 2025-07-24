@@ -8,12 +8,18 @@ import (
 )
 
 func newUser(w http.ResponseWriter, r *http.Request) {
-	userPassword, err := Coms.ExternalPostReceived[string](r)
+	userData, _ := fileSystem.GetUserData()
+	if userData != "" {
+		Coms.ExternalPostRespondCode(http.StatusForbidden, w)
+		return
+	}
+
+	newUserPassword, err := Coms.ExternalPostReceived[string](r)
 	if err != nil {
 		Coms.ExternalPostRespondCode(http.StatusBadRequest, w)
 		return
 	}
-	userPasswordHash, err := createPasswordHash(*userPassword)
+	userPasswordHash, err := createPasswordHash(*newUserPassword)
 	if err != nil {
 		Coms.ExternalPostRespondCode(http.StatusBadRequest, w)
 		return
