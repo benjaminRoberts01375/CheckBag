@@ -12,7 +12,13 @@ const PasswordScreen = ({ buttonText, passwordSubmit, error }: PasswordScreenPro
 	function onSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 		const formData = new FormData(event.currentTarget);
-		passwordSubmit(formData.get("password") as string);
+		const password = formData.get("password") as string;
+		if (password === undefined || password === "" || password === null) {
+			error = "Password cannot be empty";
+			return;
+		}
+		console.log("Password submitted: " + password);
+		passwordSubmit(password);
 	}
 
 	return (
@@ -24,7 +30,12 @@ const PasswordScreen = ({ buttonText, passwordSubmit, error }: PasswordScreenPro
 					</div>
 				</div>
 				<form onSubmit={onSubmit}>
-					<input placeholder="Password" type="password" id={PasswordStyles["field"]} />
+					<input
+						placeholder="Password"
+						type="password"
+						id={PasswordStyles["field"]}
+						name="password"
+					/>
 					<button type="submit" id={PasswordStyles["submit"]}>
 						{buttonText}
 					</button>
