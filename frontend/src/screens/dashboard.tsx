@@ -12,6 +12,7 @@ const DashboardScreen = () => {
 	const [quantityData, setQuantityData] = useState<GraphData[]>([]);
 	const [responseCodeData, setResponseCodeData] = useState<ChartData[]>([]);
 	const [countryCodeData, setCountryCodeData] = useState<ChartData[]>([]);
+	const [IPAddressData, setIPAddressData] = useState<ChartData[]>([]);
 
 	useEffect(() => {
 		requestServiceData();
@@ -80,6 +81,7 @@ const DashboardScreen = () => {
 
 			var responseCodesCounter = new Map<number, number>(); // Map of error codes to quantity
 			var countryCounter = new Map<string, number>(); // Map of countries to quantity
+			var ipCounter = new Map<string, number>(); // Map of IP addresses to quantity
 			for (let i = 0; i < timeStepQuantity; i++) {
 				const date = rollback(-i);
 				var analytic = analyticsMap.get(date.toISOString());
@@ -93,6 +95,9 @@ const DashboardScreen = () => {
 					analytic.country.forEach((value, key) => {
 						countryCounter.set(key, countryCounter.get(key) ?? 0 + value);
 					});
+					analytic.ip.forEach((value, key) => {
+						ipCounter.set(key, ipCounter.get(key) ?? 0 + value);
+					});
 				}
 			}
 			const responseCodes = Array.from(responseCodesCounter.entries()).map(([key, value]) => {
@@ -101,8 +106,12 @@ const DashboardScreen = () => {
 			const countries = Array.from(countryCounter.entries()).map(([key, value]) => {
 				return new ChartData(value, key);
 			});
+			const IPs = Array.from(ipCounter.entries()).map(([key, value]) => {
+				return new ChartData(value, key);
+			});
 			setCountryCodeData(countries);
 			setResponseCodeData(responseCodes);
+			setIPAddressData(IPs);
 		}
 		setQuantityData(graphData);
 	}, [timescale, services]);
@@ -118,6 +127,7 @@ const DashboardScreen = () => {
 			<div id={servicesStyles["pie-charts"]}>
 				<PieChartComponent data={responseCodeData} title="Response Codes" />
 				<PieChartComponent data={countryCodeData} title="Countries" />
+				<PieChartComponent data={IPAddressData} title="IP Addresses" />
 			</div>
 		</div>
 	);
