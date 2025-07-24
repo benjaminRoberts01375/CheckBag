@@ -2,22 +2,60 @@ import { useState, useEffect, useRef } from "react";
 import PasswordStyles from "./password.module.css";
 import { FormEvent } from "react";
 
-class PathData {
+// Normalized path data (using 0-1 coordinates)
+class NormalizedPathData {
 	id: number;
-	path: string;
+	startY: number;
+	endY: number;
+	cp1X: number;
+	cp1Y: number;
+	cp2X: number;
+	cp2Y: number;
 	duration: number;
 	delay: number;
 
-	constructor(id: number, path: string, duration: number, delay: number) {
+	constructor(
+		id: number,
+		startY: number,
+		endY: number,
+		cp1X: number,
+		cp1Y: number,
+		cp2X: number,
+		cp2Y: number,
+		duration: number,
+		delay: number,
+	) {
 		this.id = id;
-		this.path = path;
+		this.startY = startY;
+		this.endY = endY;
+		this.cp1X = cp1X;
+		this.cp1Y = cp1Y;
+		this.cp2X = cp2X;
+		this.cp2Y = cp2Y;
 		this.duration = duration;
 		this.delay = delay;
+	}
+
+	// Convert normalized coordinates to actual path string
+	toPath(width: number, height: number): string {
+		const startX = -50;
+		const endX = width + 50;
+		const centerY = height / 2;
+		const centerRadius = Math.min(width, height) * 0.2;
+
+		const actualStartY = this.startY * height;
+		const actualEndY = this.endY * height;
+		const actualCp1X = this.cp1X * width;
+		const actualCp1Y = centerY + (this.cp1Y - 0.5) * centerRadius;
+		const actualCp2X = this.cp2X * width;
+		const actualCp2Y = centerY + (this.cp2Y - 0.5) * centerRadius;
+
+		return `M ${startX} ${actualStartY} C ${actualCp1X} ${actualCp1Y}, ${actualCp2X} ${actualCp2Y}, ${endX} ${actualEndY}`;
 	}
 }
 
 const AnimatedBackground = () => {
-	const [paths, setPaths] = useState<PathData[]>([]);
+	const [normalizedPaths, setNormalizedPaths] = useState<NormalizedPathData[]>([]);
 	const svgRef = useRef(null);
 	const [dimensions, setDimensions] = useState({
 		width: window.innerWidth,
@@ -33,48 +71,37 @@ const AnimatedBackground = () => {
 		return () => window.removeEventListener("resize", handleResize);
 	}, []);
 
+	// Only generate paths once on mount
 	useEffect(() => {
-		if (paths.length === 0) {
-			generatePaths();
+		if (normalizedPaths.length === 0) {
+			generateNormalizedPaths();
 		}
-	}, []);
+	}, [normalizedPaths.length]);
 
-	useEffect(() => {
-		generatePaths();
-	}, [dimensions]);
-
-	// Generate random curved path that goes through center
-	function generatePath(startY: number, endY: number, width: number, height: number): string {
-		const startX = -50; // Start off-screen left
-		const endX = width + 50; // End off-screen right
-
-		// Define center area (roughly where login form is)
-		const centerY = height / 2;
-		const centerRadius = Math.min(width, height) * 0.2; // 20% of screen size
-
-		// First control point - guides path toward center from start
-		const cp1X = width * 0.3 + (Math.random() - 0.5) * width * 0.1;
-		const cp1Y = centerY + (Math.random() - 0.5) * centerRadius;
-
-		// Second control point - guides path away from center toward end
-		const cp2X = width * 0.7 + (Math.random() - 0.5) * width * 0.1;
-		const cp2Y = centerY + (Math.random() - 0.5) * centerRadius;
-
-		return `M ${startX} ${startY} C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${endX} ${endY}`;
-	}
-
-	// Generate multiple paths
-	function generatePaths(): void {
-		setPaths(() => {
+	// Generate normalized paths (only called once on mount)
+	function generateNormalizedPaths(): void {
+		setNormalizedPaths(() => {
 			return Array.from({ length: 10 }, (_, i) => {
-				const startY = Math.random() * dimensions.height;
-				const endY = Math.random() * dimensions.height;
-				return {
-					id: i,
-					path: generatePath(startY, endY, dimensions.width, dimensions.height),
-					duration: 8 + Math.random() * 4, // 8-12 seconds
-					delay: Math.random() * 5,
-				};
+				const startY = Math.random(); // 0-1
+				const endY = Math.random(); // 0-1
+
+				// Control points in normalized coordinates
+				const cp1X = 0.3 + (Math.random() - 0.5) * 0.1; // Around 30% with some variance
+				const cp1Y = Math.random(); // 0-1, will be adjusted relative to center
+				const cp2X = 0.7 + (Math.random() - 0.5) * 0.1; // Around 70% with some variance
+				const cp2Y = Math.random(); // 0-1, will be adjusted relative to center
+
+				return new NormalizedPathData(
+					i,
+					startY,
+					endY,
+					cp1X,
+					cp1Y,
+					cp2X,
+					cp2Y,
+					8 + Math.random() * 4, // 8-12 seconds
+					Math.random() * 5,
+				);
 			});
 		});
 	}
@@ -98,42 +125,45 @@ const AnimatedBackground = () => {
 					</filter>
 				</defs>
 
-				{paths.map(pathData => (
-					<g key={pathData.id}>
-						{/* Invisible path for animation */}
-						<path id={`path-${pathData.id}`} d={pathData.path} fill="none" stroke="none" />
+				{normalizedPaths.map(pathData => {
+					const actualPath = pathData.toPath(dimensions.width, dimensions.height);
+					return (
+						<g key={pathData.id}>
+							{/* Invisible path for animation */}
+							<path id={`path-${pathData.id}`} d={actualPath} fill="none" stroke="none" />
 
-						{/* Optional: visible path for debugging */}
-						<path
-							d={pathData.path}
-							fill="none"
-							stroke="rgba(255, 255, 255, 0.1)"
-							strokeWidth="1"
-							strokeDasharray="5,5"
-						/>
-
-						{/* Animated ball */}
-						<circle r="12" fill="#ffff00" filter="url(#glow)" opacity="0">
-							<animateMotion
-								dur={`${pathData.duration}s`}
-								begin={`${pathData.delay}s`}
-								repeatCount="indefinite"
-								rotate="auto"
-							>
-								<mpath href={`#path-${pathData.id}`} />
-							</animateMotion>
-
-							{/* Instant visibility animation */}
-							<animate
-								attributeName="opacity"
-								values="1"
-								dur={`${pathData.duration}s`}
-								begin={`${pathData.delay}s`}
-								repeatCount="indefinite"
+							{/* Optional: visible path for debugging */}
+							<path
+								d={actualPath}
+								fill="none"
+								stroke="rgba(255, 255, 255, 0.1)"
+								strokeWidth="1"
+								strokeDasharray="5,5"
 							/>
-						</circle>
-					</g>
-				))}
+
+							{/* Animated ball */}
+							<circle r="12" fill="#ffff00" filter="url(#glow)" opacity="0">
+								<animateMotion
+									dur={`${pathData.duration}s`}
+									begin={`${pathData.delay}s`}
+									repeatCount="indefinite"
+									rotate="auto"
+								>
+									<mpath href={`#path-${pathData.id}`} />
+								</animateMotion>
+
+								{/* Instant visibility animation */}
+								<animate
+									attributeName="opacity"
+									values="1"
+									dur={`${pathData.duration}s`}
+									begin={`${pathData.delay}s`}
+									repeatCount="indefinite"
+								/>
+							</circle>
+						</g>
+					);
+				})}
 			</svg>
 		</div>
 	);
