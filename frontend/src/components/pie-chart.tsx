@@ -23,19 +23,6 @@ const PieChartComponent = ({ data, title, theme }: PieChartProps) => {
 					]}
 					width={200}
 					height={200}
-					slotProps={{
-						tooltip: {
-							sx: {
-								maxWidth: "700pt",
-								minWidth: "50pt",
-								whiteSpace: "nowrap",
-								"& .MuiPaper-root": {
-									maxWidth: "700px",
-									minWidth: "100px",
-								},
-							},
-						},
-					}}
 				/>
 			</div>
 		</ThemeProvider>
