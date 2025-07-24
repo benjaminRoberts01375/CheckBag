@@ -2,7 +2,22 @@ import { useState, useEffect, useRef } from "react";
 import PasswordStyles from "./password.module.css";
 import { FormEvent } from "react";
 
+class PathData {
+	id: number;
+	path: string;
+	duration: number;
+	delay: number;
+
+	constructor(id: number, path: string, duration: number, delay: number) {
+		this.id = id;
+		this.path = path;
+		this.duration = duration;
+		this.delay = delay;
+	}
+}
+
 const AnimatedBackground = () => {
+	const [paths, setPaths] = useState<PathData[]>([]);
 	const svgRef = useRef(null);
 	const [dimensions, setDimensions] = useState({
 		width: window.innerWidth,
@@ -18,8 +33,14 @@ const AnimatedBackground = () => {
 		return () => window.removeEventListener("resize", handleResize);
 	}, []);
 
+	useEffect(() => {
+		if (paths.length === 0) {
+			generatePaths();
+		}
+	}, []);
+
 	// Generate random curved path that goes through center
-	const generatePath = (startY: number, endY: number, width: number, height: number): string => {
+	function generatePath(startY: number, endY: number, width: number, height: number): string {
 		const startX = -50; // Start off-screen left
 		const endX = width + 50; // End off-screen right
 
@@ -36,19 +57,23 @@ const AnimatedBackground = () => {
 		const cp2Y = centerY + (Math.random() - 0.5) * centerRadius;
 
 		return `M ${startX} ${startY} C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${endX} ${endY}`;
-	};
+	}
 
 	// Generate multiple paths
-	const paths = Array.from({ length: 10 }, (_, i) => {
-		const startY = Math.random() * dimensions.height;
-		const endY = Math.random() * dimensions.height;
-		return {
-			id: i,
-			path: generatePath(startY, endY, dimensions.width, dimensions.height),
-			duration: 8 + Math.random() * 4, // 8-12 seconds
-			delay: Math.random() * 5, // 0-5 seconds delay
-		};
-	});
+	function generatePaths(): void {
+		setPaths(() => {
+			return Array.from({ length: 10 }, (_, i) => {
+				const startY = Math.random() * dimensions.height;
+				const endY = Math.random() * dimensions.height;
+				return {
+					id: i,
+					path: generatePath(startY, endY, dimensions.width, dimensions.height),
+					duration: 8 + Math.random() * 4, // 8-12 seconds
+					delay: Math.random() * 5,
+				};
+			});
+		});
+	}
 
 	return (
 		<div className={PasswordStyles.backgroundContainer}>
