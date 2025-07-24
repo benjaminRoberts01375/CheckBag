@@ -7,7 +7,9 @@ const Dashboard = () => {
 	return (
 		<div id={DashboardStyles["dashboard-container"]}>
 			<Navbar />
-			<Outlet />
+			<div className={DashboardStyles["content-area"]}>
+				<Outlet />
+			</div>
 		</div>
 	);
 };

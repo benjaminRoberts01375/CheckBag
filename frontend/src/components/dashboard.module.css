@@ -2,3 +2,8 @@
 	display: flex;
 	flex-direction: row;
 }
+
+.content-area {
+	margin-left: 200pt;
+	flex-grow: 1;
+}
