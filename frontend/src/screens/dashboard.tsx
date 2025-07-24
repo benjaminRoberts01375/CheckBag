@@ -30,6 +30,9 @@ const DashboardScreen = () => {
 
 	useEffect(() => {
 		var graphData: GraphData[] = [];
+		var responseCodesCounter = new Map<number, number>(); // Map of error codes to quantity
+		var countryCounter = new Map<string, number>(); // Map of countries to quantity
+		var ipCounter = new Map<string, number>(); // Map of IP addresses to quantity
 
 		for (const service of services.filter(service => service.enabled)) {
 			var analyticsMap = service[timescale]; // Woo bracket notation
@@ -89,9 +92,6 @@ const DashboardScreen = () => {
 					break;
 			}
 
-			var responseCodesCounter = new Map<number, number>(); // Map of error codes to quantity
-			var countryCounter = new Map<string, number>(); // Map of countries to quantity
-			var ipCounter = new Map<string, number>(); // Map of IP addresses to quantity
 			for (let i = 0; i < timeStepQuantity; i++) {
 				const date = rollback(-i);
 				var analytic = analyticsMap.get(date.toISOString());
@@ -111,32 +111,32 @@ const DashboardScreen = () => {
 					});
 				}
 			}
-			// Create chart data for response codes
-			const responseCodes = Array.from(responseCodesCounter.entries()).map(([key, value]) => {
-				return new ChartData(value, String(key));
-			});
-			// Create chart data for countries
-			const countries = Array.from(countryCounter.entries()).sort((a, b) => b[1] - a[1]);
-			const topCountries = countries.slice(0, 10);
-			const otherCountriesCount = countries.slice(10).reduce((sum, current) => sum + current[1], 0);
-			const countryData = topCountries.map(([key, value]) => {
-				return new ChartData(value, key);
-			});
-			countryData.push(new ChartData(otherCountriesCount, "Other"));
-			// Create chart data for top 10 IP addresses and other
-			const IPs = Array.from(ipCounter.entries()).sort((a, b) => b[1] - a[1]);
-			const topIPs = IPs.slice(0, 10);
-			const otherIPsCount = IPs.slice(10).reduce((sum, current) => sum + current[1], 0);
-			const ipData = topIPs.map(([key, value]) => {
-				return new ChartData(value, key);
-			});
-			ipData.push(new ChartData(otherIPsCount, "Other"));
-
-			// Update state
-			setCountryCodeData(countryData);
-			setResponseCodeData(responseCodes);
-			setIPAddressData(ipData);
 		}
+		// Create chart data for response codes
+		const responseCodes = Array.from(responseCodesCounter.entries()).map(([key, value]) => {
+			return new ChartData(value, String(key));
+		});
+		// Create chart data for countries
+		const countries = Array.from(countryCounter.entries()).sort((a, b) => b[1] - a[1]);
+		const topCountries = countries.slice(0, 10);
+		const otherCountriesCount = countries.slice(10).reduce((sum, current) => sum + current[1], 0);
+		const countryData = topCountries.map(([key, value]) => {
+			return new ChartData(value, key);
+		});
+		countryData.push(new ChartData(otherCountriesCount, "Other"));
+		// Create chart data for top 10 IP addresses and other
+		const IPs = Array.from(ipCounter.entries()).sort((a, b) => b[1] - a[1]);
+		const topIPs = IPs.slice(0, 10);
+		const otherIPsCount = IPs.slice(10).reduce((sum, current) => sum + current[1], 0);
+		const ipData = topIPs.map(([key, value]) => {
+			return new ChartData(value, key);
+		});
+		ipData.push(new ChartData(otherIPsCount, "Other"));
+
+		// Update state
+		setCountryCodeData(countryData);
+		setResponseCodeData(responseCodes);
+		setIPAddressData(ipData);
 		setQuantityData(graphData);
 	}, [timescale, services]);
 
