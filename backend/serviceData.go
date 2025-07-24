@@ -28,7 +28,7 @@ func getServiceData(w http.ResponseWriter, r *http.Request) {
 	_, _, err := checkUserRequest[any](r)
 	if err != nil {
 		Coms.PrintErrStr("Could not verify user for analytic data: " + err.Error())
-		Coms.ExternalPostRespondCode(http.StatusInternalServerError, w)
+		Coms.ExternalPostRespondCode(http.StatusForbidden, w)
 		return
 	}
 	queryParams := r.URL.Query()
