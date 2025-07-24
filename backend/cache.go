@@ -254,6 +254,11 @@ func (cache *CacheClient[client]) getAnalyticsService(service ServiceData, timeS
 		if err != nil {
 			continue
 		}
+		responseCodesRaw, err := cache.raw.GetHash("Analytics:" + service.ID + ":" + quantity + ":" + timeStep.timeStr(-timePeriod) + ":response_code")
+		if err != nil {
+			continue
+		}
+
 		quantity, err := strconv.Atoi(quantityRaw)
 		if err != nil {
 			continue
@@ -279,12 +284,24 @@ func (cache *CacheClient[client]) getAnalyticsService(service ServiceData, timeS
 				continue
 			}
 		}
+		responseCodes := make(map[int]int)
+		for responseCode, responseCodeCount := range responseCodesRaw {
+			responseCodeInt, err := strconv.Atoi(responseCode)
+			if err != nil {
+				continue
+			}
+			responseCodes[responseCodeInt], err = strconv.Atoi(responseCodeCount)
+			if err != nil {
+				continue
+			}
+		}
 
 		analytics[timeStep.time(-timePeriod)] = Analytic{
-			Quantity: quantity,
-			Country:  country,
-			IP:       ip,
-			Resource: resource,
+			Quantity:     quantity,
+			Country:      country,
+			IP:           ip,
+			Resource:     resource,
+			ResponseCode: responseCodes,
 		}
 	}
 
