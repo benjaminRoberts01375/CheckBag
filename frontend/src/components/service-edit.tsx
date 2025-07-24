@@ -1,4 +1,5 @@
 import "../styles.css";
+import ServiceEditStyles from "./service-edit.module.css";
 import Service from "../types/service.tsx";
 import { useState } from "react";
 import { useList } from "../context-hook";
@@ -62,6 +63,7 @@ const ServiceEdit = ({ service }: ServiceAddScreenProps) => {
 					</button>
 				) : (
 					<button
+						className={`${ServiceEditStyles.submit} primary`}
 						onClick={() => createService()}
 						disabled={name === "" || internalAddress === "" || externalAddress[0] === ""}
 					>
