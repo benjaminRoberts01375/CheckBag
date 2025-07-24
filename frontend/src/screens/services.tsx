@@ -15,10 +15,18 @@ const ServicesScreen = () => {
 			<table id={servicesStyles["fancy-table"]}>
 				<thead>
 					<tr>
-						<th>Name</th>
-						<th>External Address</th>
-						<th>Internal Address</th>
-						<th>Actions</th>
+						<th>
+							<p>Name</p>
+						</th>
+						<th>
+							<p>External Address</p>
+						</th>
+						<th>
+							<p>Internal Address</p>
+						</th>
+						<th>
+							<p>Actions</p>
+						</th>
 					</tr>
 				</thead>
 				<tbody>
