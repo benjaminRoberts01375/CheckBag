@@ -116,9 +116,13 @@ const DashboardScreen = () => {
 				return new ChartData(value, String(key));
 			});
 			// Create chart data for countries
-			const countries = Array.from(countryCounter.entries()).map(([key, value]) => {
+			const countries = Array.from(countryCounter.entries()).sort((a, b) => b[1] - a[1]);
+			const topCountries = countries.slice(0, 10);
+			const otherCountriesCount = countries.slice(10).reduce((sum, current) => sum + current[1], 0);
+			const countryData = topCountries.map(([key, value]) => {
 				return new ChartData(value, key);
 			});
+			countryData.push(new ChartData(otherCountriesCount, "Other"));
 			// Create chart data for top 10 IP addresses and other
 			const IPs = Array.from(ipCounter.entries()).sort((a, b) => b[1] - a[1]);
 			const topIPs = IPs.slice(0, 10);
@@ -129,7 +133,7 @@ const DashboardScreen = () => {
 			ipData.push(new ChartData(otherIPsCount, "Other"));
 
 			// Update state
-			setCountryCodeData(countries);
+			setCountryCodeData(countryData);
 			setResponseCodeData(responseCodes);
 			setIPAddressData(ipData);
 		}
@@ -147,7 +151,7 @@ const DashboardScreen = () => {
 			/>
 			<div id={servicesStyles["pie-charts"]}>
 				<PieChartComponent data={responseCodeData} title="Response Codes" theme={theme} />
-				<PieChartComponent data={countryCodeData} title="Countries" theme={theme} />
+				<PieChartComponent data={countryCodeData} title="Top Countries" theme={theme} />
 				<PieChartComponent data={IPAddressData} title="Top IP Addresses" theme={theme} />
 			</div>
 		</div>
