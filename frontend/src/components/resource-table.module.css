@@ -1,0 +1,24 @@
+.styled-table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.styled-table td {
+	border: 1px solid #111;
+	padding: 8px;
+	text-align: left;
+}
+
+.styled-table th {
+	border: 1px solid #111;
+	font-weight: bold;
+	padding: 8pt;
+}
+
+.styled-table tbody tr:nth-child(odd) {
+	background-color: #222a;
+}
+
+.styled-table tbody tr:hover {
+	background-color: #333a;
+}

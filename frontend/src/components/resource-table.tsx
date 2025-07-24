@@ -1,5 +1,6 @@
 import "../styles.css";
 import GraphStyles from "./graphs.module.css";
+import ResourceTableStyles from "./resource-table.module.css";
 import ResourceUsageData from "../types/resource-usage-data";
 
 interface ResourceTableProps {
@@ -11,7 +12,7 @@ const ResourceTable = ({ data, title }: ResourceTableProps) => {
 	return (
 		<div id={GraphStyles["container"]}>
 			<h2 className={GraphStyles["header"]}>{title}</h2>
-			<table>
+			<table className={ResourceTableStyles["styled-table"]}>
 				<thead>
 					<tr>
 						<th>
