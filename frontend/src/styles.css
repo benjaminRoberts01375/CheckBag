@@ -63,15 +63,3 @@ button:disabled {
 	opacity: 50%;
 	cursor: not-allowed;
 }
-
-tr {
-	display: flex;
-}
-td,
-th {
-	flex: 1;
-}
-
-th {
-	text-align: left;
-}
