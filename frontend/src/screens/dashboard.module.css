@@ -1,6 +1,7 @@
 .graph-group {
 	margin: 0pt 20pt 20pt 20pt;
-	background: #343031;
+	background: #343031dd;
+	backdrop-filter: blur(10pt);
 	padding: 0pt 20pt 20pt 20pt;
 	border-radius: 10pt;
 
