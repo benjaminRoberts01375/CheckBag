@@ -9,12 +9,3 @@
 #fancy-table {
 	width: 100%;
 }
-
-#pie-charts {
-	display: flex;
-	flex-direction: row;
-}
-
-#pie-charts > * {
-	flex-grow: 1;
-}

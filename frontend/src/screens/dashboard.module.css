@@ -13,3 +13,12 @@
 	box-shadow: 0pt 0pt 10pt #000a;
 	transition-duration: 0.5s;
 }
+
+#pie-charts {
+	display: flex;
+	flex-direction: row;
+}
+
+#pie-charts > * {
+	flex-grow: 1;
+}

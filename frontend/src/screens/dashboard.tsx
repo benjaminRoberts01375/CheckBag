@@ -173,7 +173,7 @@ const DashboardScreen = () => {
 						theme={theme}
 					/>
 				</div>
-				<div id={servicesStyles["pie-charts"]} className={DashboardStyles["graph-group"]}>
+				<div id={DashboardStyles["pie-charts"]} className={DashboardStyles["graph-group"]}>
 					<PieChartComponent data={responseCodeData} title="Response Codes" theme={theme} />
 					<PieChartComponent data={countryCodeData} title="Top Countries" theme={theme} />
 					<PieChartComponent data={IPAddressData} title="Top IP Addresses" theme={theme} />
