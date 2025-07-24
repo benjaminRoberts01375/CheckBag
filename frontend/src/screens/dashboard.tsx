@@ -3,11 +3,13 @@ import servicesStyles from "./services.module.css";
 import { useList } from "../context-hook";
 import { useEffect, useState } from "react";
 import GraphData from "../types/graph-data";
+import ChartData from "../types/chart-data";
 import StackedBarChart from "../components/stacked-bar-chart";
 
 const DashboardScreen = () => {
 	const { services, requestServiceData, timescale } = useList();
 	const [quantityData, setQuantityData] = useState<GraphData[]>([]);
+	const [responseCodeData, setResponseCodeData] = useState<ChartData[]>([]);
 
 	useEffect(() => {
 		requestServiceData();
@@ -74,11 +76,23 @@ const DashboardScreen = () => {
 					break;
 			}
 
+			var responseCodesCounter = new Map<number, number>(); // Map of error codes to quantity
 			for (let i = 0; i < timeStepQuantity; i++) {
 				const date = rollback(-i);
 				var analytic = analyticsMap.get(date.toISOString());
+				// Save per-service query quantity data
 				graphData.push(new GraphData(analytic?.quantity ?? 0, service.title, date));
+				// Save error code data
+				if (analytic !== undefined) {
+					analytic.responseCode.forEach((value, key) => {
+						responseCodesCounter.set(key, responseCodesCounter.get(key) ?? 0 + value);
+					});
+				}
 			}
+			const responseCodes = Array.from(responseCodesCounter.entries()).map(([key, value]) => {
+				return new ChartData(value, String(key));
+			});
+			setResponseCodeData(responseCodes);
 		}
 		setQuantityData(graphData);
 	}, [timescale, services]);
