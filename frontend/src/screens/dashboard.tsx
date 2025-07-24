@@ -6,6 +6,7 @@ import GraphData from "../types/graph-data";
 import ChartData from "../types/chart-data";
 import StackedBarChart from "../components/stacked-bar-chart";
 import PieChartComponent from "../components/pie-chart";
+import { createTheme } from "@mui/material/styles";
 
 const DashboardScreen = () => {
 	const { services, requestServiceData, timescale } = useList();
@@ -13,6 +14,15 @@ const DashboardScreen = () => {
 	const [responseCodeData, setResponseCodeData] = useState<ChartData[]>([]);
 	const [countryCodeData, setCountryCodeData] = useState<ChartData[]>([]);
 	const [IPAddressData, setIPAddressData] = useState<ChartData[]>([]);
+
+	const darkTheme = createTheme({
+		palette: {
+			mode: "dark",
+			text: {
+				primary: "#aaa",
+			},
+		},
+	});
 
 	useEffect(() => {
 		requestServiceData();
@@ -133,6 +143,7 @@ const DashboardScreen = () => {
 				timescale={timescale}
 				yAxisLabel="Query Quantity"
 				title="Query Quantity Per Service"
+				theme={darkTheme}
 			/>
 			<div id={servicesStyles["pie-charts"]}>
 				<PieChartComponent data={responseCodeData} title="Response Codes" />
