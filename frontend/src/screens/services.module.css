@@ -1,6 +1,9 @@
 #container {
-	width: 100%;
+	max-width: 1000pt;
 	height: 100%;
+	margin: 0pt auto;
+	padding: 10pt 20pt;
+	background: #343031;
 }
 
 #fancy-table {
