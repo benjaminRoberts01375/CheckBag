@@ -1,5 +1,6 @@
 import "../styles.css";
 import servicesStyles from "./services.module.css";
+import DashboardStyles from "./dashboard.module.css";
 import { useList } from "../context-hook";
 import { useEffect, useState } from "react";
 import GraphData from "../types/graph-data";
@@ -154,19 +155,23 @@ const DashboardScreen = () => {
 
 	return (
 		<div id={servicesStyles["container"]}>
-			<StackedBarChart
-				graphData={quantityData}
-				timescale={timescale}
-				yAxisLabel="Query Quantity"
-				title="Query Quantity Per Service"
-				theme={theme}
-			/>
-			<div id={servicesStyles["pie-charts"]}>
+			<div className={DashboardStyles["graph-group"]}>
+				<StackedBarChart
+					graphData={quantityData}
+					timescale={timescale}
+					yAxisLabel="Query Quantity"
+					title="Query Quantity Per Service"
+					theme={theme}
+				/>
+			</div>
+			<div id={servicesStyles["pie-charts"]} className={DashboardStyles["graph-group"]}>
 				<PieChartComponent data={responseCodeData} title="Response Codes" theme={theme} />
 				<PieChartComponent data={countryCodeData} title="Top Countries" theme={theme} />
 				<PieChartComponent data={IPAddressData} title="Top IP Addresses" theme={theme} />
 			</div>
-			<ResourceTable data={resourceUsage} title="Resource Usage" />
+			<div className={DashboardStyles["graph-group"]}>
+				<ResourceTable data={resourceUsage} title="Resource Usage" />
+			</div>
 		</div>
 	);
 };
