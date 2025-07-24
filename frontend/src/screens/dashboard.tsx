@@ -15,9 +15,9 @@ const DashboardScreen = () => {
 	const [countryCodeData, setCountryCodeData] = useState<ChartData[]>([]);
 	const [IPAddressData, setIPAddressData] = useState<ChartData[]>([]);
 
-	const darkTheme = createTheme({
+	const theme = createTheme({
 		palette: {
-			mode: "dark",
+			mode: "light",
 			text: {
 				primary: "#aaa",
 			},
