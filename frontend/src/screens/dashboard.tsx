@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import GraphData from "../types/graph-data";
 import ChartData from "../types/chart-data";
 import StackedBarChart from "../components/stacked-bar-chart";
+import PieChartComponent from "../components/pie-chart";
 
 const DashboardScreen = () => {
 	const { services, requestServiceData, timescale } = useList();
@@ -105,6 +106,7 @@ const DashboardScreen = () => {
 				yAxisLabel="Query Quantity"
 				title="Query Quantity Per Service"
 			/>
+			<PieChartComponent data={responseCodeData} title="Response Codes" />
 		</div>
 	);
 };
