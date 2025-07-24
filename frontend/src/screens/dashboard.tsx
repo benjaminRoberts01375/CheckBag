@@ -4,6 +4,7 @@ import { useList } from "../context-hook";
 import { useEffect, useState } from "react";
 import GraphData from "../types/graph-data";
 import ChartData from "../types/chart-data";
+import ResourceUsageData from "../types/resource-usage-data";
 import StackedBarChart from "../components/stacked-bar-chart";
 import PieChartComponent from "../components/pie-chart";
 import { createTheme } from "@mui/material/styles";
@@ -14,6 +15,7 @@ const DashboardScreen = () => {
 	const [responseCodeData, setResponseCodeData] = useState<ChartData[]>([]);
 	const [countryCodeData, setCountryCodeData] = useState<ChartData[]>([]);
 	const [IPAddressData, setIPAddressData] = useState<ChartData[]>([]);
+	const [resourceUsage, setResourceUsage] = useState<ResourceUsageData[]>([]);
 
 	const theme = createTheme({
 		palette: {
@@ -33,6 +35,7 @@ const DashboardScreen = () => {
 		var responseCodesCounter = new Map<number, number>(); // Map of error codes to quantity
 		var countryCounter = new Map<string, number>(); // Map of countries to quantity
 		var ipCounter = new Map<string, number>(); // Map of IP addresses to quantity
+		var resourceUsage = new Array<ResourceUsageData>();
 
 		for (const service of services.filter(service => service.enabled)) {
 			var analyticsMap = service[timescale]; // Woo bracket notation
@@ -91,7 +94,7 @@ const DashboardScreen = () => {
 					timeStepQuantity = 12;
 					break;
 			}
-
+			const usedResource = new Map<string, number>();
 			for (let i = 0; i < timeStepQuantity; i++) {
 				const date = rollback(-i);
 				var analytic = analyticsMap.get(date.toISOString());
@@ -109,8 +112,15 @@ const DashboardScreen = () => {
 					analytic.ip.forEach((value, key) => {
 						ipCounter.set(key, ipCounter.get(key) ?? 0 + value);
 					});
+					// Count resources
+					analytic.resource.forEach((value, key) => {
+						usedResource.set(key, usedResource.get(key) ?? 0 + value);
+					});
 				}
 			}
+			usedResource.forEach((value, key) => {
+				resourceUsage.push(new ResourceUsageData(service.title, key, value));
+			});
 		}
 		// Create chart data for response codes
 		const responseCodes = Array.from(responseCodesCounter.entries()).map(([key, value]) => {
@@ -138,6 +148,7 @@ const DashboardScreen = () => {
 		setResponseCodeData(responseCodes);
 		setIPAddressData(ipData);
 		setQuantityData(graphData);
+		setResourceUsage(resourceUsage.sort((a, b) => b.quantity - a.quantity));
 	}, [timescale, services]);
 
 	return (
