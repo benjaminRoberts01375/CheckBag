@@ -10,7 +10,7 @@ class NormalizedPathData {
 	cp1Y: number;
 	cp2X: number;
 	cp2Y: number;
-	duration: number;
+	baseDuration: number; // Base duration before speed adjustment
 	delay: number;
 
 	constructor(
@@ -21,7 +21,7 @@ class NormalizedPathData {
 		cp1Y: number,
 		cp2X: number,
 		cp2Y: number,
-		duration: number,
+		baseDuration: number,
 		delay: number,
 	) {
 		this.id = id;
@@ -31,8 +31,13 @@ class NormalizedPathData {
 		this.cp1Y = cp1Y;
 		this.cp2X = cp2X;
 		this.cp2Y = cp2Y;
-		this.duration = duration;
+		this.baseDuration = baseDuration;
 		this.delay = delay;
+	}
+
+	// Get actual duration based on speed multiplier
+	getDuration(speed: number): number {
+		return this.baseDuration / speed;
 	}
 
 	// Convert normalized coordinates to actual path string
@@ -53,7 +58,12 @@ class NormalizedPathData {
 	}
 }
 
-const AnimatedBackground = () => {
+interface AnimatedBackgroundProps {
+	nodes: number;
+	speed: number; // Now actually used! 1.0 = normal speed, 2.0 = twice as fast, 0.5 = half speed
+}
+
+const AnimatedBackground = ({ nodes, speed }: AnimatedBackgroundProps) => {
 	const [normalizedPaths, setNormalizedPaths] = useState<NormalizedPathData[]>([]);
 	const svgRef = useRef(null);
 	const [dimensions, setDimensions] = useState({
@@ -80,7 +90,7 @@ const AnimatedBackground = () => {
 	// Generate normalized paths (only called once on mount)
 	function generateNormalizedPaths(): void {
 		setNormalizedPaths(() => {
-			return Array.from({ length: 10 }, (_, i) => {
+			return Array.from({ length: nodes }, (_, i) => {
 				const startY = Math.random(); // 0-1
 				const endY = Math.random(); // 0-1
 
@@ -98,7 +108,7 @@ const AnimatedBackground = () => {
 					cp1Y,
 					cp2X,
 					cp2Y,
-					8 + Math.random() * 4, // 8-12 seconds
+					8 + Math.random() * 4, // Base duration: 8-12 seconds
 					Math.random() * 5,
 				);
 			});
@@ -126,6 +136,8 @@ const AnimatedBackground = () => {
 
 				{normalizedPaths.map(pathData => {
 					const actualPath = pathData.toPath(dimensions.width, dimensions.height);
+					const actualDuration = pathData.getDuration(speed);
+
 					return (
 						<g key={pathData.id}>
 							{/* Invisible path for animation */}
@@ -143,7 +155,7 @@ const AnimatedBackground = () => {
 							{/* Animated ball */}
 							<circle r="12" fill="#ffff00" filter="url(#glow)" opacity="0">
 								<animateMotion
-									dur={`${pathData.duration}s`}
+									dur={`${actualDuration}s`}
 									begin={`${pathData.delay}s`}
 									repeatCount="indefinite"
 									rotate="auto"
@@ -155,7 +167,7 @@ const AnimatedBackground = () => {
 								<animate
 									attributeName="opacity"
 									values="1"
-									dur={`${pathData.duration}s`}
+									dur={`${actualDuration}s`}
 									begin={`${pathData.delay}s`}
 									repeatCount="indefinite"
 								/>
