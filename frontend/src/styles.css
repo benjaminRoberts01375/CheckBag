@@ -56,7 +56,7 @@ h4,
 h5,
 h6,
 button {
-	color: white;
+	color: #ccc;
 }
 
 button:disabled {
