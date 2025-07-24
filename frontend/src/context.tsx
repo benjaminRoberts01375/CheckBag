@@ -3,6 +3,7 @@ import { Context, ContextType } from "./context-object";
 import { useState } from "react";
 import Service from "./types/service.tsx";
 import { CookieKeys, Timescale } from "./types/strings";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
 	children: ReactNode;
@@ -11,6 +12,7 @@ interface Props {
 export const ContextProvider: React.FC<Props> = ({ children }) => {
 	const [services, setServices] = useState<Service[]>(new Array<Service>());
 	const [timescale, setTimescale] = useState<Timescale>("hour"); // TODO: I'm not a huge fan of this being here, but I'm short on time
+	const navigate = useNavigate();
 
 	function cookieGet(key: CookieKeys): string | undefined {
 		const cookieString = document.cookie.split("; ").find(cookie => cookie.startsWith(`${key}=`));
@@ -41,7 +43,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 					});
 
 					if (!response.ok) {
-						throw new Error("Failed to fetch initial data");
+						throw new Error("Failed to fetch initial data:" + response.status);
 					}
 					const newServices: Service[] = (await response.json()).map((serviceData: any) =>
 						Service.fromJSON(serviceData),
@@ -84,6 +86,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 					});
 				} catch (error) {
 					console.error("Error fetching initial data:", error);
+					navigate("/signin");
 				}
 			})();
 		});
