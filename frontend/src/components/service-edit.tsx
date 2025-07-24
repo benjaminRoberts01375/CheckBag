@@ -25,6 +25,14 @@ const ServiceEdit = ({ service }: ServiceAddScreenProps) => {
 		setExternalAddress([""]);
 	}
 
+	function deleteService() {
+		console.log("Deleting service");
+	}
+
+	function updateService() {
+		console.log("Updating service");
+	}
+
 	return (
 		<tr>
 			<td>
@@ -53,14 +61,26 @@ const ServiceEdit = ({ service }: ServiceAddScreenProps) => {
 			</td>
 			<td>
 				{service ? (
-					<button
-						onClick={() => {
-							console.log("Service exists");
-						}}
-						title={"ClientID: " + service.clientID + ", ID: " + service.id}
-					>
-						Exists
-					</button>
+					<>
+						<button
+							onClick={() => updateService()}
+							title={"ClientID: " + service.clientID + ", ID: " + service.id}
+							className={`${ServiceEditStyles.submit} primary`}
+							disabled={
+								name === service.title &&
+								internalAddress === service.internal_address &&
+								externalAddress[0] === service.external_address[0]
+							}
+						>
+							Update
+						</button>
+						<button
+							className={`${ServiceEditStyles.delete} primary`}
+							onClick={() => deleteService()}
+						>
+							Delete
+						</button>
+					</>
 				) : (
 					<button
 						className={`${ServiceEditStyles.submit} primary`}
