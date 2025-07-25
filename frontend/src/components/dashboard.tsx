@@ -9,17 +9,32 @@ import { useEffect, useState } from "react";
 const Dashboard = () => {
 	const { services } = useList();
 	const [nodes, setNodes] = useState(services.length);
+	const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 884); // Initialize with current width
 
 	useEffect(() => {
 		console.log("Updating nodes to " + services.length);
 		setNodes(services.length);
 	}, [services]);
 
+	// Check window size for mobile view
+	useEffect(() => {
+		const handleResize = () => {
+			setIsMobileView(window.innerWidth <= 884);
+		};
+
+		window.addEventListener("resize", handleResize);
+
+		// Cleanup
+		return () => {
+			window.removeEventListener("resize", handleResize);
+		};
+	}, []);
+
 	return (
 		<>
 			<AnimatedBackground nodes={nodes} speed={0.5} />
 			<div id={DashboardStyles["dashboard-container"]}>
-				<Navbar />
+				<Navbar isMobileView={isMobileView} />
 				<div className={DashboardStyles["content-area"]}>
 					<Outlet />
 				</div>
