@@ -42,18 +42,19 @@ const ServiceEdit = ({ service }: ServiceAddScreenProps) => {
 				onChange={e => setName(e.target.value)}
 				className={ServiceEditStyles["input"]}
 			/>
-			<input
-				type="text"
-				placeholder="Internal IP Address"
-				value={internalAddress}
-				onChange={e => setInternalAddress(e.target.value)}
-				className={ServiceEditStyles["input"]}
-			/>
+
 			<input
 				type="text"
 				placeholder="External Address"
 				value={externalAddress}
 				onChange={e => setExternalAddress([e.target.value])}
+				className={ServiceEditStyles["input"]}
+			/>
+			<input
+				type="text"
+				placeholder="Internal IP Address"
+				value={internalAddress}
+				onChange={e => setInternalAddress(e.target.value)}
 				className={ServiceEditStyles["input"]}
 			/>
 			<div id={ServiceEditStyles["buttons"]}>
