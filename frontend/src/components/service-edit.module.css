@@ -1,5 +1,28 @@
+#input-container {
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+	background: #464142aa;
+	margin: 3pt;
+	padding: 3pt;
+	border-radius: 5pt;
+	max-width: 220pt;
+	min-width: 110pt;
+}
+
+#buttons {
+	display: flex;
+	flex-wrap: nowrap;
+	gap: 5pt;
+	margin: 3pt;
+}
+
 .delete {
 	background: red;
+}
+
+.delete:hover {
+	background: #f99;
 }
 
 .submit,
@@ -8,8 +31,7 @@
 	padding: 5pt;
 	font-size: 12pt;
 	border-radius: 6pt;
-	min-width: 40pt;
-	margin-right: 10pt;
+	width: 100%;
 }
 
 .input {
@@ -19,6 +41,8 @@
 	border: none;
 	border-radius: 5pt;
 	transition-duration: 0.5s;
+	flex: 1;
+	margin: 3pt;
 }
 
 .input:hover {
