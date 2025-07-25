@@ -22,7 +22,7 @@ const PasswordScreen = ({ buttonText, passwordSubmit, error }: PasswordScreenPro
 
 	return (
 		<>
-			<AnimatedBackground nodes={10} speed={10.0} />
+			<AnimatedBackground nodes={10} speed={0.8} />
 			<div id={PasswordStyles["container"]}>
 				<div id={PasswordStyles["wrapper"]}>
 					<div id={PasswordStyles["logo"]}>
