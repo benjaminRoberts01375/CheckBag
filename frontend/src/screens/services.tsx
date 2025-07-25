@@ -18,30 +18,12 @@ const ServicesScreen = () => {
 			<div id={servicesStyles["container"]}>
 				<div className={DashboardStyles["graph-group"]}>
 					<h2 id={servicesStyles["title"]}>Services</h2>
-					<table id={servicesStyles["fancy-table"]}>
-						<thead>
-							<tr>
-								<th>
-									<p>Name</p>
-								</th>
-								<th>
-									<p>External Address</p>
-								</th>
-								<th>
-									<p>Internal Address</p>
-								</th>
-								<th>
-									<p>Actions</p>
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{services.map(service => (
-								<ServiceEdit service={service} key={service.clientID} />
-							))}
-							<ServiceEdit service={undefined} key={"new"} />
-						</tbody>
-					</table>
+					<div id={servicesStyles["services"]}>
+						{services.map(service => (
+							<ServiceEdit service={service} key={service.clientID} />
+						))}
+						<ServiceEdit service={undefined} key={"new"} />
+					</div>
 				</div>
 			</div>
 		</>

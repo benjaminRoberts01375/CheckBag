@@ -5,16 +5,7 @@
 	padding: 10pt 20pt;
 }
 
-#title {
-	padding: 10pt 0pt;
-	width: 100%;
-	text-align: center;
-}
-
-#fancy-table {
-	width: 100%;
-}
-
-#fancy-table > thead > tr > th > p {
-	text-align: start;
+#services {
+	display: flex;
+	flex-wrap: wrap;
 }
