@@ -10,6 +10,7 @@ interface IPAddressProps {
 
 const AnimatedIPAddress = ({ duration, waitTime }: IPAddressProps) => {
 	const [ip, setIp] = useState([192, 168, 1, 1]);
+	const [port, setPort] = useState(8080);
 	const intervalRef = useRef<NodeJS.Timeout | null>(null);
 	const animationRef = useRef<number | null>(null);
 
@@ -22,13 +23,19 @@ const AnimatedIPAddress = ({ duration, waitTime }: IPAddressProps) => {
 		];
 	}
 
-	function animateToNewIP(newIP: number[]) {
+	function generateRandomPort(): number {
+		// Generate ports in common ranges: 80-10000
+		return Math.floor(Math.random() * 9920) + 80;
+	}
+
+	function animateToNewIP(newIP: number[], newPort: number) {
 		// Cancel any existing animation
 		if (animationRef.current) {
 			cancelAnimationFrame(animationRef.current);
 		}
 
 		const startIP = [...ip];
+		const startPort = port;
 		const startTime = Date.now();
 
 		const animate = () => {
@@ -45,7 +52,10 @@ const AnimatedIPAddress = ({ duration, waitTime }: IPAddressProps) => {
 				return current;
 			});
 
+			const currentPort = Math.round(startPort + (newPort - startPort) * easedProgress);
+
 			setIp(currentIP);
+			setPort(currentPort);
 
 			if (progress < 1) {
 				animationRef.current = requestAnimationFrame(animate);
@@ -59,11 +69,11 @@ const AnimatedIPAddress = ({ duration, waitTime }: IPAddressProps) => {
 
 	useEffect(() => {
 		// Start the first animation immediately
-		animateToNewIP(generateRandomIP());
+		animateToNewIP(generateRandomIP(), generateRandomPort());
 
 		// Then start the interval for subsequent animations
 		intervalRef.current = setInterval(() => {
-			animateToNewIP(generateRandomIP());
+			animateToNewIP(generateRandomIP(), generateRandomPort());
 		}, waitTime);
 
 		// Cleanup on unmount
@@ -79,7 +89,9 @@ const AnimatedIPAddress = ({ duration, waitTime }: IPAddressProps) => {
 
 	return (
 		<div>
-			<h1 id={PasswordStyles["IPAddress"]}>{ip.join(".")}</h1>
+			<h1 id={PasswordStyles["IPAddress"]}>
+				{ip.join(".")}:{port}
+			</h1>
 		</div>
 	);
 };
@@ -109,8 +121,10 @@ const PasswordScreen = ({ buttonText, passwordSubmit, error }: PasswordScreenPro
 				<div id={PasswordStyles["wrapper"]}>
 					<div id={PasswordStyles["logoWrapper"]}>
 						<img src={logo} alt="CheckBag Logo" draggable={false} />
+						<div id={PasswordStyles["ipOverlay"]}>
+							<AnimatedIPAddress duration={1000} waitTime={5000} />
+						</div>
 						<p>Know your network inside and out</p>
-						<AnimatedIPAddress duration={1000} waitTime={5000} />
 					</div>
 					<form onSubmit={onSubmit}>
 						<input
