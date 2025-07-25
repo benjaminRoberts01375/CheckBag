@@ -135,7 +135,9 @@ const DashboardScreen = () => {
 		const countryData = topCountries.map(([key, value]) => {
 			return new ChartData(value, key);
 		});
-		countryData.push(new ChartData(otherCountriesCount, "Other"));
+		if (otherCountriesCount > 0) {
+			countryData.push(new ChartData(otherCountriesCount, "Other"));
+		}
 		// Create chart data for top 10 IP addresses and other
 		const IPs = Array.from(ipCounter.entries()).sort((a, b) => b[1] - a[1]);
 		const topIPs = IPs.slice(0, 10);
@@ -143,7 +145,9 @@ const DashboardScreen = () => {
 		const ipData = topIPs.map(([key, value]) => {
 			return new ChartData(value, key);
 		});
-		ipData.push(new ChartData(otherIPsCount, "Other"));
+		if (otherIPsCount > 0) {
+			ipData.push(new ChartData(otherIPsCount, "Other"));
+		}
 
 		// Update state
 		setCountryCodeData(countryData);
