@@ -26,16 +26,19 @@ const PasswordScreen = ({ buttonText, passwordSubmit, error }: PasswordScreenPro
 			<AnimatedBackground nodes={10} speed={0.8} />
 			<div id={PasswordStyles["container"]}>
 				<div id={PasswordStyles["wrapper"]}>
-					<img src={logo} alt="CheckBag Logo" id={PasswordStyles["logo"]} draggable={false} />
+					<div id={PasswordStyles["logoWrapper"]}>
+						<img src={logo} alt="CheckBag Logo" draggable={false} />
+						<p>Know your network inside and out</p>
+					</div>
 					<form onSubmit={onSubmit}>
 						<input
-							placeholder="Password"
+							placeholder="Enter your password"
 							type="password"
 							id={PasswordStyles["field"]}
 							name="password"
 						/>
 						<button type="submit" id={PasswordStyles["submit"]} className="primary">
-							{buttonText}
+							<p id={PasswordStyles["submit-text"]}>{buttonText}</p>
 						</button>
 						{error !== "" ? <p id={PasswordStyles["error"]}>{error}</p> : null}
 					</form>
