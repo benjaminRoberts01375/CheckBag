@@ -1,7 +1,88 @@
 import logo from "../assets/CheckBag.svg";
 import PasswordStyles from "./password.module.css";
-import { FormEvent } from "react";
+import { FormEvent, useState, useRef, useEffect } from "react";
 import AnimatedBackground from "./animated-background";
+
+interface IPAddressProps {
+	duration: number;
+	waitTime: number;
+}
+
+const AnimatedIPAddress = ({ duration, waitTime }: IPAddressProps) => {
+	const [ip, setIp] = useState([192, 168, 1, 1]);
+	const intervalRef = useRef<NodeJS.Timeout | null>(null);
+	const animationRef = useRef<number | null>(null);
+
+	function generateRandomIP(): number[] {
+		return [
+			Math.floor(Math.random() * 256),
+			Math.floor(Math.random() * 256),
+			Math.floor(Math.random() * 256),
+			Math.floor(Math.random() * 256),
+		];
+	}
+
+	function animateToNewIP(newIP: number[]) {
+		// Cancel any existing animation
+		if (animationRef.current) {
+			cancelAnimationFrame(animationRef.current);
+		}
+
+		const startIP = [...ip];
+		const startTime = Date.now();
+
+		const animate = () => {
+			const elapsed = Date.now() - startTime;
+			const progress = Math.min(elapsed / duration, 1);
+
+			// Easing function for smooth animation
+			const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+			const easedProgress = easeOutCubic(progress);
+
+			const currentIP = startIP.map((start, index) => {
+				const end = newIP[index];
+				const current = Math.round(start + (end - start) * easedProgress);
+				return current;
+			});
+
+			setIp(currentIP);
+
+			if (progress < 1) {
+				animationRef.current = requestAnimationFrame(animate);
+			} else {
+				animationRef.current = null;
+			}
+		};
+
+		animationRef.current = requestAnimationFrame(animate);
+	}
+
+	useEffect(() => {
+		// Start the first animation immediately
+		animateToNewIP(generateRandomIP());
+
+		// Then start the interval for subsequent animations
+		intervalRef.current = setInterval(() => {
+			animateToNewIP(generateRandomIP());
+		}, waitTime);
+
+		// Cleanup on unmount
+		return () => {
+			if (intervalRef.current) {
+				clearInterval(intervalRef.current);
+			}
+			if (animationRef.current) {
+				cancelAnimationFrame(animationRef.current);
+			}
+		};
+	}, []);
+
+	return (
+		<div>
+			<h1 id={PasswordStyles["IPAddress"]}>{ip.join(".")}</h1>
+		</div>
+	);
+};
 
 interface PasswordScreenProps {
 	buttonText: string;
@@ -29,6 +110,7 @@ const PasswordScreen = ({ buttonText, passwordSubmit, error }: PasswordScreenPro
 					<div id={PasswordStyles["logoWrapper"]}>
 						<img src={logo} alt="CheckBag Logo" draggable={false} />
 						<p>Know your network inside and out</p>
+						<AnimatedIPAddress duration={1000} waitTime={5000} />
 					</div>
 					<form onSubmit={onSubmit}>
 						<input
