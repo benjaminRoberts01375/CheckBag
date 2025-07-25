@@ -1,5 +1,4 @@
 import "../styles.css";
-import graphsStyles from "./graphs.module.css";
 import GraphData from "../types/graph-data";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { Timescale } from "../types/strings";
