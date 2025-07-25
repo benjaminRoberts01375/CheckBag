@@ -82,10 +82,8 @@ const AnimatedBackground = ({ nodes, speed }: AnimatedBackgroundProps) => {
 
 	// Only generate paths once on mount
 	useEffect(() => {
-		if (normalizedPaths.length === 0) {
-			generateNormalizedPaths();
-		}
-	}, [normalizedPaths.length]);
+		generateNormalizedPaths();
+	}, [nodes]);
 
 	// Generate normalized paths (only called once on mount)
 	function generateNormalizedPaths(): void {
