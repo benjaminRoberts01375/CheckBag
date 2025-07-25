@@ -3,7 +3,12 @@
 	height: 100%;
 	margin: 0pt auto;
 	padding: 10pt 20pt;
-	background: none;
+}
+
+#title {
+	padding: 10pt 0pt;
+	width: 100%;
+	text-align: center;
 }
 
 #fancy-table {
