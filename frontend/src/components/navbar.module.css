@@ -5,6 +5,11 @@
 	width: 200pt;
 	height: 100vh;
 	position: fixed;
+	transition-duration: 0.5s;
+}
+
+#navbar-container:hover {
+	box-shadow: 0pt 0pt 10pt #0005;
 }
 
 #title {
