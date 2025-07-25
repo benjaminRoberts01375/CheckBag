@@ -11,3 +11,21 @@
 	min-width: 40pt;
 	margin-right: 10pt;
 }
+
+.input {
+	padding: 5pt;
+	background: #0005;
+	color: white;
+	border: none;
+	border-radius: 5pt;
+	transition-duration: 0.5s;
+}
+
+.input:hover {
+	box-shadow: 0pt 0pt 3pt #555a;
+	transition-duration: 0s;
+}
+
+.input:focus {
+	outline: solid 2pt #aaa;
+}

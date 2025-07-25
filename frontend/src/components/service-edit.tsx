@@ -41,6 +41,7 @@ const ServiceEdit = ({ service }: ServiceAddScreenProps) => {
 					placeholder="Name"
 					value={name}
 					onChange={e => setName(e.target.value)}
+					className={ServiceEditStyles["input"]}
 				/>
 			</td>
 			<td>
@@ -49,6 +50,7 @@ const ServiceEdit = ({ service }: ServiceAddScreenProps) => {
 					placeholder="External Address"
 					value={externalAddress}
 					onChange={e => setExternalAddress([e.target.value])}
+					className={ServiceEditStyles["input"]}
 				/>
 			</td>
 			<td>
@@ -57,6 +59,7 @@ const ServiceEdit = ({ service }: ServiceAddScreenProps) => {
 					placeholder="Internal Address"
 					value={internalAddress}
 					onChange={e => setInternalAddress(e.target.value)}
+					className={ServiceEditStyles["input"]}
 				/>
 			</td>
 			<td>
