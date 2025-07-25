@@ -1,5 +1,6 @@
 import "../styles.css";
 import servicesStyles from "./services.module.css";
+import DashboardStyles from "./dashboard.module.css";
 import { useList } from "../context-hook";
 import ServiceEdit from "../components/service-edit";
 import { useEffect } from "react";
@@ -15,30 +16,33 @@ const ServicesScreen = () => {
 		<>
 			<AnimatedBackground nodes={services.length} speed={0.5} />
 			<div id={servicesStyles["container"]}>
-				<table id={servicesStyles["fancy-table"]}>
-					<thead>
-						<tr>
-							<th>
-								<p>Name</p>
-							</th>
-							<th>
-								<p>External Address</p>
-							</th>
-							<th>
-								<p>Internal Address</p>
-							</th>
-							<th>
-								<p>Actions</p>
-							</th>
-						</tr>
-					</thead>
-					<tbody>
-						{services.map(service => (
-							<ServiceEdit service={service} key={service.clientID} />
-						))}
-						<ServiceEdit service={undefined} key={"new"} />
-					</tbody>
-				</table>
+				<div className={DashboardStyles["graph-group"]}>
+					<h2 id={servicesStyles["title"]}>Services</h2>
+					<table id={servicesStyles["fancy-table"]}>
+						<thead>
+							<tr>
+								<th>
+									<p>Name</p>
+								</th>
+								<th>
+									<p>External Address</p>
+								</th>
+								<th>
+									<p>Internal Address</p>
+								</th>
+								<th>
+									<p>Actions</p>
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							{services.map(service => (
+								<ServiceEdit service={service} key={service.clientID} />
+							))}
+							<ServiceEdit service={undefined} key={"new"} />
+						</tbody>
+					</table>
+				</div>
 			</div>
 		</>
 	);
