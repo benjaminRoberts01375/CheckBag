@@ -34,10 +34,10 @@ const ResourceTable = ({ data, title }: ResourceTableProps) => {
 							return (
 								<tr key={resourceUsage.service + resourceUsage.resource}>
 									<td>
-										<p>{resourceUsage.service}</p>
+										<p className={ResourceTableStyles["service"]}>{resourceUsage.service}</p>
 									</td>
 									<td>
-										<p>{resourceUsage.resource}</p>
+										<p className={ResourceTableStyles["resource"]}>{resourceUsage.resource}</p>
 									</td>
 									<td>
 										<p>{resourceUsage.quantity}</p>
