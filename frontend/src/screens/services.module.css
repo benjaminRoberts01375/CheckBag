@@ -14,3 +14,7 @@
 #fancy-table {
 	width: 100%;
 }
+
+#fancy-table > thead > tr > th > p {
+	text-align: start;
+}
