@@ -21,8 +21,9 @@ const PieChartComponent = ({ data, title, theme }: PieChartProps) => {
 							data: data,
 						},
 					]}
-					width={200}
-					height={200}
+					width={170}
+					height={170}
+					margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
 				/>
 			</div>
 		</ThemeProvider>
