@@ -1,9 +1,22 @@
 #dashboard-container {
 	display: flex;
-	flex-direction: row;
+	width: 100vw;
+	height: 100vh;
 }
 
 .content-area {
-	margin-left: 200pt;
-	flex-grow: 1;
+	flex: 1;
+	margin-left: 200pt; /* Account for fixed navbar width */
+	padding: 20pt;
+	overflow-y: auto;
+	transition: margin-left 0.3s ease-in-out;
+}
+
+/* Responsive styles */
+@media (max-width: 884px) {
+	.content-area {
+		margin-left: 0; /* No margin on mobile since navbar is hidden */
+		padding: 15pt;
+		padding-top: 60pt; /* Account for hamburger button height */
+	}
 }
