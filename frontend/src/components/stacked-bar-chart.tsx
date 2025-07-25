@@ -59,7 +59,7 @@ const StackedBarChart = ({
 
 	return (
 		<ThemeProvider theme={theme}>
-			<h2 className={graphsStyles["header"]}>{title}</h2>
+			<h2 className="header">{title}</h2>
 			<BarChart
 				xAxis={[
 					{

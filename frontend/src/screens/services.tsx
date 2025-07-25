@@ -17,7 +17,7 @@ const ServicesScreen = () => {
 			<AnimatedBackground nodes={services.length} speed={0.5} />
 			<div id={servicesStyles["container"]}>
 				<div className={DashboardStyles["graph-group"]}>
-					<h2 id={servicesStyles["title"]}>Services</h2>
+					<h2 className="header">Services</h2>
 					<div id={servicesStyles["services"]}>
 						{services.map(service => (
 							<ServiceEdit service={service} key={service.clientID} />

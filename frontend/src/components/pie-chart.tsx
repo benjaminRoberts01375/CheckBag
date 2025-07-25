@@ -14,7 +14,7 @@ const PieChartComponent = ({ data, title, theme }: PieChartProps) => {
 	return (
 		<ThemeProvider theme={theme}>
 			<div id={graphsStyles["container"]}>
-				<h2 className={graphsStyles["header"]}>{title}</h2>
+				<h2 className="header">{title}</h2>
 				<PieChart
 					series={[
 						{
