@@ -16,7 +16,7 @@
 
 #pie-charts {
 	display: flex;
-	flex-direction: row;
+	flex-wrap: wrap;
 }
 
 #pie-charts > * {
