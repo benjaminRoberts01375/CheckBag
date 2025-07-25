@@ -1,3 +1,4 @@
+import logo from "../assets/CheckBag.svg";
 import PasswordStyles from "./password.module.css";
 import { FormEvent } from "react";
 import AnimatedBackground from "./animated-background";
@@ -25,11 +26,7 @@ const PasswordScreen = ({ buttonText, passwordSubmit, error }: PasswordScreenPro
 			<AnimatedBackground nodes={10} speed={0.8} />
 			<div id={PasswordStyles["container"]}>
 				<div id={PasswordStyles["wrapper"]}>
-					<div id={PasswordStyles["logo"]}>
-						<div id={PasswordStyles["placeholder"]}>
-							<h1>CheckBag Logo Placeholder</h1>
-						</div>
-					</div>
+					<img src={logo} alt="CheckBag Logo" id={PasswordStyles["logo"]} draggable={false} />
 					<form onSubmit={onSubmit}>
 						<input
 							placeholder="Password"
