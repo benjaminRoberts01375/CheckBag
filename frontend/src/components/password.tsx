@@ -37,8 +37,8 @@ const PasswordScreen = ({ buttonText, passwordSubmit, error }: PasswordScreenPro
 						<button type="submit" id={PasswordStyles["submit"]} className="primary">
 							{buttonText}
 						</button>
+						{error !== "" ? <p id={PasswordStyles["error"]}>{error}</p> : null}
 					</form>
-					<p>{error}</p>
 				</div>
 			</div>
 		</>
