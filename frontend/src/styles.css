@@ -63,3 +63,9 @@ button:disabled {
 	opacity: 50%;
 	cursor: not-allowed;
 }
+
+.header {
+	padding: 10pt;
+	width: 100%;
+	text-align: center;
+}

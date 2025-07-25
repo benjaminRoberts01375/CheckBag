@@ -11,7 +11,7 @@ interface ResourceTableProps {
 const ResourceTable = ({ data, title }: ResourceTableProps) => {
 	return (
 		<div id={GraphStyles["container"]}>
-			<h2 className={GraphStyles["header"]}>{title}</h2>
+			<h2 className="header">{title}</h2>
 			<table className={ResourceTableStyles["styled-table"]}>
 				<thead>
 					<tr>
