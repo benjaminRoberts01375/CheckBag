@@ -27,6 +27,8 @@
 /* Responsive styles */
 @media (max-width: 884px) {
 	.content-area {
-		margin-left: 0; /* Remove margin since navbar is hidden */
+		margin-left: 0pt; /* Remove margin since navbar is hidden */
+		padding: 0pt;
+		transition-duration: 0.5s;
 	}
 }

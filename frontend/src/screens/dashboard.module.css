@@ -22,3 +22,9 @@
 #pie-charts > * {
 	flex-grow: 1;
 }
+
+@media (max-width: 884px) {
+	.graph-group {
+		padding: 0pt 10pt 10pt 10pt;
+	}
+}
