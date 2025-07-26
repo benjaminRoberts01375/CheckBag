@@ -1,18 +1,35 @@
 .styled-table {
 	width: 100%;
-	border-collapse: collapse;
+	border-collapse: separate;
+	border-spacing: 0;
+	border-radius: 8px;
+	overflow: hidden;
+	border: 1px solid #111;
 }
 
 .styled-table td {
-	border: 1px solid #111;
+	border-right: 1px solid #111;
+	border-bottom: 1px solid #111;
 	padding: 8px;
 	text-align: left;
 }
 
 .styled-table th {
-	border: 1px solid #111;
+	border-right: 1px solid #111;
+	border-bottom: 1px solid #111;
 	font-weight: bold;
 	padding: 8pt;
+}
+
+/* Remove right border from last column */
+.styled-table td:last-child,
+.styled-table th:last-child {
+	border-right: none;
+}
+
+/* Remove bottom border from last row */
+.styled-table tbody tr:last-child td {
+	border-bottom: none;
 }
 
 .styled-table tbody tr:nth-child(odd) {
@@ -24,7 +41,6 @@
 }
 
 .no-data {
-	/* Styles stolen from Material UI X Charts */
 	text-align: center;
 	margin-top: 20pt;
 	font-size: 11pt;
