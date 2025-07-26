@@ -5,12 +5,15 @@
 }
 
 #hamburger-menu {
-	background: green;
+	background: #fff5;
+	backdrop-filter: blur(10pt);
 	height: 48px;
 	width: 48px;
 	position: absolute;
-	top: 50pt;
-	left: 0;
+	top: 0pt;
+	left: 0pt;
+	z-index: 1000;
+	border-radius: 0pt 0pt 5pt 0pt;
 }
 
 .content-area {
