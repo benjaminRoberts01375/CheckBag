@@ -4,18 +4,19 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useList } from "../context-hook";
 import Timescale from "./timescale";
 import { Checkbox } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Fade as Hamburger } from "hamburger-react";
 
 interface NavbarProps {
 	isMobileView: boolean;
+	isMobileMenuOpen: boolean;
+	setIsMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const Navbar = ({ isMobileView }: NavbarProps) => {
+const Navbar = ({ isMobileView, isMobileMenuOpen, setIsMobileMenuOpen }: NavbarProps) => {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const { services, serviceToggle } = useList();
-	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
 	// Close mobile menu when route changes
 	useEffect(() => {

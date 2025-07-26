@@ -4,9 +4,18 @@
 	height: 100vh;
 }
 
+#hamburger-menu {
+	background: green;
+	height: 48px;
+	width: 48px;
+	position: absolute;
+	top: 50pt;
+	left: 0;
+}
+
 .content-area {
 	flex: 1;
-	margin-left: 200pt; /* Account for fixed navbar width */
+	margin-left: 200pt;
 	padding: 20pt;
 	overflow-y: auto;
 	transition: margin-left 0.3s ease-in-out;
@@ -15,8 +24,6 @@
 /* Responsive styles */
 @media (max-width: 884px) {
 	.content-area {
-		margin-left: 0; /* No margin on mobile since navbar is hidden */
-		padding: 15pt;
-		padding-top: 60pt; /* Account for hamburger button height */
+		margin-left: 0; /* Remove margin since navbar is hidden */
 	}
 }

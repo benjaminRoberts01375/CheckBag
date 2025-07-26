@@ -1,11 +1,11 @@
 .graph-group {
-	margin: 0pt 20pt 20pt 20pt;
 	background: #343031dd;
 	backdrop-filter: blur(10pt);
 	padding: 0pt 20pt 20pt 20pt;
 	border-radius: 10pt;
 
 	box-shadow: 0pt 0pt 10pt #0000;
+	margin-bottom: 20pt;
 	transition-duration: 0.5s;
 }
 

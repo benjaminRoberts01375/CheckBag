@@ -5,11 +5,13 @@ import Navbar from "./navbar";
 import AnimatedBackground from "../components/animated-background";
 import { useList } from "../context-hook";
 import { useEffect, useState } from "react";
+import { Fade as Hamburger } from "hamburger-react";
 
 const Dashboard = () => {
 	const { services } = useList();
 	const [nodes, setNodes] = useState(services.length);
 	const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 884); // Initialize with current width
+	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
 	useEffect(() => {
 		console.log("Updating nodes to " + services.length);
@@ -34,7 +36,16 @@ const Dashboard = () => {
 		<>
 			<AnimatedBackground nodes={nodes} speed={0.5} />
 			<div id={DashboardStyles["dashboard-container"]}>
-				<Navbar isMobileView={isMobileView} />
+				{isMobileView ? (
+					<div id={DashboardStyles["hamburger-menu"]}>
+						<Hamburger toggled={isMobileMenuOpen} toggle={setIsMobileMenuOpen} />
+					</div>
+				) : null}
+				<Navbar
+					isMobileView={isMobileView}
+					isMobileMenuOpen={isMobileMenuOpen}
+					setIsMobileMenuOpen={setIsMobileMenuOpen}
+				/>
 				<div className={DashboardStyles["content-area"]}>
 					<Outlet />
 				</div>
