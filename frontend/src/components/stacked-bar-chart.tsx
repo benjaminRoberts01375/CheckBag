@@ -2,23 +2,15 @@ import "../styles.css";
 import GraphData from "../types/graph-data";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { Timescale } from "../types/strings";
-import { ThemeProvider, Theme } from "@mui/material/styles";
 
 interface StackedBarChartProps {
 	graphData: GraphData[];
 	timescale: Timescale;
 	yAxisLabel: string;
 	title: string;
-	theme: Theme;
 }
 
-const StackedBarChart = ({
-	graphData,
-	timescale,
-	yAxisLabel,
-	title,
-	theme,
-}: StackedBarChartProps) => {
+const StackedBarChart = ({ graphData, timescale, yAxisLabel, title }: StackedBarChartProps) => {
 	const uniqueXValues = Array.from(new Set(graphData.map(d => d.xValue.getTime())))
 		.sort((a, b) => a - b)
 		.map(time => new Date(time));
@@ -57,7 +49,7 @@ const StackedBarChart = ({
 	};
 
 	return (
-		<ThemeProvider theme={theme}>
+		<div>
 			<h2 className="header">{title}</h2>
 			<BarChart
 				xAxis={[
@@ -86,7 +78,7 @@ const StackedBarChart = ({
 					},
 				}}
 			/>
-		</ThemeProvider>
+		</div>
 	);
 };
 

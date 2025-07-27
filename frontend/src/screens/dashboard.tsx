@@ -10,6 +10,7 @@ import StackedBarChart from "../components/stacked-bar-chart";
 import PieChartComponent from "../components/pie-chart";
 import ResourceTable from "../components/resource-table";
 import { createTheme } from "@mui/material/styles";
+import { ThemeProvider } from "@mui/material/styles";
 
 const DashboardScreen = () => {
 	const { services, requestServiceData, timescale } = useList();
@@ -159,23 +160,24 @@ const DashboardScreen = () => {
 
 	return (
 		<div id={servicesStyles["container"]}>
-			<div className={DashboardStyles["graph-group"]}>
-				<StackedBarChart
-					graphData={quantityData}
-					timescale={timescale}
-					yAxisLabel="Query Quantity"
-					title="Query Quantity Per Service"
-					theme={theme}
-				/>
-			</div>
-			<div id={DashboardStyles["pie-charts"]} className={DashboardStyles["graph-group"]}>
-				<PieChartComponent data={responseCodeData} title="Response Codes" theme={theme} />
-				<PieChartComponent data={countryCodeData} title="Top Countries" theme={theme} />
-				<PieChartComponent data={IPAddressData} title="Top IP Addresses" theme={theme} />
-			</div>
-			<div className={DashboardStyles["graph-group"]}>
-				<ResourceTable data={resourceUsage} title="Resource Usage" />
-			</div>
+			<ThemeProvider theme={theme}>
+				<div className={DashboardStyles["graph-group"]}>
+					<StackedBarChart
+						graphData={quantityData}
+						timescale={timescale}
+						yAxisLabel="Query Quantity"
+						title="Query Quantity Per Service"
+					/>
+				</div>
+				<div id={DashboardStyles["pie-charts"]} className={DashboardStyles["graph-group"]}>
+					<PieChartComponent data={responseCodeData} title="Response Codes" />
+					<PieChartComponent data={countryCodeData} title="Top Countries" />
+					<PieChartComponent data={IPAddressData} title="Top IP Addresses" />
+				</div>
+				<div className={DashboardStyles["graph-group"]}>
+					<ResourceTable data={resourceUsage} title="Resource Usage" />
+				</div>
+			</ThemeProvider>
 		</div>
 	);
 };
