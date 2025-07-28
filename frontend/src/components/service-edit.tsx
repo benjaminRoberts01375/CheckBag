@@ -16,17 +16,13 @@ const ServiceEdit = ({ service }: ServiceAddScreenProps) => {
 	const [externalAddress, setExternalAddress] = useState<string[]>(
 		service ? service.external_address : [""],
 	);
-	const { serviceAdd } = useList();
+	const { serviceAdd, serviceDelete } = useList();
 	function createService() {
 		console.log("Creating service");
 		serviceAdd(new Service(internalAddress, externalAddress, name));
 		setName("");
 		setInternalAddress("");
 		setExternalAddress([""]);
-	}
-
-	function deleteService() {
-		console.log("Deleting service");
 	}
 
 	function updateService() {
@@ -74,7 +70,7 @@ const ServiceEdit = ({ service }: ServiceAddScreenProps) => {
 						</button>
 						<button
 							className={`${ServiceEditStyles.delete} primary`}
-							onClick={() => deleteService()}
+							onClick={() => serviceDelete(service.clientID)}
 						>
 							Delete
 						</button>
