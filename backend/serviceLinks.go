@@ -47,6 +47,20 @@ func servicesSet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Delete service links that are not in new service links
+	serviceLinks = slices.DeleteFunc(serviceLinks, func(existingService ServiceLink) bool {
+		delVal := !slices.ContainsFunc(*newServiceLinks, func(newService ServiceLink) bool {
+			return existingService.ID == newService.ID
+		})
+		if delVal {
+			err := cache.deleteService(existingService)
+			if err != nil {
+				Coms.PrintErrStr("Could not delete service from cache: " + err.Error())
+			}
+		}
+		return delVal
+	})
+
 	for i, service := range *newServiceLinks {
 		if service.ID == "" {
 			(*newServiceLinks)[i].ID = generateRandomString(models.Config.ServiceIDLength)
