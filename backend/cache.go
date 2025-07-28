@@ -307,3 +307,36 @@ func (cache *CacheClient[client]) getAnalyticsService(service ServiceData, timeS
 
 	return analytics
 }
+
+func (cache *CacheClient[client]) deleteService(service ServiceLink) error {
+	for _, timeStep := range cacheAnalyticsTime {
+		recordTime := timeStep.timeStr(0)
+		quantity := strconv.Itoa(timeStep.maximumUnits)
+		err := cache.raw.Delete("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":quantity")
+		if err != nil {
+			Coms.PrintErrStr("Could not delete minute analytics key: " + err.Error())
+			return err
+		}
+		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":country")
+		if err != nil {
+			Coms.PrintErrStr("Could not delete minute analytics country: " + err.Error())
+			return err
+		}
+		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":ip")
+		if err != nil {
+			Coms.PrintErrStr("Could not delete minute analytics ip: " + err.Error())
+			return err
+		}
+		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":resource")
+		if err != nil {
+			Coms.PrintErrStr("Could not delete minute analytics resource: " + err.Error())
+			return err
+		}
+		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":response_code")
+		if err != nil {
+			Coms.PrintErrStr("Could not delete minute analytics response code: " + err.Error())
+			return err
+		}
+	}
+	return nil
+}
