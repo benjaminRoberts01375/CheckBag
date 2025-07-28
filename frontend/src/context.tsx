@@ -110,6 +110,17 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		})();
 	}
 
+	/** A helper function to update a service on the server. */
+	function serviceUpdate(service: Service): void {
+		const updatedServices = services.map(existingService => {
+			return existingService.clientID === service.clientID ? service : existingService;
+		});
+		(async () => {
+			await serverUpdateServices(updatedServices);
+			requestServiceData();
+		})();
+	}
+
 	/**A helper function to set the services on the server. */
 	async function serverUpdateServices(servicesToSend: Service[] = services) {
 		console.log("Sending: " + JSON.stringify(servicesToSend));
@@ -172,6 +183,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		setTimescale,
 		serviceAdd,
 		serviceDelete,
+		serviceUpdate,
 		cookieGet,
 		requestServiceData,
 		passwordReset,

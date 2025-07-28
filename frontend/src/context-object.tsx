@@ -8,6 +8,7 @@ export interface ContextType {
 	setTimescale: (timescale: Timescale) => void;
 	serviceAdd: (service: Service) => void;
 	serviceDelete: (serviceID: string) => void;
+	serviceUpdate: (service: Service) => void;
 	requestServiceData: () => void;
 	cookieGet: (key: CookieKeys) => string | undefined;
 	passwordReset: (newPassword: string) => void;
