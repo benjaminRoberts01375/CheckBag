@@ -72,7 +72,6 @@ func servicesSet(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		// Update service - Don't update ID
-		Coms.Println("Updating service " + serviceLinks[existingServiceI].InternalAddress + " to " + newService.InternalAddress)
 		serviceLinks[existingServiceI].ExternalAddress = newService.ExternalAddress
 		serviceLinks[existingServiceI].Title = newService.Title
 		serviceLinks[existingServiceI].InternalAddress = newService.InternalAddress
