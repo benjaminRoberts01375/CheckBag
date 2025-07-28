@@ -101,6 +101,15 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		serverUpdateServices(updatedServices);
 	}
 
+	/** A helper function to delete a service on the server. */
+	function serviceDelete(serviceID: string): void {
+		const updatedServices = services.filter(service => service.clientID !== serviceID);
+		(async () => {
+			await serverUpdateServices(updatedServices);
+			requestServiceData();
+		})();
+	}
+
 	/**A helper function to set the services on the server. */
 	async function serverUpdateServices(servicesToSend: Service[] = services) {
 		console.log("Sending: " + JSON.stringify(servicesToSend));
@@ -115,11 +124,11 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 			});
 
 			if (!response.ok) {
-				throw new Error("Failed to add service");
+				throw new Error("Failed to modify services - " + response.status);
 			}
-			console.log("Successfully added service");
+			console.log("Successfully modified services");
 		} catch (error) {
-			console.error("Error adding service:", error);
+			console.error("Error modifying service:", error);
 		}
 	}
 
@@ -162,6 +171,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		timescale,
 		setTimescale,
 		serviceAdd,
+		serviceDelete,
 		cookieGet,
 		requestServiceData,
 		passwordReset,
