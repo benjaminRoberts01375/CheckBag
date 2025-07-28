@@ -1,18 +1,34 @@
-import React, { ReactNode } from "react";
-import { Context, ContextType } from "./context-object";
-import { useState } from "react";
+import React, { ReactNode, useState, useCallback, useEffect } from "react";
+import { Context, ContextType, ProcessedChartData } from "./context-object";
 import Service from "./types/service.tsx";
 import { CookieKeys, Timescale } from "./types/strings";
 import { useNavigate } from "react-router-dom";
+import GraphData from "./types/graph-data";
+import ChartData from "./types/chart-data";
+import ResourceUsageData from "./types/resource-usage-data";
 
 interface Props {
 	children: ReactNode;
 }
 
+const emptyChartData: ProcessedChartData = {
+	quantityData: [],
+	responseCodeData: [],
+	countryCodeData: [],
+	IPAddressData: [],
+	resourceUsage: [],
+};
+
 export const ContextProvider: React.FC<Props> = ({ children }) => {
 	const [services, setServices] = useState<Service[]>(new Array<Service>());
-	const [timescale, setTimescale] = useState<Timescale>("hour"); // TODO: I'm not a huge fan of this being here, but I'm short on time
+	const [timescale, setTimescale] = useState<Timescale>("hour");
 	const navigate = useNavigate();
+
+	// Chart data states for each timespan
+	const [hourData, setHourData] = useState<ProcessedChartData>(emptyChartData);
+	const [dayData, setDayData] = useState<ProcessedChartData>(emptyChartData);
+	const [monthData, setMonthData] = useState<ProcessedChartData>(emptyChartData);
+	const [yearData, setYearData] = useState<ProcessedChartData>(emptyChartData);
 
 	function cookieGet(key: CookieKeys): string | undefined {
 		const cookieString = document.cookie.split("; ").find(cookie => cookie.startsWith(`${key}=`));
@@ -23,10 +39,176 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		return undefined;
 	}
 
-	/**Get a specific service's data from the backend.
-	Overwrites the service's data if it already exists while maintaining the client ID.
-	Creates a new service if it doesn't exist.
-	*/
+	// Process services data into chart data for a specific timescale
+	const processServicesData = useCallback(
+		(targetTimescale: Timescale): ProcessedChartData => {
+			const enabledServices = services.filter(service => service.enabled);
+			if (enabledServices.length === 0) {
+				return emptyChartData;
+			}
+
+			var graphData: GraphData[] = [];
+			var responseCodesCounter = new Map<number, number>();
+			var countryCounter = new Map<string, number>();
+			var ipCounter = new Map<string, number>();
+			var resourceUsage = new Array<ResourceUsageData>();
+
+			// Configure timespan-specific settings
+			var timeStepQuantity = 0;
+			var rollback: (step: number) => Date;
+
+			switch (targetTimescale) {
+				case "hour":
+					rollback = (step: number) => {
+						const now = new Date();
+						const currentMinute = now.getMinutes();
+						now.setMinutes(currentMinute + step);
+						now.setSeconds(0);
+						now.setMilliseconds(0);
+						return now;
+					};
+					timeStepQuantity = 60;
+					break;
+				case "day":
+					rollback = (step: number) => {
+						const now = new Date();
+						const currentHour = now.getHours();
+						now.setHours(currentHour + step);
+						now.setMinutes(0);
+						now.setSeconds(0);
+						now.setMilliseconds(0);
+						return now;
+					};
+					timeStepQuantity = 24;
+					break;
+				case "month":
+					rollback = (step: number): Date => {
+						var now = new Date();
+						const currentUTCDay = now.getUTCDate();
+						now.setUTCDate(currentUTCDay + step);
+						now.setUTCHours(0);
+						now.setUTCMinutes(0);
+						now.setUTCSeconds(0);
+						now.setUTCMilliseconds(0);
+						return now;
+					};
+					timeStepQuantity = 30;
+					break;
+				case "year":
+					rollback = (step: number) => {
+						const now = new Date();
+						const currentMonth = now.getMonth();
+						now.setUTCMonth(currentMonth + step);
+						now.setUTCDate(1);
+						now.setUTCHours(0);
+						now.setUTCMinutes(0);
+						now.setUTCSeconds(0);
+						now.setUTCMilliseconds(0);
+						return now;
+					};
+					timeStepQuantity = 12;
+					break;
+			}
+
+			// Process each service
+			for (const service of enabledServices) {
+				var analyticsMap = service[targetTimescale];
+				const usedResource = new Map<string, number>();
+
+				// Generate data points for the entire time range (including empty ones)
+				for (let i = 0; i < timeStepQuantity; i++) {
+					const date = rollback(-i);
+					var analytic = analyticsMap.get(date.toISOString());
+					graphData.push(new GraphData(analytic?.quantity ?? 0, service.title, date));
+
+					if (analytic !== undefined) {
+						// Count response codes
+						analytic.responseCode.forEach((value, key) => {
+							responseCodesCounter.set(key, (responseCodesCounter.get(key) ?? 0) + value);
+						});
+						// Count countries
+						analytic.country.forEach((value, key) => {
+							countryCounter.set(key, (countryCounter.get(key) ?? 0) + value);
+						});
+						// Count IP addresses
+						analytic.ip.forEach((value, key) => {
+							ipCounter.set(key, (ipCounter.get(key) ?? 0) + value);
+						});
+						// Count resources
+						analytic.resource.forEach((value, key) => {
+							usedResource.set(key, (usedResource.get(key) ?? 0) + value);
+						});
+					}
+				}
+
+				// Add resource usage data for this service
+				usedResource.forEach((value, key) => {
+					resourceUsage.push(new ResourceUsageData(service.title, key, value));
+				});
+			}
+
+			// Create chart data for response codes
+			const responseCodes = Array.from(responseCodesCounter.entries()).map(([key, value]) => {
+				return new ChartData(value, String(key));
+			});
+
+			// Create chart data for countries (top 10 + others)
+			const countries = Array.from(countryCounter.entries()).sort((a, b) => b[1] - a[1]);
+			const topCountries = countries.slice(0, 10);
+			const otherCountriesCount = countries.slice(10).reduce((sum, current) => sum + current[1], 0);
+			const countryData = topCountries.map(([key, value]) => {
+				return new ChartData(value, key);
+			});
+			if (otherCountriesCount > 0) {
+				countryData.push(new ChartData(otherCountriesCount, "Other"));
+			}
+
+			// Create chart data for IP addresses (top 10 + others)
+			const IPs = Array.from(ipCounter.entries()).sort((a, b) => b[1] - a[1]);
+			const topIPs = IPs.slice(0, 10);
+			const otherIPsCount = IPs.slice(10).reduce((sum, current) => sum + current[1], 0);
+			const ipData = topIPs.map(([key, value]) => {
+				return new ChartData(value, key);
+			});
+			if (otherIPsCount > 0) {
+				ipData.push(new ChartData(otherIPsCount, "Other"));
+			}
+
+			return {
+				quantityData: graphData,
+				responseCodeData: responseCodes,
+				countryCodeData: countryData,
+				IPAddressData: ipData,
+				resourceUsage: resourceUsage.sort((a, b) => b.quantity - a.quantity),
+			};
+		},
+		[services],
+	);
+
+	// Update all timespan data when services change
+	useEffect(() => {
+		setHourData(processServicesData("hour"));
+		setDayData(processServicesData("day"));
+		setMonthData(processServicesData("month"));
+		setYearData(processServicesData("year"));
+	}, [processServicesData]);
+
+	// Get data for current timescale
+	const getCurrentTimescaleData = useCallback((): ProcessedChartData => {
+		switch (timescale) {
+			case "hour":
+				return hourData;
+			case "day":
+				return dayData;
+			case "month":
+				return monthData;
+			case "year":
+				return yearData;
+			default:
+				return emptyChartData;
+		}
+	}, [timescale, hourData, dayData, monthData, yearData]);
+
 	function requestServiceData(): void {
 		const time_steps: string[] = ["hour", "day", "month", "year"];
 		time_steps.forEach(time_step => {
@@ -101,7 +283,6 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		serverUpdateServices(updatedServices);
 	}
 
-	/** A helper function to delete a service on the server. */
 	function serviceDelete(serviceID: string): void {
 		const updatedServices = services.filter(service => service.clientID !== serviceID);
 		(async () => {
@@ -110,7 +291,6 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		})();
 	}
 
-	/** A helper function to update a service on the server. */
 	function serviceUpdate(service: Service): void {
 		const updatedServices = services.map(existingService => {
 			return existingService.clientID === service.clientID ? service : existingService;
@@ -121,7 +301,6 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		})();
 	}
 
-	/**A helper function to set the services on the server. */
 	async function serverUpdateServices(servicesToSend: Service[] = services) {
 		console.log("Sending: " + JSON.stringify(servicesToSend));
 		try {
@@ -165,7 +344,6 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		})();
 	}
 
-	// Toggle the service's enabled state and update setServices
 	function serviceToggle(serviceID: string): void {
 		setServices(services => {
 			return services.map(existingService => {
@@ -188,6 +366,11 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		requestServiceData,
 		passwordReset,
 		serviceToggle,
+		hourData,
+		dayData,
+		monthData,
+		yearData,
+		getCurrentTimescaleData,
 	};
 
 	return <Context.Provider value={contextShape}>{children}</Context.Provider>;
