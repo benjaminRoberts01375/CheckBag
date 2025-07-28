@@ -61,19 +61,30 @@ func servicesSet(w http.ResponseWriter, r *http.Request) {
 		return delVal
 	})
 
-	for i, service := range *newServiceLinks {
-		if service.ID == "" {
-			(*newServiceLinks)[i].ID = generateRandomString(models.Config.ServiceIDLength)
+	// Update or add services to serviceLinks
+	for _, newService := range *newServiceLinks {
+		existingServiceI := slices.IndexFunc(serviceLinks, func(existingService ServiceLink) bool {
+			return existingService.ID == newService.ID
+		})
+		if existingServiceI == -1 { // Add service
+			newService.ID = generateRandomString(models.Config.ServiceIDLength)
+			serviceLinks = append(serviceLinks, newService)
+			continue
 		}
+		// Update service - Don't update ID
+		Coms.Println("Updating service " + serviceLinks[existingServiceI].InternalAddress + " to " + newService.InternalAddress)
+		serviceLinks[existingServiceI].ExternalAddress = newService.ExternalAddress
+		serviceLinks[existingServiceI].Title = newService.Title
+		serviceLinks[existingServiceI].InternalAddress = newService.InternalAddress
 	}
 
-	err = fileSystem.SetServices(*newServiceLinks)
+	err = fileSystem.SetServices(serviceLinks)
 	if err != nil {
 		Coms.PrintErrStr("Could not set services in file system: " + err.Error())
 		Coms.ExternalPostRespondCode(http.StatusInternalServerError, w)
 		return
 	}
-	serviceLinks = *newServiceLinks
+
 	Coms.ExternalPostRespond(serviceLinks, w)
 }
 
