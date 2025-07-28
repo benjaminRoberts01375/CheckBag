@@ -16,17 +16,19 @@ const ServiceEdit = ({ service }: ServiceAddScreenProps) => {
 	const [externalAddress, setExternalAddress] = useState<string[]>(
 		service ? service.external_address : [""],
 	);
-	const { serviceAdd, serviceDelete } = useList();
+	const { serviceAdd, serviceDelete, serviceUpdate } = useList();
 	function createService() {
-		console.log("Creating service");
 		serviceAdd(new Service(internalAddress, externalAddress, name));
 		setName("");
 		setInternalAddress("");
 		setExternalAddress([""]);
 	}
 
-	function updateService() {
-		console.log("Updating service");
+	function updateService(service: Service): void {
+		service.internal_address = internalAddress;
+		service.external_address = externalAddress;
+		service.title = name;
+		serviceUpdate(service);
 	}
 
 	return (
@@ -57,7 +59,7 @@ const ServiceEdit = ({ service }: ServiceAddScreenProps) => {
 				{service ? (
 					<>
 						<button
-							onClick={() => updateService()}
+							onClick={() => updateService(service)}
 							title={"ClientID: " + service.clientID + ", ID: " + service.id}
 							className={`${ServiceEditStyles.submit} primary`}
 							disabled={
