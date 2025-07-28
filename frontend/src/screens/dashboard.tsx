@@ -105,19 +105,19 @@ const DashboardScreen = () => {
 				if (analytic !== undefined) {
 					// Count response codes
 					analytic.responseCode.forEach((value, key) => {
-						responseCodesCounter.set(key, responseCodesCounter.get(key) ?? 0 + value);
+						responseCodesCounter.set(key, (responseCodesCounter.get(key) ?? 0) + value);
 					});
 					// Count countries
 					analytic.country.forEach((value, key) => {
-						countryCounter.set(key, countryCounter.get(key) ?? 0 + value);
+						countryCounter.set(key, (countryCounter.get(key) ?? 0) + value);
 					});
 					// Count IP addresses
 					analytic.ip.forEach((value, key) => {
-						ipCounter.set(key, ipCounter.get(key) ?? 0 + value);
+						ipCounter.set(key, (ipCounter.get(key) ?? 0) + value);
 					});
 					// Count resources
 					analytic.resource.forEach((value, key) => {
-						usedResource.set(key, usedResource.get(key) ?? 0 + value);
+						usedResource.set(key, (usedResource.get(key) ?? 0) + value);
 					});
 				}
 			}
