@@ -114,12 +114,29 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 			for (const service of enabledServices) {
 				var analyticsMap = service[targetTimescale];
 				const usedResource = new Map<string, number>();
+				const working_graph_data = new GraphData(service.title, targetTimescale);
 
 				// Generate data points for the entire time range (including empty ones)
 				for (let i = 0; i < timeStepQuantity; i++) {
 					const date = rollback(-i);
+					var dateString = () => {
+						switch (targetTimescale) {
+							case "hour":
+								return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+							case "day":
+								return date.toLocaleTimeString([], { hour: "numeric", hour12: true });
+							case "month":
+								return date.toLocaleString("default", { month: "short", day: "numeric" });
+							case "year":
+								return date.toLocaleString("default", { month: "short" });
+							default:
+								return date.toLocaleDateString();
+						}
+					};
+					working_graph_data.x_values[timeStepQuantity - i - 1] = dateString(); // Reverse order
+					working_graph_data.data[timeStepQuantity - i - 1] =
+						analyticsMap.get(date.toISOString())?.quantity ?? 0; // Reverse order
 					var analytic = analyticsMap.get(date.toISOString());
-					graphData.push(new GraphData(analytic?.quantity ?? 0, service.title, date));
 
 					if (analytic !== undefined) {
 						// Count response codes
@@ -140,6 +157,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 						});
 					}
 				}
+				graphData.push(working_graph_data);
 
 				// Add resource usage data for this service
 				usedResource.forEach((value, key) => {

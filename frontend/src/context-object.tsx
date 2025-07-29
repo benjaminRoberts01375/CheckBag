@@ -6,7 +6,7 @@ import ChartData from "./types/chart-data";
 import ResourceUsageData from "./types/resource-usage-data";
 
 export interface ProcessedChartData {
-	quantityData: GraphData[];
+	quantityData: GraphData[]; // Per service
 	responseCodeData: ChartData[];
 	countryCodeData: ChartData[];
 	IPAddressData: ChartData[];
