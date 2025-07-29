@@ -10,7 +10,7 @@ import { createTheme } from "@mui/material/styles";
 import { ThemeProvider } from "@mui/material/styles";
 
 const DashboardScreen = () => {
-	const { requestServiceData, getCurrentTimescaleData, timescale, services } = useList();
+	const { requestServiceData, getCurrentTimescaleData, services } = useList();
 
 	// Get the processed chart data for the current timescale
 	const chartData = getCurrentTimescaleData();
@@ -37,7 +37,6 @@ const DashboardScreen = () => {
 				<div className={DashboardStyles["graph-group"]}>
 					<StackedBarChart
 						graphData={chartData.quantityData}
-						timescale={timescale}
 						yAxisLabel="Query Quantity"
 						title="Query Quantity Per Service"
 					/>
