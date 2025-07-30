@@ -62,7 +62,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 					rollback = (step: number) => {
 						const now = new Date();
 						const currentMinute = now.getMinutes();
-						now.setUTCMinutes(currentMinute + step);
+						now.setUTCMinutes(currentMinute + step, 0, 0);
 						return now;
 					};
 					timeStepQuantity = 60;
