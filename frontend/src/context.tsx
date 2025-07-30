@@ -163,17 +163,21 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 			}
 
 			// Create chart data for response codes
-			const responseCodes = Array.from(responseCodesCounter.entries()).map(([key, value]) => {
-				return new ChartData(value, String(key));
-			});
+			const responseCodes = Array.from(responseCodesCounter.entries())
+				.map(([key, value]) => {
+					return new ChartData(value, String(key));
+				})
+				.sort((a, b) => (b.label < a.label ? 1 : -1));
 
 			// Create chart data for countries (top 10 + others)
 			const countries = Array.from(countryCounter.entries()).sort((a, b) => b[1] - a[1]);
 			const topCountries = countries.slice(0, 10);
 			const otherCountriesCount = countries.slice(10).reduce((sum, current) => sum + current[1], 0);
-			const countryData = topCountries.map(([key, value]) => {
-				return new ChartData(value, key);
-			});
+			const countryData = topCountries
+				.map(([key, value]) => {
+					return new ChartData(value, key);
+				})
+				.sort((a, b) => (b.label < a.label ? 1 : -1));
 			if (otherCountriesCount > 0) {
 				countryData.push(new ChartData(otherCountriesCount, "Other"));
 			}
@@ -182,9 +186,11 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 			const IPs = Array.from(ipCounter.entries()).sort((a, b) => b[1] - a[1]);
 			const topIPs = IPs.slice(0, 10);
 			const otherIPsCount = IPs.slice(10).reduce((sum, current) => sum + current[1], 0);
-			const ipData = topIPs.map(([key, value]) => {
-				return new ChartData(value, key);
-			});
+			const ipData = topIPs
+				.map(([key, value]) => {
+					return new ChartData(value, key);
+				})
+				.sort((a, b) => (b.label < a.label ? 1 : -1));
 			if (otherIPsCount > 0) {
 				ipData.push(new ChartData(otherIPsCount, "Other"));
 			}
