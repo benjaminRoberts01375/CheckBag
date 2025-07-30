@@ -14,6 +14,10 @@
 .active {
 	color: black;
 }
+.active:focus {
+	background: #ffe989;
+	outline: none;
+}
 
 .passive {
 	background: none;
@@ -24,7 +28,9 @@
 	border-left: 2pt solid #555;
 }
 
-.passive:hover {
+.passive:hover,
+.passive:focus {
 	background: #686162;
 	color: white;
+	outline: none;
 }
