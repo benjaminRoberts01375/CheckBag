@@ -70,9 +70,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 				case "day":
 					rollback = (step: number) => {
 						const now = new Date();
-						const currentHour = now.getHours();
-						now.setHours(currentHour + step);
-						now.setUTCHours(currentHour + step, 0, 0, 0);
+						now.setUTCHours(now.getUTCHours() + step, 0, 0, 0);
 						return now;
 					};
 					timeStepQuantity = 24;
