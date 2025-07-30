@@ -62,9 +62,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 					rollback = (step: number) => {
 						const now = new Date();
 						const currentMinute = now.getMinutes();
-						now.setMinutes(currentMinute + step);
-						now.setSeconds(0);
-						now.setMilliseconds(0);
+						now.setUTCMinutes(currentMinute + step);
 						return now;
 					};
 					timeStepQuantity = 60;
@@ -74,9 +72,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 						const now = new Date();
 						const currentHour = now.getHours();
 						now.setHours(currentHour + step);
-						now.setMinutes(0);
-						now.setSeconds(0);
-						now.setMilliseconds(0);
+						now.setUTCHours(currentHour + step, 0, 0, 0);
 						return now;
 					};
 					timeStepQuantity = 24;
@@ -84,12 +80,9 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 				case "month":
 					rollback = (step: number): Date => {
 						var now = new Date();
+						now.setUTCHours(0, 0, 0, 0);
 						const currentUTCDay = now.getUTCDate();
 						now.setUTCDate(currentUTCDay + step);
-						now.setUTCHours(0);
-						now.setUTCMinutes(0);
-						now.setUTCSeconds(0);
-						now.setUTCMilliseconds(0);
 						return now;
 					};
 					timeStepQuantity = 30;
@@ -97,13 +90,10 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 				case "year":
 					rollback = (step: number) => {
 						const now = new Date();
-						const currentMonth = now.getMonth();
-						now.setUTCMonth(currentMonth + step);
 						now.setUTCDate(1);
-						now.setUTCHours(0);
-						now.setUTCMinutes(0);
-						now.setUTCSeconds(0);
-						now.setUTCMilliseconds(0);
+						now.setUTCHours(0, 0, 0, 0);
+						const currentMonth = now.getUTCMonth();
+						now.setUTCMonth(currentMonth + step);
 						return now;
 					};
 					timeStepQuantity = 12;
@@ -126,9 +116,16 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 							case "day":
 								return date.toLocaleTimeString([], { hour: "numeric", hour12: true });
 							case "month":
-								return date.toLocaleString("default", { month: "short", day: "numeric" });
+								return date.toLocaleString("default", {
+									month: "short",
+									day: "numeric",
+									timeZone: "UTC",
+								});
 							case "year":
-								return date.toLocaleString("default", { month: "short" });
+								return date.toLocaleString("default", {
+									month: "short",
+									timeZone: "UTC",
+								});
 							default:
 								return date.toLocaleDateString();
 						}
