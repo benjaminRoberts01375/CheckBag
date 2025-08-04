@@ -30,6 +30,7 @@ const StackedBarChart = ({ graphData, yAxisLabel, title }: StackedBarChartProps)
 				height={300}
 				margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
 				grid={{ vertical: true, horizontal: true }}
+				skipAnimation={true}
 				sx={{
 					"& .MuiChartsGrid-line": {
 						stroke: "#000",
