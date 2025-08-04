@@ -1,18 +1,19 @@
-# Build frontend with bun/vite
-FROM oven/bun:1.1.18 AS builder
+# Build frontend with Node.js and npm
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 
 # Copy package files from frontend directory
-COPY frontend/package.json frontend/bun.lock ./
+COPY frontend/package.json ./
 
-RUN bun install
+# Use npm install instead of npm ci (generates lock file)
+RUN npm install
 
 # Copy frontend source
 COPY frontend/ .
 
 # Build the frontend
-RUN bun run build
+RUN npm run build
 
 # Setup NGINX for production
 FROM nginx:1.27.4-alpine-slim
