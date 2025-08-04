@@ -151,3 +151,4 @@ ConfigsWriter/dbConfig.go
 
 # Temp files
 tmp/
+checkbag-volume-backup/
