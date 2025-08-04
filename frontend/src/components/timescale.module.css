@@ -14,7 +14,7 @@
 .active {
 	color: black;
 }
-.active:focus {
+.active:focus-visible {
 	background: #ffe989;
 	outline: none;
 }
@@ -29,7 +29,7 @@
 }
 
 .passive:hover,
-.passive:focus {
+.passive:focus-visible {
 	background: #686162;
 	color: white;
 	outline: none;
