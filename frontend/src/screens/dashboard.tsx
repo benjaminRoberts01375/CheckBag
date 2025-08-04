@@ -25,10 +25,13 @@ const DashboardScreen = () => {
 	});
 
 	useEffect(() => {
-		if (services.length !== 0) {
-			return;
+		// Initial request
+		if (services.length === 0) {
+			requestServiceData();
 		}
-		requestServiceData();
+		// Update every 10 seconds after initial request
+		const interval = setInterval(requestServiceData, 10000);
+		return () => clearInterval(interval);
 	}, []);
 
 	return (
