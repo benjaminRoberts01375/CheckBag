@@ -6,6 +6,8 @@ import Timescale from "./timescale";
 import { Checkbox } from "@mui/material";
 import { useEffect } from "react";
 import { Fade as Hamburger } from "hamburger-react";
+import { IoHome } from "react-icons/io5";
+import { FaShareAlt } from "react-icons/fa";
 
 interface NavbarProps {
 	isMobileView: boolean;
@@ -77,12 +79,14 @@ const Navbar = ({ isMobileView, isMobileMenuOpen, setIsMobileMenuOpen }: NavbarP
 					className={`${NavbarStyles["entry"]} ${location.pathname === "/dashboard/home" ? NavbarStyles["active"] : ""}`}
 					onClick={() => navigate("/dashboard/home")}
 				>
+					<IoHome className={NavbarStyles["entry-icon"]} />
 					<p>Home</p>
 				</button>
 				<button
 					className={`${NavbarStyles["entry"]} ${location.pathname === "/dashboard/services" ? NavbarStyles["active"] : ""}`}
 					onClick={() => navigate("/dashboard/services")}
 				>
+					<FaShareAlt className={NavbarStyles["entry-icon"]} />
 					<p>Services</p>
 				</button>
 				<div id={NavbarStyles["divider"]}></div>
