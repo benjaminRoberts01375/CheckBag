@@ -16,6 +16,7 @@ const PieChartComponent = ({ data, title }: PieChartProps) => {
 				series={[
 					{
 						data: data,
+						highlightScope: { highlight: "item" },
 					},
 				]}
 				width={170}
