@@ -1,4 +1,5 @@
 import Analytic from "./analytic";
+import { v4 as uuidv4 } from "uuid";
 
 class Service {
 	internal_address: string;
@@ -48,7 +49,7 @@ class Service {
 		this.title = title;
 		this.enabled = enabled;
 		this.id = id;
-		this.clientID = crypto.randomUUID();
+		this.clientID = uuidv4();
 		this.hour = hour;
 		this.day = day;
 		this.month = month;

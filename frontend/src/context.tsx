@@ -1,4 +1,5 @@
 import React, { ReactNode, useState, useCallback, useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { Context, ContextType, ProcessedChartData } from "./context-object";
 import Service from "./types/service.tsx";
 import { CookieKeys, Timescale } from "./types/strings";
@@ -258,7 +259,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 
 							// If the service doesn't exist, add it
 							if (finalService === undefined) {
-								newService.clientID = crypto.randomUUID();
+								newService.clientID = uuidv4();
 								newService.enabled = true;
 								finalServices.push(newService);
 								break;
