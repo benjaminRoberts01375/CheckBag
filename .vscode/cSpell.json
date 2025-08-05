@@ -26,7 +26,8 @@
 		"Hdel",
 		"Newkey",
 		"hincrby",
-		"Upgrader"
+		"Upgrader",
+		"uuidv4"
 	],
 	"flagWords": ["hte"]
 }
