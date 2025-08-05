@@ -229,72 +229,74 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		}
 	}, [timescale, hourData, dayData, monthData, yearData]);
 
-	function requestServiceData(): void {
-		const time_steps: string[] = ["hour", "day", "month", "year"];
-		time_steps.forEach(time_step => {
-			(async () => {
-				try {
-					const url = new URL("/api/service-data", window.location.origin);
-					url.searchParams.set("time-step", time_step);
-					const response = await fetch(url.toString(), {
-						method: "GET",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						credentials: "include",
-					});
+	async function requestServiceData(): Promise<void> {
+		const time_steps = ["hour", "day", "month", "year"] as const;
+		type TimeStep = (typeof time_steps)[number];
 
-					if (!response.ok) {
-						throw new Error("Failed to fetch initial data:" + response.status);
-					}
-					const newServices: Service[] = (await response.json()).map((serviceData: any) =>
-						Service.fromJSON(serviceData),
-					);
-					setServices(existingServices => {
-						var finalServices: Service[] = [];
-						for (const newService of newServices) {
-							var finalService = existingServices.find(
-								existingService => existingService.id === newService.id,
-							);
+		try {
+			// Make all requests in parallel
+			const requests: Promise<{
+				time_step: string;
+				services: Service[];
+			}>[] = time_steps.map(async time_step => {
+				const url = new URL("/api/service-data", window.location.origin);
+				url.searchParams.set("time-step", time_step);
+				const response = await fetch(url.toString(), {
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					credentials: "include",
+				});
 
-							// If the service doesn't exist, add it
-							if (finalService === undefined) {
-								newService.clientID = uuidv4();
-								newService.enabled = true;
-								finalServices.push(newService);
-								break;
-							}
-							// If the service does exist, update it
-							switch (time_step) {
-								case "hour":
-									finalService.hour = newService.hour;
-									finalServices.push(finalService);
-									break;
-								case "day":
-									finalService.day = newService.day;
-									finalServices.push(finalService);
-									break;
-								case "month":
-									finalService.month = newService.month;
-									finalServices.push(finalService);
-									break;
-								case "year":
-									finalService.year = newService.year;
-									finalServices.push(finalService);
-									break;
-							}
-						}
-						if (finalServices.length === 0) {
-							navigate("/dashboard/services");
-						}
-						return finalServices;
-					});
-				} catch (error) {
-					console.error("Error fetching initial data:", error);
-					navigate("/signin");
+				if (!response.ok) {
+					throw new Error(`Failed to fetch data for ${time_step}: ${response.status}`);
 				}
-			})();
-		});
+
+				const data = await response.json();
+				return {
+					time_step,
+					services: data.map((serviceData: any) => Service.fromJSON(serviceData)),
+				};
+			});
+
+			// Wait for all requests to complete
+			const results = await Promise.all(requests);
+
+			// Single state update with all the data
+			setServices(existingServices => {
+				const updatedServices = [...existingServices];
+
+				// Process each time_step's data
+				results.forEach(({ time_step, services }) => {
+					services.forEach(newService => {
+						const existingIndex = updatedServices.findIndex(
+							existing => existing.id === newService.id,
+						);
+
+						if (existingIndex === -1) {
+							// Service doesn't exist, add it
+							newService.clientID = uuidv4();
+							newService.enabled = true;
+							updatedServices.push(newService);
+						} else {
+							// Service exists, update the specific time_step data
+							const existing = updatedServices[existingIndex];
+							existing[time_step as TimeStep] = newService[time_step as TimeStep];
+						}
+					});
+				});
+
+				if (updatedServices.length === 0) {
+					navigate("/dashboard/services");
+				}
+
+				return updatedServices;
+			});
+		} catch (error) {
+			console.error("Error fetching service data:", error);
+			navigate("/signin");
+		}
 	}
 
 	function serviceAdd(service: Service): void {
