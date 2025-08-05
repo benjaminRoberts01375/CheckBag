@@ -2,7 +2,7 @@ import React, { ReactNode, useState, useCallback, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { Context, ContextType, ProcessedChartData } from "./context-object";
 import Service from "./types/service.tsx";
-import { CookieKeys, Timescale } from "./types/strings";
+import { CookieKeys, Timescale, Timescales } from "./types/strings";
 import { useNavigate } from "react-router-dom";
 import GraphData from "./types/graph-data";
 import ChartData from "./types/chart-data";
@@ -230,17 +230,14 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 	}, [timescale, hourData, dayData, monthData, yearData]);
 
 	async function requestServiceData(): Promise<void> {
-		const time_steps = ["hour", "day", "month", "year"] as const;
-		type TimeStep = (typeof time_steps)[number];
-
 		try {
 			// Make all requests in parallel
 			const requests: Promise<{
 				time_step: string;
 				services: Service[];
-			}>[] = time_steps.map(async time_step => {
+			}>[] = Timescales.map(async time_scale => {
 				const url = new URL("/api/service-data", window.location.origin);
-				url.searchParams.set("time-step", time_step);
+				url.searchParams.set("time-step", time_scale);
 				const response = await fetch(url.toString(), {
 					method: "GET",
 					headers: {
@@ -250,12 +247,12 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 				});
 
 				if (!response.ok) {
-					throw new Error(`Failed to fetch data for ${time_step}: ${response.status}`);
+					throw new Error(`Failed to fetch data for ${time_scale}: ${response.status}`);
 				}
 
 				const data = await response.json();
 				return {
-					time_step,
+					time_step: time_scale,
 					services: data.map((serviceData: any) => Service.fromJSON(serviceData)),
 				};
 			});
@@ -282,7 +279,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 						} else {
 							// Service exists, update the specific time_step data
 							const existing = updatedServices[existingIndex];
-							existing[time_step as TimeStep] = newService[time_step as TimeStep];
+							existing[time_step as Timescale] = newService[time_step as Timescale];
 						}
 					});
 				});
