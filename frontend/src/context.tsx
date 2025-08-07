@@ -81,9 +81,9 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 			});
 
 			// Create chart data for response codes
-			const responseCodes = Array.from(responseCodesCounter.entries()).map(
-				([key, value]) => new ChartData(value, String(key)),
-			);
+			const responseCodes = Array.from(responseCodesCounter.entries())
+				.map(([key, value]) => new ChartData(value, String(key)))
+				.sort((a, b) => (b.label < a.label ? 1 : -1));
 
 			// Create chart data for countries (top 10 + others)
 			const countries = Array.from(countryCounter.entries()).sort((a, b) => b[1] - a[1]);
@@ -191,18 +191,16 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 								}
 								updatedServices[existingServiceIndex] = existingService;
 							}
+							updatedServices[existingServiceIndex] = existingService;
 						}
+					}
+				});
 
-						if (updatedServices.length === 0) {
-							navigate("/dashboard/services");
-						}
-						return updatedServices;
-					});
-				} catch (error) {
-					console.error("Error fetching initial data:", error);
-					navigate("/signin");
+				if (updatedServices.length === 0) {
+					navigate("/dashboard/services");
 				}
-			})();
+				return updatedServices;
+			});
 		});
 	}
 
