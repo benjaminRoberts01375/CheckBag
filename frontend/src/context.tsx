@@ -140,56 +140,80 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 
 	function requestServiceData(): void {
 		const time_steps: string[] = ["hour", "day", "month", "year"];
-		time_steps.forEach(time_step => {
-			(async () => {
-				try {
-					const url = new URL("/api/service-data", window.location.origin);
-					url.searchParams.set("time-step", time_step);
-					const response = await fetch(url.toString(), {
-						method: "GET",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						credentials: "include",
-					});
 
-					if (!response.ok) {
-						throw new Error("Failed to fetch initial data:" + response.status);
-					}
-					const newServices: Service[] = (await response.json()).map((serviceData: any) =>
-						Service.fromJSON(serviceData),
-					);
-					setServices(existingServices => {
-						var updatedServices = [...existingServices]; // Make a copy of the existing services, not just a reference to avoid state issues
+		// Create all fetch promises
+		const fetchPromises = time_steps.map(async time_step => {
+			try {
+				const url = new URL("/api/service-data", window.location.origin);
+				url.searchParams.set("time-step", time_step);
+				const response = await fetch(url.toString(), {
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					credentials: "include",
+				});
 
-						for (const newService of newServices) {
-							var existingServiceIndex = updatedServices.findIndex(
-								existingService => existingService.id === newService.id,
-							);
+				if (!response.ok) {
+					throw new Error("Failed to fetch initial data:" + response.status);
+				}
 
-							// If the service doesn't exist, add it
-							if (existingServiceIndex === -1) {
-								newService.clientID = uuidv4();
-								newService.enabled = true;
-								updatedServices.push(newService);
-							} else {
-								// If the service exists, update its processed data
-								const existingService = updatedServices[existingServiceIndex];
-								switch (time_step) {
-									case "hour":
-										existingService.hourProcessed = newService.hourProcessed;
-										break;
-									case "day":
-										existingService.dayProcessed = newService.dayProcessed;
-										break;
-									case "month":
-										existingService.monthProcessed = newService.monthProcessed;
-										break;
-									case "year":
-										existingService.yearProcessed = newService.yearProcessed;
-										break;
-								}
-								updatedServices[existingServiceIndex] = existingService;
+				const newServices: Service[] = (await response.json()).map((serviceData: any) =>
+					Service.fromJSON(serviceData),
+				);
+
+				return { time_step, services: newServices, success: true };
+			} catch (error) {
+				console.error(`Error fetching data for ${time_step}:`, error);
+				return { time_step, services: [], success: false };
+			}
+		});
+
+		// Wait for all requests to complete and process results
+		Promise.allSettled(fetchPromises).then(results => {
+			const successfulResults = results
+				.filter(result => result.status === "fulfilled")
+				.map(result => result.value);
+
+			// Check if any requests succeeded
+			if (successfulResults.length === 0) {
+				console.error("All service data requests failed");
+				navigate("/signin");
+				return;
+			}
+
+			// Update services state once with all the collected data
+			setServices(existingServices => {
+				var updatedServices = [...existingServices];
+
+				// Process each successful result
+				successfulResults.forEach(({ time_step, services: newServices }) => {
+					for (const newService of newServices) {
+						var existingServiceIndex = updatedServices.findIndex(
+							existingService => existingService.id === newService.id,
+						);
+
+						// If the service doesn't exist, add it
+						if (existingServiceIndex === -1) {
+							newService.clientID = uuidv4();
+							newService.enabled = true;
+							updatedServices.push(newService);
+						} else {
+							// If the service exists, update its processed data
+							const existingService = updatedServices[existingServiceIndex];
+							switch (time_step) {
+								case "hour":
+									existingService.hourProcessed = newService.hourProcessed;
+									break;
+								case "day":
+									existingService.dayProcessed = newService.dayProcessed;
+									break;
+								case "month":
+									existingService.monthProcessed = newService.monthProcessed;
+									break;
+								case "year":
+									existingService.yearProcessed = newService.yearProcessed;
+									break;
 							}
 							updatedServices[existingServiceIndex] = existingService;
 						}
