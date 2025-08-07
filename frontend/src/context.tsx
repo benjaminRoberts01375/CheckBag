@@ -2,9 +2,8 @@ import React, { ReactNode, useState, useCallback, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { Context, ContextType, ProcessedChartData } from "./context-object";
 import Service from "./types/service.tsx";
-import { CookieKeys, Timescale, Timescales } from "./types/strings";
+import { CookieKeys, Timescale } from "./types/strings";
 import { useNavigate } from "react-router-dom";
-import GraphData from "./types/graph-data";
 import ChartData from "./types/chart-data";
 import ResourceUsageData from "./types/resource-usage-data";
 
@@ -25,7 +24,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 	const [timescale, setTimescale] = useState<Timescale>("hour");
 	const navigate = useNavigate();
 
-	// Chart data states for each timespan
+	// Chart data states for each timespan - now cached and only recalculated when needed
 	const [hourData, setHourData] = useState<ProcessedChartData>(emptyChartData);
 	const [dayData, setDayData] = useState<ProcessedChartData>(emptyChartData);
 	const [monthData, setMonthData] = useState<ProcessedChartData>(emptyChartData);
@@ -40,132 +39,50 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		return undefined;
 	}
 
-	// Process services data into chart data for a specific timescale
-	const processServicesData = useCallback(
+	// Combines pre-processed service data for a specific timescale
+	const combinePreProcessedData = useCallback(
 		(targetTimescale: Timescale): ProcessedChartData => {
 			const enabledServices = services.filter(service => service.enabled);
 			if (enabledServices.length === 0) {
 				return emptyChartData;
 			}
 
-			var graphData: GraphData[] = [];
-			var responseCodesCounter = new Map<number, number>();
-			var countryCounter = new Map<string, number>();
-			var ipCounter = new Map<string, number>();
-			var resourceUsage = new Array<ResourceUsageData>();
+			const quantityData = enabledServices.map(
+				service => service.getProcessedData(targetTimescale).quantityData,
+			);
+			const responseCodesCounter = new Map<number, number>();
+			const countryCounter = new Map<string, number>();
+			const ipCounter = new Map<string, number>();
+			const resourceUsage = new Array<ResourceUsageData>();
 
-			// Configure timespan-specific settings
-			var timeStepQuantity = 0;
-			var rollback: (step: number) => Date;
+			// Combine data from all enabled services
+			enabledServices.forEach(service => {
+				const serviceData = service.getProcessedData(targetTimescale);
 
-			switch (targetTimescale) {
-				case "hour":
-					rollback = (step: number) => {
-						const now = new Date();
-						const currentMinute = now.getMinutes();
-						now.setUTCMinutes(currentMinute + step, 0, 0);
-						return now;
-					};
-					timeStepQuantity = 60;
-					break;
-				case "day":
-					rollback = (step: number) => {
-						const now = new Date();
-						now.setUTCHours(now.getUTCHours() + step, 0, 0, 0);
-						return now;
-					};
-					timeStepQuantity = 24;
-					break;
-				case "month":
-					rollback = (step: number): Date => {
-						var now = new Date();
-						now.setUTCHours(0, 0, 0, 0);
-						const currentUTCDay = now.getUTCDate();
-						now.setUTCDate(currentUTCDay + step);
-						return now;
-					};
-					timeStepQuantity = 30;
-					break;
-				case "year":
-					rollback = (step: number) => {
-						const now = new Date();
-						now.setUTCDate(1);
-						now.setUTCHours(0, 0, 0, 0);
-						const currentMonth = now.getUTCMonth();
-						now.setUTCMonth(currentMonth + step);
-						return now;
-					};
-					timeStepQuantity = 12;
-					break;
-			}
+				// Combine response codes
+				serviceData.responseCodeData.forEach((value, key) => {
+					responseCodesCounter.set(key, (responseCodesCounter.get(key) ?? 0) + value);
+				});
 
-			// Process each service
-			for (const service of enabledServices) {
-				var analyticsMap = service[targetTimescale];
-				const usedResource = new Map<string, number>();
-				const working_graph_data = new GraphData(service.title, targetTimescale);
+				// Combine countries
+				serviceData.countryCodeData.forEach((value, key) => {
+					countryCounter.set(key, (countryCounter.get(key) ?? 0) + value);
+				});
 
-				// Generate data points for the entire time range (including empty ones)
-				for (let i = 0; i < timeStepQuantity; i++) {
-					const date = rollback(-i);
-					var dateString = () => {
-						switch (targetTimescale) {
-							case "hour":
-								return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-							case "day":
-								return date.toLocaleTimeString([], { hour: "numeric", hour12: true });
-							case "month":
-								return date.toLocaleString("default", {
-									month: "short",
-									day: "numeric",
-									timeZone: "UTC",
-								});
-							case "year":
-								return date.toLocaleString("default", {
-									month: "short",
-									timeZone: "UTC",
-								});
-							default:
-								return date.toLocaleDateString();
-						}
-					};
-					working_graph_data.x_values[timeStepQuantity - i - 1] = dateString(); // Reverse order
-					working_graph_data.data[timeStepQuantity - i - 1] =
-						analyticsMap.get(date.toISOString())?.quantity ?? 0; // Reverse order
-					var analytic = analyticsMap.get(date.toISOString());
+				// Combine IP addresses
+				serviceData.ipAddressData.forEach((value, key) => {
+					ipCounter.set(key, (ipCounter.get(key) ?? 0) + value);
+				});
 
-					if (analytic !== undefined) {
-						// Count response codes
-						analytic.responseCode.forEach((value, key) => {
-							responseCodesCounter.set(key, (responseCodesCounter.get(key) ?? 0) + value);
-						});
-						// Count countries
-						analytic.country.forEach((value, key) => {
-							countryCounter.set(key, (countryCounter.get(key) ?? 0) + value);
-						});
-						// Count IP addresses
-						analytic.ip.forEach((value, key) => {
-							ipCounter.set(key, (ipCounter.get(key) ?? 0) + value);
-						});
-						// Count resources
-						analytic.resource.forEach((value, key) => {
-							usedResource.set(key, (usedResource.get(key) ?? 0) + value);
-						});
-					}
-				}
-				graphData.push(working_graph_data);
-
-				// Add resource usage data for this service
-				usedResource.forEach((value, key) => {
+				// Add resource usage data
+				serviceData.resourceUsage.forEach((value, key) => {
 					resourceUsage.push(new ResourceUsageData(service.title, key, value));
 				});
-			}
+			});
 
 			// Create chart data for response codes
 			const responseCodes = Array.from(responseCodesCounter.entries())
-				.map(([key, value]) => {
-					return new ChartData(value, String(key));
-				})
+				.map(([key, value]) => new ChartData(value, String(key)))
 				.sort((a, b) => (b.label < a.label ? 1 : -1));
 
 			// Create chart data for countries (top 10 + others)
@@ -173,9 +90,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 			const topCountries = countries.slice(0, 10);
 			const otherCountriesCount = countries.slice(10).reduce((sum, current) => sum + current[1], 0);
 			const countryData = topCountries
-				.map(([key, value]) => {
-					return new ChartData(value, key);
-				})
+				.map(([key, value]) => new ChartData(value, key))
 				.sort((a, b) => (b.label < a.label ? 1 : -1));
 			if (otherCountriesCount > 0) {
 				countryData.push(new ChartData(otherCountriesCount, "Other"));
@@ -186,16 +101,14 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 			const topIPs = IPs.slice(0, 10);
 			const otherIPsCount = IPs.slice(10).reduce((sum, current) => sum + current[1], 0);
 			const ipData = topIPs
-				.map(([key, value]) => {
-					return new ChartData(value, key);
-				})
+				.map(([key, value]) => new ChartData(value, key))
 				.sort((a, b) => (b.label < a.label ? 1 : -1));
 			if (otherIPsCount > 0) {
 				ipData.push(new ChartData(otherIPsCount, "Other"));
 			}
 
 			return {
-				quantityData: graphData,
+				quantityData,
 				responseCodeData: responseCodes,
 				countryCodeData: countryData,
 				IPAddressData: ipData,
@@ -207,11 +120,11 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 
 	// Update all timespan data when services change
 	useEffect(() => {
-		setHourData(processServicesData("hour"));
-		setDayData(processServicesData("day"));
-		setMonthData(processServicesData("month"));
-		setYearData(processServicesData("year"));
-	}, [processServicesData]);
+		setHourData(combinePreProcessedData("hour"));
+		setDayData(combinePreProcessedData("day"));
+		setMonthData(combinePreProcessedData("month"));
+		setYearData(combinePreProcessedData("year"));
+	}, [combinePreProcessedData]);
 
 	// Get data for current timescale
 	const getCurrentTimescaleData = useCallback((): ProcessedChartData => {
@@ -229,71 +142,72 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		}
 	}, [timescale, hourData, dayData, monthData, yearData]);
 
-	async function requestServiceData(): Promise<void> {
-		try {
-			// Make all requests in parallel
-			const requests: Promise<{
-				time_step: string;
-				services: Service[];
-			}>[] = Timescales.map(async time_scale => {
-				const url = new URL("/api/service-data", window.location.origin);
-				url.searchParams.set("time-step", time_scale);
-				const response = await fetch(url.toString(), {
-					method: "GET",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					credentials: "include",
-				});
-
-				if (!response.ok) {
-					throw new Error(`Failed to fetch data for ${time_scale}: ${response.status}`);
-				}
-
-				const data = await response.json();
-				return {
-					time_step: time_scale,
-					services: data.map((serviceData: any) => Service.fromJSON(serviceData)),
-				};
-			});
-
-			// Wait for all requests to complete
-			const results = await Promise.all(requests);
-
-			// Single state update with all the data
-			setServices(existingServices => {
-				const updatedServices = [...existingServices];
-
-				// Process each time_step's data
-				results.forEach(({ time_step, services }) => {
-					services.forEach(newService => {
-						const existingIndex = updatedServices.findIndex(
-							existing => existing.id === newService.id,
-						);
-
-						if (existingIndex === -1) {
-							// Service doesn't exist, add it
-							newService.clientID = uuidv4();
-							newService.enabled = true;
-							updatedServices.push(newService);
-						} else {
-							// Service exists, update the specific time_step data
-							const existing = updatedServices[existingIndex];
-							existing[time_step as Timescale] = newService[time_step as Timescale];
-						}
+	function requestServiceData(): void {
+		const time_steps: string[] = ["hour", "day", "month", "year"];
+		time_steps.forEach(time_step => {
+			(async () => {
+				try {
+					const url = new URL("/api/service-data", window.location.origin);
+					url.searchParams.set("time-step", time_step);
+					const response = await fetch(url.toString(), {
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						credentials: "include",
 					});
-				});
 
-				if (updatedServices.length === 0) {
-					navigate("/dashboard/services");
+					if (!response.ok) {
+						throw new Error("Failed to fetch initial data:" + response.status);
+					}
+					const newServices: Service[] = (await response.json()).map((serviceData: any) =>
+						Service.fromJSON(serviceData),
+					);
+					setServices(existingServices => {
+						var finalServices: Service[] = [];
+						for (const newService of newServices) {
+							var finalService = existingServices.find(
+								existingService => existingService.id === newService.id,
+							);
+
+							// If the service doesn't exist, add it
+							if (finalService === undefined) {
+								newService.clientID = uuidv4();
+								newService.enabled = true;
+								finalServices.push(newService);
+								break;
+							}
+							// If the service does exist, update its processed data and preserve enabled state
+							switch (time_step) {
+								case "hour":
+									finalService.hourProcessed = newService.hourProcessed;
+									finalServices.push(finalService);
+									break;
+								case "day":
+									finalService.dayProcessed = newService.dayProcessed;
+									finalServices.push(finalService);
+									break;
+								case "month":
+									finalService.monthProcessed = newService.monthProcessed;
+									finalServices.push(finalService);
+									break;
+								case "year":
+									finalService.yearProcessed = newService.yearProcessed;
+									finalServices.push(finalService);
+									break;
+							}
+						}
+						if (finalServices.length === 0) {
+							navigate("/dashboard/services");
+						}
+						return finalServices;
+					});
+				} catch (error) {
+					console.error("Error fetching initial data:", error);
+					navigate("/signin");
 				}
-
-				return updatedServices;
-			});
-		} catch (error) {
-			console.error("Error fetching service data:", error);
-			navigate("/signin");
-		}
+			})();
+		});
 	}
 
 	function serviceAdd(service: Service): void {
@@ -363,11 +277,18 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		})();
 	}
 
+	// Toggle the "enabled" state of a service
 	function serviceToggle(serviceID: string): void {
 		setServices(services => {
 			return services.map(existingService => {
 				if (existingService.clientID === serviceID) {
-					return { ...existingService, enabled: !existingService.enabled };
+					return new Service(
+						existingService.internal_address,
+						existingService.external_address,
+						existingService.title,
+						existingService.id,
+						!existingService.enabled,
+					);
 				}
 				return existingService;
 			});
