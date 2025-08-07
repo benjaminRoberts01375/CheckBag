@@ -16,7 +16,7 @@ const Dashboard = () => {
 	useEffect(() => {
 		console.log("Updating nodes to " + services.length);
 		setNodes(services.length);
-	}, [services]);
+	}, [services.length]);
 
 	// Check window size for mobile view
 	useEffect(() => {
