@@ -282,13 +282,18 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		setServices(services => {
 			return services.map(existingService => {
 				if (existingService.clientID === serviceID) {
-					return new Service(
+					const updated_service = new Service(
 						existingService.internal_address,
 						existingService.external_address,
 						existingService.title,
 						existingService.id,
 						!existingService.enabled,
 					);
+					updated_service.hourProcessed = existingService.hourProcessed;
+					updated_service.dayProcessed = existingService.dayProcessed;
+					updated_service.monthProcessed = existingService.monthProcessed;
+					updated_service.yearProcessed = existingService.yearProcessed;
+					return updated_service;
 				}
 				return existingService;
 			});
