@@ -164,43 +164,43 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 						Service.fromJSON(serviceData),
 					);
 					setServices(existingServices => {
-						var finalServices: Service[] = [];
+						var updatedServices = [...existingServices]; // Make a copy of the existing services, not just a reference to avoid state issues
+
 						for (const newService of newServices) {
-							var finalService = existingServices.find(
+							var existingServiceIndex = updatedServices.findIndex(
 								existingService => existingService.id === newService.id,
 							);
 
 							// If the service doesn't exist, add it
-							if (finalService === undefined) {
+							if (existingServiceIndex === -1) {
 								newService.clientID = uuidv4();
 								newService.enabled = true;
-								finalServices.push(newService);
-								break;
-							}
-							// If the service does exist, update its processed data and preserve enabled state
-							switch (time_step) {
-								case "hour":
-									finalService.hourProcessed = newService.hourProcessed;
-									finalServices.push(finalService);
-									break;
-								case "day":
-									finalService.dayProcessed = newService.dayProcessed;
-									finalServices.push(finalService);
-									break;
-								case "month":
-									finalService.monthProcessed = newService.monthProcessed;
-									finalServices.push(finalService);
-									break;
-								case "year":
-									finalService.yearProcessed = newService.yearProcessed;
-									finalServices.push(finalService);
-									break;
+								updatedServices.push(newService);
+							} else {
+								// If the service exists, update its processed data
+								const existingService = updatedServices[existingServiceIndex];
+								switch (time_step) {
+									case "hour":
+										existingService.hourProcessed = newService.hourProcessed;
+										break;
+									case "day":
+										existingService.dayProcessed = newService.dayProcessed;
+										break;
+									case "month":
+										existingService.monthProcessed = newService.monthProcessed;
+										break;
+									case "year":
+										existingService.yearProcessed = newService.yearProcessed;
+										break;
+								}
+								updatedServices[existingServiceIndex] = existingService;
 							}
 						}
-						if (finalServices.length === 0) {
+
+						if (updatedServices.length === 0) {
 							navigate("/dashboard/services");
 						}
-						return finalServices;
+						return updatedServices;
 					});
 				} catch (error) {
 					console.error("Error fetching initial data:", error);
