@@ -65,8 +65,13 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 				});
 
 				// Combine countries
+				let regionNames = new Intl.DisplayNames(["en"], { type: "region" });
 				serviceData.countryCodeData.forEach((value, key) => {
-					countryCounter.set(key, (countryCounter.get(key) ?? 0) + value);
+					const regionName = regionNames.of(key);
+					countryCounter.set(
+						regionName ?? key,
+						(countryCounter.get(regionName ?? key) ?? 0) + value,
+					);
 				});
 
 				// Combine IP addresses
