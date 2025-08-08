@@ -2,7 +2,6 @@ import "../styles.css";
 import servicesStyles from "./services.module.css";
 import DashboardStyles from "./dashboard.module.css";
 import { useList } from "../context-hook";
-import { useEffect } from "react";
 import StackedBarChart from "../components/stacked-bar-chart";
 import PieChartComponent from "../components/pie-chart";
 import ResourceTable from "../components/resource-table";
@@ -10,7 +9,7 @@ import { createTheme } from "@mui/material/styles";
 import { ThemeProvider } from "@mui/material/styles";
 
 const DashboardScreen = () => {
-	const { requestServiceData, getCurrentTimescaleData, services } = useList();
+	const { getCurrentTimescaleData } = useList();
 
 	// Get the processed chart data for the current timescale
 	const chartData = getCurrentTimescaleData();
@@ -23,16 +22,6 @@ const DashboardScreen = () => {
 			},
 		},
 	});
-
-	useEffect(() => {
-		// Initial request
-		if (services.length === 0) {
-			requestServiceData();
-		}
-		// Update every 10 seconds after initial request
-		const interval = setInterval(requestServiceData, 10000);
-		return () => clearInterval(interval);
-	}, []);
 
 	return (
 		<div id={servicesStyles["container"]}>

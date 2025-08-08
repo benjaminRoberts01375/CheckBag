@@ -3,13 +3,9 @@ import servicesStyles from "./services.module.css";
 import DashboardStyles from "./dashboard.module.css";
 import { useList } from "../context-hook";
 import ServiceEdit from "../components/service-edit";
-import { useEffect } from "react";
 
 const ServicesScreen = () => {
-	const { services, requestServiceData } = useList();
-	useEffect(() => {
-		requestServiceData();
-	}, []);
+	const { services } = useList();
 
 	return (
 		<div id={servicesStyles["container"]}>
