@@ -28,6 +28,7 @@ type RequestAnalyticData struct {
 	Country      string `json:"country"`
 	IP           string `json:"ip"`
 	ResponseCode int    `json:"response_code"`
+	Time         string `json:"time"`
 }
 
 func getServiceDataLive(w http.ResponseWriter, r *http.Request) {
@@ -87,6 +88,7 @@ func (serviceUpdater *ServiceUpdater) sendServiceDataLive() {
 			serviceUpdater.Subscribers = append(serviceUpdater.Subscribers, addChannel)
 
 		case update := <-serviceUpdater.Update: // Update all subscribers
+			update.Time = cacheAnalyticsMinute.timeStr(0)
 			updateBytes, err := json.Marshal(update)
 			if err != nil {
 				Coms.PrintErrStr("Could not marshal SSE update: " + err.Error())
