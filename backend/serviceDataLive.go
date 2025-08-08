@@ -12,7 +12,7 @@ var serviceUpdater = ServiceUpdater{
 	Subscribers: make([]chan []byte, 0),
 	Remove:      make(chan chan []byte, 5),
 	Add:         make(chan chan []byte, 5),
-	Update:      make(chan RequestAnalyticData, 5),
+	Update:      make(chan RequestAnalyticData, 30), // High number to prevent blocking with high traffic
 }
 
 type ServiceUpdater struct {
@@ -51,7 +51,7 @@ func getServiceDataLive(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	Coms.Println("Got flusher")
-	updateChannel := make(chan []byte, 10)
+	updateChannel := make(chan []byte, 30) // High number to prevent blocking with high traffic
 	serviceUpdater.Add <- updateChannel
 	Coms.Println("Added update channel")
 	for {
