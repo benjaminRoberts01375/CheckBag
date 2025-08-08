@@ -27,5 +27,12 @@ func analytics(r *http.Request, responseCode int) {
 			ip = values[0]
 		}
 	}
+	serviceUpdater.Update <- RequestAnalyticData{
+		ServiceID:    serviceID,
+		Resource:     resource,
+		Country:      country,
+		IP:           ip,
+		ResponseCode: responseCode,
+	}
 	cache.incrementAnalytics(serviceID, resource, country, ip, responseCode)
 }

@@ -22,6 +22,10 @@ func main() {
 	serviceLinks.Setup()
 	// Setup endpoints
 	setupEndpoints()
+	// Setup SSE
+	go serviceUpdater.sendServiceDataLive()
+
+	// Print startup messages
 	if models.Config.DevMode {
 		Coms.Println("Running in dev mode")
 	}
@@ -38,6 +42,7 @@ func setupEndpoints() {
 	http.HandleFunc("POST /api/user-reset-password", userResetPassword) // Reset the user's password
 	http.HandleFunc("POST /api/services-set", servicesSet)              // Setting/replacing all services
 	http.HandleFunc("GET /api/service-data", getServiceData)            // Getting analytics
+	http.HandleFunc("GET /api/service-data-live", getServiceDataLive)   // Getting analytics in real-time
 	http.HandleFunc("/api/service/{path...}", requestForwarding)        // Proxying requests
 	http.HandleFunc("/", notFound)                                      // Serve default 404 data
 }

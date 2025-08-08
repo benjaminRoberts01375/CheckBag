@@ -415,6 +415,15 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		526: "526: Invalid SSL Certificate",
 	} as const;
 
+	useEffect(() => {
+		console.log("Starting SSE");
+		const event = new EventSource("/api/service-data-live");
+		event.onmessage = event => {
+			const data = JSON.parse(event.data);
+			console.log("Received data:", data);
+		};
+	}, []);
+
 	const contextShape: ContextType = {
 		services,
 		timescale,
