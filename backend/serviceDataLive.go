@@ -23,7 +23,7 @@ type ServiceUpdater struct {
 }
 
 type RequestAnalyticData struct {
-	ServiceID    string `json:"service"`
+	ServiceID    string `json:"id"`
 	Resource     string `json:"resource"`
 	Country      string `json:"country"`
 	IP           string `json:"ip"`
