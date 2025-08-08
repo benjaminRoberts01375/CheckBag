@@ -92,9 +92,21 @@ func (serviceUpdater *ServiceUpdater) sendServiceDataLive() {
 				Coms.PrintErrStr("Could not marshal SSE update: " + err.Error())
 				continue
 			}
+
+			// Send to all subscribers, removing slow ones
+			var activeSubscribers []chan []byte
 			for _, subscriber := range serviceUpdater.Subscribers {
-				subscriber <- updateBytes
+				select {
+				case subscriber <- updateBytes:
+
+					activeSubscribers = append(activeSubscribers, subscriber)
+				default:
+					// Channel is full/blocked, drop this subscriber
+					Coms.Println("Dropping slow subscriber: ", subscriber)
+					close(subscriber)
+				}
 			}
+			serviceUpdater.Subscribers = activeSubscribers
 		}
 	}
 }
