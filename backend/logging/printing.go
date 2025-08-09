@@ -5,11 +5,8 @@ import (
 )
 
 const (
-	reset     = "\033[0m"
-	bold      = "\033[1m"
-	dim       = "\033[2m"
-	italic    = "\033[3m"
-	underline = "\033[4m"
+	reset = "\033[0m"
+	bold  = "\033[1m"
 )
 
 func printPrefix() string {
