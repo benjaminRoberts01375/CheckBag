@@ -18,8 +18,9 @@ createRoot(document.getElementById("root")!).render(
 					<Route path="/signup" element={<SignUp />} />
 					<Route path="/dashboard" element={<Dashboard />}>
 						<Route index element={<Navigate to="/dashboard/home" replace />} />
-						<Route path="/dashboard/home" element={<DashboardScreen />} />
-						<Route path="/dashboard/services" element={<ServicesScreen />} />
+						<Route path="home" element={<DashboardScreen />} />
+						<Route path="services" element={<ServicesScreen />} />
+						<Route path="*" element={<Navigate to="/dashboard/home" replace />} />
 					</Route>
 				</Routes>
 			</ContextProvider>
