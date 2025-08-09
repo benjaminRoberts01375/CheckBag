@@ -82,7 +82,7 @@ class Service {
 		const ipCounter = new Map<string, number>();
 		const resourceCounter = new Map<string, number>();
 
-		// Configure timespan-specific settings
+		// Configure time span-specific settings
 		let timeStepQuantity = 0;
 		let rollback: (step: number) => Date;
 

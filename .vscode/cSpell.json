@@ -28,7 +28,8 @@
 		"hincrby",
 		"Upgrader",
 		"uuidv4",
-		"checkbag"
+		"checkbag",
+		"appuser"
 	],
 	"flagWords": ["hte"]
 }
