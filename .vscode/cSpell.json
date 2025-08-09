@@ -27,7 +27,8 @@
 		"Newkey",
 		"hincrby",
 		"Upgrader",
-		"uuidv4"
+		"uuidv4",
+		"checkbag"
 	],
 	"flagWords": ["hte"]
 }
