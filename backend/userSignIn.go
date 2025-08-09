@@ -54,7 +54,7 @@ func userSignIn(w http.ResponseWriter, r *http.Request) {
 			Name:     jwt.CookieName,
 			Value:    token,
 			HttpOnly: false,
-			Secure:   true,
+			Secure:   false,
 			SameSite: http.SameSiteStrictMode,
 			Expires:  time.Now().Add(jwt.LoginDuration),
 			Path:     "/",
