@@ -96,7 +96,13 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 			const otherCountriesCount = countries.slice(10).reduce((sum, current) => sum + current[1], 0);
 			const countryData = topCountries.map(([key, value]) => new ChartData(value, key));
 			if (otherCountriesCount > 0) {
-				countryData.push(new ChartData(otherCountriesCount, "Other"));
+				const totalOtherCountries = countries.slice(10).length;
+				var label = "Others";
+				if (totalOtherCountries == 1) {
+					label = "Other";
+				}
+				label = "+" + totalOtherCountries + " " + label;
+				countryData.push(new ChartData(otherCountriesCount, label));
 			}
 
 			// Create chart data for IP addresses (top 10 + others)
@@ -105,7 +111,13 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 			const otherIPsCount = IPs.slice(10).reduce((sum, current) => sum + current[1], 0);
 			const ipData = topIPs.map(([key, value]) => new ChartData(value, key));
 			if (otherIPsCount > 0) {
-				ipData.push(new ChartData(otherIPsCount, "Other"));
+				const totalOtherIPs = IPs.slice(10).length;
+				var label = "Others";
+				if (totalOtherIPs == 1) {
+					label = "Other";
+				}
+				label = "+" + totalOtherIPs + " " + label;
+				ipData.push(new ChartData(otherIPsCount, label));
 			}
 
 			return {
