@@ -62,7 +62,6 @@ services:
       - CACHE_CONTAINER_NAME=valkey
       - CACHE_ID_LENGTH=15
       - SERVICE_ID_LENGTH=15
-      - ALLOW_SENDING_EMAILS=false
       - DEV_MODE=true
     ports:
       - "9001:9001"
