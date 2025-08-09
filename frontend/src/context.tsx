@@ -87,21 +87,26 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 
 			// Create chart data for response codes
 			const responseCodes = Array.from(responseCodesCounter.entries())
-				.map(([key, value]) => new ChartData(value, statusCodeToString[key] ?? key))
+				.map(
+					([key, value]) =>
+						new ChartData(value, (statusCodeToString[key] ?? key) + " (" + value + ")"),
+				)
 				.sort((a, b) => (b.label < a.label ? 1 : -1));
 
 			// Create chart data for countries (top 10 + others)
 			const countries = Array.from(countryCounter.entries()).sort((a, b) => b[1] - a[1]);
 			const topCountries = countries.slice(0, 10);
 			const otherCountriesCount = countries.slice(10).reduce((sum, current) => sum + current[1], 0);
-			const countryData = topCountries.map(([key, value]) => new ChartData(value, key));
+			const countryData = topCountries.map(
+				([key, value]) => new ChartData(value, key + " (" + value + ")"),
+			);
 			if (otherCountriesCount > 0) {
 				const totalOtherCountries = countries.slice(10).length;
 				var label = "Others";
 				if (totalOtherCountries == 1) {
 					label = "Other";
 				}
-				label = "+" + totalOtherCountries + " " + label;
+				label = "+" + totalOtherCountries + " " + label + " (" + otherCountriesCount + ")";
 				countryData.push(new ChartData(otherCountriesCount, label));
 			}
 
@@ -109,14 +114,14 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 			const IPs = Array.from(ipCounter.entries()).sort((a, b) => b[1] - a[1]);
 			const topIPs = IPs.slice(0, 10);
 			const otherIPsCount = IPs.slice(10).reduce((sum, current) => sum + current[1], 0);
-			const ipData = topIPs.map(([key, value]) => new ChartData(value, key));
+			const ipData = topIPs.map(([key, value]) => new ChartData(value, key + " (" + value + ")"));
 			if (otherIPsCount > 0) {
 				const totalOtherIPs = IPs.slice(10).length;
 				var label = "Others";
 				if (totalOtherIPs == 1) {
 					label = "Other";
 				}
-				label = "+" + totalOtherIPs + " " + label;
+				label = "+" + totalOtherIPs + " " + label + " (" + otherIPsCount + ")";
 				ipData.push(new ChartData(otherIPsCount, label));
 			}
 
