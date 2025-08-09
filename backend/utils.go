@@ -32,11 +32,6 @@ func requestRespondCode(w http.ResponseWriter, code int) error {
 	return requestRespond(w, nil)
 }
 
-func requestRespondError(w http.ResponseWriter, err error) error {
-	w.WriteHeader(http.StatusInternalServerError)
-	return requestRespond(w, []byte(err.Error()))
-}
-
 func requestReceived[ReturnType any](r *http.Request) (*ReturnType, error) {
 	defer r.Body.Close()
 	body, err := io.ReadAll(r.Body)
