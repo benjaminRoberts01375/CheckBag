@@ -62,7 +62,12 @@ const SignUpScreen = () => {
 		})();
 	}
 
-	return <PasswordScreen buttonText="Create account" passwordSubmit={onSubmit} error={error} />;
+	return (
+		<>
+			<title>CheckBag - Sign In</title>
+			<PasswordScreen buttonText="Create account" passwordSubmit={onSubmit} error={error} />;
+		</>
+	);
 };
 
 export default SignUpScreen;

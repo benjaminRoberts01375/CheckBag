@@ -85,7 +85,10 @@ const SignInScreen = () => {
 	}
 
 	return (
-		<PasswordScreen buttonText="Sign in (uses cookies)" passwordSubmit={onSubmit} error={error} />
+		<>
+			<title>CheckBag - Sign Up</title>
+			<PasswordScreen buttonText="Sign in (uses cookies)" passwordSubmit={onSubmit} error={error} />
+		</>
 	);
 };
 

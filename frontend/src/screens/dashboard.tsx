@@ -36,6 +36,7 @@ const DashboardScreen = () => {
 
 	return (
 		<div id={servicesStyles["container"]}>
+			<title>CheckBag - Dashboard</title>
 			<ThemeProvider theme={theme}>
 				<div className={DashboardStyles["graph-group"]}>
 					<StackedBarChart
