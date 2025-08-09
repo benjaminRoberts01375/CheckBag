@@ -40,11 +40,4 @@ func setupEndpoints() {
 	http.HandleFunc("POST /api/services-set", servicesSet)              // Setting/replacing all services
 	http.HandleFunc("GET /api/service-data", getServiceData)            // Getting analytics
 	http.HandleFunc("/api/service/{path...}", requestForwarding)        // Proxying requests
-	http.HandleFunc("/", notFound)                                      // Serve default 404 data
-}
-
-func notFound(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotFound)
-	Printing.PrintErrStr("404 - Not found - Sadge")
-	w.Write([]byte("Womp Womp - 404"))
 }
