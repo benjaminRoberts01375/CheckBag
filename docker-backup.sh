@@ -2,7 +2,7 @@
 
 # Docker Volume Backup/Restore Script for CheckBag
 
-VOLUMES=("valkey-data" "backend-data" "frontend-node-modules")
+VOLUMES=("valkey-data" "backend-data")
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BACKUP_DIR="$SCRIPT_DIR/checkbag-volume-backup"
 
