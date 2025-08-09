@@ -1,5 +1,3 @@
-github.com/benjaminRoberts01375/Go-Communicate v0.0.0-20250709124053-e4173423654c h1:DsbaTu0l70DGfD1rtaMG9YTtvONCxa0wtaor7G/3CDQ=
-github.com/benjaminRoberts01375/Go-Communicate v0.0.0-20250709124053-e4173423654c/go.mod h1:mEtpQ3sniksqo+auuV8RH/8FojtNkcKJFOd5dp0KO0s=
 github.com/golang-jwt/jwt/v5 v5.2.2 h1:Rl4B7itRWVtYIHFrSNd7vhTiz9UpLdi6gZhZ3wEeDy8=
 github.com/golang-jwt/jwt/v5 v5.2.2/go.mod h1:pqrtFR0X4osieyHYxtmOUWsAWrfe1Q5UVIyoH402zdk=
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=

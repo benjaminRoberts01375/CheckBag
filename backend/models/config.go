@@ -3,20 +3,17 @@ package models
 import (
 	"os"
 	"strconv"
-
-	Coms "github.com/benjaminRoberts01375/Go-Communicate"
 )
 
 type config struct {
 	DevMode         bool `json:"dev_mode"`
 	ServiceIDLength int  `json:"service_id_length"`
+	LaunchPort      int  `json:"launch_port"`
 }
 
-var Config config
+var ModelsConfig config
 
 func Setup() {
-	Coms.ReadExternalConfig("config.json", &Config)
-
 	devMode, err := strconv.ParseBool(os.Getenv("DEV_MODE"))
 	if err != nil {
 		panic("Failed to parse DEV_MODE: " + err.Error())
@@ -25,6 +22,15 @@ func Setup() {
 	if err != nil {
 		panic("Failed to parse SERVICE_ID_LENGTH: " + err.Error())
 	}
-	Config.ServiceIDLength = serviceIDLen
-	Config.DevMode = devMode
+	port, err := strconv.Atoi(os.Getenv("PORT"))
+	if err != nil {
+		panic("Failed to parse PORT: " + err.Error())
+	}
+	ModelsConfig.ServiceIDLength = serviceIDLen
+	ModelsConfig.DevMode = devMode
+	ModelsConfig.LaunchPort = port
+}
+
+func (config *config) FormatPort() string {
+	return ":" + strconv.Itoa(int(config.LaunchPort))
 }

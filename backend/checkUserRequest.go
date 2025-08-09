@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"reflect"
 
-	Coms "github.com/benjaminRoberts01375/Go-Communicate"
 	"github.com/benjaminRoberts01375/Web-Tech-Stack/jwt"
 )
 
@@ -33,6 +32,6 @@ func checkUserRequest[ReturnType any](r *http.Request) (*jwt.Claims, *ReturnType
 		return claims, &zero, nil
 	}
 
-	requestGroup, err := Coms.ExternalPostReceived[ReturnType](r)
+	requestGroup, err := requestReceived[ReturnType](r)
 	return claims, requestGroup, err
 }

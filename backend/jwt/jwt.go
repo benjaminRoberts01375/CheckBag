@@ -16,12 +16,12 @@ func GenerateJWT(duration time.Duration) (string, error) {
 	claims.NotBefore = jwt.NewNumericDate(time.Now())
 	claims.Issuer = "Backend API"
 	claims.Subject = "Session Token"
-	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(config.JWTSecret))
+	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(JWTConfig.JWTSecret))
 }
 
 func JWTIsValid(tokenString string) (*Claims, bool) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (any, error) {
-		return []byte(config.JWTSecret), nil
+		return []byte(JWTConfig.JWTSecret), nil
 	})
 	if err != nil {
 		return nil, false

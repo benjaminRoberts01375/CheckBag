@@ -1,15 +1,15 @@
 package jwt
 
 import (
-	Coms "github.com/benjaminRoberts01375/Go-Communicate"
+	Config "github.com/benjaminRoberts01375/Web-Tech-Stack/config"
 )
 
-type Config struct {
+type config struct {
 	JWTSecret string `json:"jwt_secret"`
 }
 
-var config Config
+var JWTConfig config
 
 func Setup() {
-	Coms.ReadExternalConfig("jwt.json", &config)
+	Config.ReadExternalConfig("jwt.json", &JWTConfig)
 }

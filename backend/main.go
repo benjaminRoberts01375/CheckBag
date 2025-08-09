@@ -2,8 +2,9 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 
-	Coms "github.com/benjaminRoberts01375/Go-Communicate"
+	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
 	"github.com/benjaminRoberts01375/Web-Tech-Stack/models"
 )
 
@@ -13,7 +14,7 @@ func main() {
 	// Config setup
 	models.Setup()
 	// Coms setup
-	Coms.ReadConfig()
+	Printing.ReadConfig()
 	// Cache setup
 	cache.raw = &CacheLayer{}
 	cache.raw.Setup()
@@ -22,11 +23,11 @@ func main() {
 	serviceLinks.Setup()
 	// Setup endpoints
 	setupEndpoints()
-	if models.Config.DevMode {
-		Coms.Println("Running in dev mode")
+	if models.ModelsConfig.DevMode {
+		Printing.Println("Running in dev mode")
 	}
-	Coms.Println("Listening on port " + Coms.GetLaunchPort())
-	http.ListenAndServe(Coms.GetLaunchPort(), nil)
+	Printing.Println("Listening on port " + strconv.Itoa(models.ModelsConfig.LaunchPort))
+	http.ListenAndServe(models.ModelsConfig.FormatPort(), nil)
 }
 
 func setupEndpoints() {
@@ -44,6 +45,6 @@ func setupEndpoints() {
 
 func notFound(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
-	Coms.PrintErrStr("404 - Not found - Sadge")
+	Printing.PrintErrStr("404 - Not found - Sadge")
 	w.Write([]byte("Womp Womp - 404"))
 }

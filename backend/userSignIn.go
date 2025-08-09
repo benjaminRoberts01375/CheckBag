@@ -4,42 +4,42 @@ import (
 	"net/http"
 	"time"
 
-	Coms "github.com/benjaminRoberts01375/Go-Communicate"
 	"github.com/benjaminRoberts01375/Web-Tech-Stack/jwt"
+	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
 	"github.com/benjaminRoberts01375/Web-Tech-Stack/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func userSignIn(w http.ResponseWriter, r *http.Request) {
-	rawPassword, err := Coms.ExternalPostReceived[string](r)
+	rawPassword, err := requestReceived[string](r)
 	if err != nil {
-		Coms.PrintErrStr("Could not get password from request: ", err.Error())
-		Coms.ExternalPostRespondCode(http.StatusBadRequest, w)
+		Printing.PrintErrStr("Could not get password from request: ", err.Error())
+		requestRespondCode(w, http.StatusBadRequest)
 		return
 	}
 	passwordHash, err := fileSystem.GetUserData()
 	if err != nil {
-		Coms.PrintErrStr("Could not get user data from file system: ", err.Error())
-		Coms.ExternalPostRespondCode(http.StatusBadRequest, w)
+		Printing.PrintErrStr("Could not get user data from file system: ", err.Error())
+		requestRespondCode(w, http.StatusBadRequest)
 		return
 	}
 	// Compare the password with the hash
 	if err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(*rawPassword)); err != nil {
-		Coms.PrintErrStr("Passwords do not match: ", err.Error())
-		Coms.ExternalPostRespondCode(http.StatusBadRequest, w) // Intentionally obscure the error to prevent username guessing
+		Printing.PrintErrStr("Passwords do not match: ", err.Error())
+		requestRespondCode(w, http.StatusBadRequest) // Intentionally obscure the error to prevent username guessing
 		return
 	}
 
 	// If the password is correct, generate a JWT
 	token, err := jwt.GenerateJWT(jwt.LoginDuration)
 	if err != nil {
-		Coms.PrintErrStr("Could not generate JWT: ", err.Error())
-		Coms.ExternalPostRespondCode(http.StatusInternalServerError, w)
+		Printing.PrintErrStr("Could not generate JWT: ", err.Error())
+		requestRespondCode(w, http.StatusInternalServerError)
 		return
 	}
 	go cache.setUserSignIn(token)
 
-	if models.Config.DevMode {
+	if models.ModelsConfig.DevMode {
 		http.SetCookie(w, &http.Cookie{
 			Name:     jwt.CookieName,
 			Value:    token,
@@ -60,5 +60,5 @@ func userSignIn(w http.ResponseWriter, r *http.Request) {
 			Path:     "/",
 		})
 	}
-	Coms.ExternalPostRespondCode(http.StatusOK, w)
+	requestRespondCode(w, http.StatusOK)
 }

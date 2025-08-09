@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"time"
 
+	Config "github.com/benjaminRoberts01375/Web-Tech-Stack/config"
 	JWT "github.com/benjaminRoberts01375/Web-Tech-Stack/jwt"
-
-	Coms "github.com/benjaminRoberts01375/Go-Communicate"
+	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
 	"github.com/valkey-io/valkey-go"
 )
 
@@ -95,7 +95,7 @@ func (cache *CacheLayer) Setup() {
 		panic("Failed to parse CACHE_ID_LENGTH: " + err.Error())
 	}
 
-	Coms.ReadExternalConfig("valkey.json", &cache)
+	Config.ReadExternalConfig("valkey.json", &cache)
 	cache.Port = cachePort
 	cache.ContainerName = cacheContainerName
 
@@ -109,11 +109,11 @@ func (cache *CacheLayer) Setup() {
 	}
 	client, err := valkey.NewClient(options)
 	if err != nil {
-		Coms.PrintErr(err)
+		Printing.PrintErr(err)
 		panic("Could not connect to Valkey: " + err.Error())
 	}
 	cache.DB = client
-	Coms.Println("Connected to Valkey")
+	Printing.Println("Connected to Valkey")
 }
 
 func (cache *CacheLayer) Close() {
@@ -186,7 +186,7 @@ func (cache CacheLayer) IncrementKey(key string, expiration time.Time) error {
 func (cache *CacheClient[client]) setUserSignIn(JWT string) error {
 	err := cache.raw.Set("JWT:"+JWT, "valid", cacheUserSignIn)
 	if err != nil {
-		Coms.PrintErrStr("Valkey Set Error: " + err.Error())
+		Printing.PrintErrStr("Valkey Set Error: " + err.Error())
 		return err
 	}
 	return nil
@@ -207,27 +207,27 @@ func (cache *CacheClient[client]) incrementAnalytics(serviceID string, resource 
 		quantity := strconv.Itoa(timeStep.maximumUnits)
 		err := cache.raw.IncrementKey("Analytics:"+serviceID+":"+quantity+":"+recordTime+":quantity", expiration)
 		if err != nil {
-			Coms.PrintErrStr("Could not increment minute analytics key: " + err.Error())
+			Printing.PrintErrStr("Could not increment minute analytics key: " + err.Error())
 			return err
 		}
 		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+quantity+":"+recordTime+":country", country, 1, expiration)
 		if err != nil {
-			Coms.PrintErrStr("Could not increment minute analytics country: " + err.Error())
+			Printing.PrintErrStr("Could not increment minute analytics country: " + err.Error())
 			return err
 		}
 		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+quantity+":"+recordTime+":ip", ip, 1, expiration)
 		if err != nil {
-			Coms.PrintErrStr("Could not increment minute analytics ip: " + err.Error())
+			Printing.PrintErrStr("Could not increment minute analytics ip: " + err.Error())
 			return err
 		}
 		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+quantity+":"+recordTime+":resource", resource, 1, expiration)
 		if err != nil {
-			Coms.PrintErrStr("Could not increment minute analytics resource: " + err.Error())
+			Printing.PrintErrStr("Could not increment minute analytics resource: " + err.Error())
 			return err
 		}
 		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+quantity+":"+recordTime+":response_code", strconv.Itoa(responseCode), 1, expiration)
 		if err != nil {
-			Coms.PrintErrStr("Could not increment minute analytics response code: " + err.Error())
+			Printing.PrintErrStr("Could not increment minute analytics response code: " + err.Error())
 			return err
 		}
 	}
@@ -314,27 +314,27 @@ func (cache *CacheClient[client]) deleteService(service ServiceLink) error {
 		quantity := strconv.Itoa(timeStep.maximumUnits)
 		err := cache.raw.Delete("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":quantity")
 		if err != nil {
-			Coms.PrintErrStr("Could not delete minute analytics key: " + err.Error())
+			Printing.PrintErrStr("Could not delete minute analytics key: " + err.Error())
 			return err
 		}
 		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":country")
 		if err != nil {
-			Coms.PrintErrStr("Could not delete minute analytics country: " + err.Error())
+			Printing.PrintErrStr("Could not delete minute analytics country: " + err.Error())
 			return err
 		}
 		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":ip")
 		if err != nil {
-			Coms.PrintErrStr("Could not delete minute analytics ip: " + err.Error())
+			Printing.PrintErrStr("Could not delete minute analytics ip: " + err.Error())
 			return err
 		}
 		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":resource")
 		if err != nil {
-			Coms.PrintErrStr("Could not delete minute analytics resource: " + err.Error())
+			Printing.PrintErrStr("Could not delete minute analytics resource: " + err.Error())
 			return err
 		}
 		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":response_code")
 		if err != nil {
-			Coms.PrintErrStr("Could not delete minute analytics response code: " + err.Error())
+			Printing.PrintErrStr("Could not delete minute analytics response code: " + err.Error())
 			return err
 		}
 	}

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	Coms "github.com/benjaminRoberts01375/Go-Communicate"
+	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
 )
 
 type ServiceData struct {
@@ -27,8 +27,8 @@ type Analytic struct {
 func getServiceData(w http.ResponseWriter, r *http.Request) {
 	_, _, err := checkUserRequest[any](r)
 	if err != nil {
-		Coms.PrintErrStr("Could not verify user for analytic data: " + err.Error())
-		Coms.ExternalPostRespondCode(http.StatusForbidden, w)
+		Printing.PrintErrStr("Could not verify user for analytic data: " + err.Error())
+		requestRespondCode(w, http.StatusForbidden)
 		return
 	}
 	queryParams := r.URL.Query()
@@ -84,5 +84,5 @@ func getServiceData(w http.ResponseWriter, r *http.Request) {
 		serviceData[requestedServiceIndex].Hour = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsMinute)
 	}
 
-	Coms.ExternalPostRespond(serviceData, w)
+	requestRespond(w, serviceData)
 }

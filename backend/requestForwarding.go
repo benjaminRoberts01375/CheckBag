@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	Coms "github.com/benjaminRoberts01375/Go-Communicate"
+	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
 	"github.com/gorilla/websocket"
 )
 
@@ -14,7 +14,7 @@ import (
 func requestForwarding(w http.ResponseWriter, r *http.Request) {
 	requestedService, err := serviceLinks.GetServiceFromExternalURL(r.Host)
 	if err != nil {
-		Coms.PrintErrStr("No service found for external URL \"" + r.Host + "\": " + err.Error())
+		Printing.PrintErrStr("No service found for external URL \"" + r.Host + "\": " + err.Error())
 		requestRespondCode(w, http.StatusNotFound)
 		return
 	}
@@ -49,15 +49,15 @@ func restForwarding(w http.ResponseWriter, r *http.Request, internalAddress stri
 		bodyBytes, err = io.ReadAll(r.Body)
 		defer r.Body.Close()
 		if err != nil {
-			Coms.PrintErr(err)
+			Printing.PrintErr(err)
 			return
 		}
 	}
 
-	Coms.Println("Creating " + r.Method + " request to: " + internalAddress)
+	Printing.Println("Creating " + r.Method + " request to: " + internalAddress)
 	proxyRequest, err := http.NewRequest(r.Method, internalAddress, bytes.NewBuffer(bodyBytes))
 	if err != nil {
-		Coms.PrintErrStr("Error creating new request: " + err.Error())
+		Printing.PrintErrStr("Error creating new request: " + err.Error())
 		requestRespondCode(w, http.StatusInternalServerError)
 		return
 	}
@@ -75,7 +75,7 @@ func restForwarding(w http.ResponseWriter, r *http.Request, internalAddress stri
 	}
 	proxyResponse, err := client.Do(proxyRequest)
 	if err != nil {
-		Coms.PrintErrStr("Error sending request: " + err.Error())
+		Printing.PrintErrStr("Error sending request: " + err.Error())
 		requestRespondCode(w, http.StatusInternalServerError)
 		return
 	}
@@ -84,7 +84,7 @@ func restForwarding(w http.ResponseWriter, r *http.Request, internalAddress stri
 	defer proxyResponse.Body.Close()
 	responseBytes, err := io.ReadAll(proxyResponse.Body)
 	if err != nil {
-		Coms.PrintErrStr("Error reading response body: " + err.Error())
+		Printing.PrintErrStr("Error reading response body: " + err.Error())
 		requestRespondCode(w, http.StatusInternalServerError)
 		return
 	}
@@ -127,7 +127,7 @@ func websocketProxy(w http.ResponseWriter, r *http.Request, baseInternalURL stri
 	// Upgrade client connection to WebSocket
 	clientConn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		Coms.PrintErrStr("Error upgrading client connection: " + err.Error())
+		Printing.PrintErrStr("Error upgrading client connection: " + err.Error())
 		return
 	}
 	defer clientConn.Close()
@@ -146,17 +146,17 @@ func websocketProxy(w http.ResponseWriter, r *http.Request, baseInternalURL stri
 	}
 
 	// Connect to internal WebSocket service
-	Coms.Println("Attempting to connect to WebSocket: " + wsURL)
+	Printing.Println("Attempting to connect to WebSocket: " + wsURL)
 	internalConn, resp, err := websocket.DefaultDialer.Dial(wsURL, headers)
 	if err != nil {
-		Coms.PrintErrStr("Error connecting to internal WebSocket service: " + err.Error())
+		Printing.PrintErrStr("Error connecting to internal WebSocket service: " + err.Error())
 		if resp != nil {
-			Coms.PrintErrStr("HTTP Response Status: " + resp.Status)
+			Printing.PrintErrStr("HTTP Response Status: " + resp.Status)
 			if resp.Body != nil {
 				bodyBytes, _ := io.ReadAll(resp.Body)
 				resp.Body.Close()
 				if len(bodyBytes) > 0 {
-					Coms.PrintErrStr("Response Body: " + string(bodyBytes))
+					Printing.PrintErrStr("Response Body: " + string(bodyBytes))
 				}
 			}
 		}
@@ -165,7 +165,7 @@ func websocketProxy(w http.ResponseWriter, r *http.Request, baseInternalURL stri
 	}
 	defer internalConn.Close()
 
-	Coms.Println("WebSocket proxy established between client and " + wsURL)
+	Printing.Println("WebSocket proxy established between client and " + wsURL)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -174,7 +174,7 @@ func websocketProxy(w http.ResponseWriter, r *http.Request, baseInternalURL stri
 	go forwardSocketMessage(ctx, clientConn, internalConn, cancel)
 
 	<-ctx.Done()
-	Coms.Println("WebSocket proxy connection closed")
+	Printing.Println("WebSocket proxy connection closed")
 }
 
 func forwardSocketMessage(ctx context.Context, incoming *websocket.Conn, outgoing *websocket.Conn, cancel context.CancelFunc) {
@@ -189,30 +189,15 @@ func forwardSocketMessage(ctx context.Context, incoming *websocket.Conn, outgoin
 		messageType, message, err := incoming.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				Coms.PrintErrStr("Client WebSocket read error: " + err.Error())
+				Printing.PrintErrStr("Client WebSocket read error: " + err.Error())
 			}
 			return
 		}
 
 		err = outgoing.WriteMessage(messageType, message)
 		if err != nil {
-			Coms.PrintErrStr("Error writing to internal WebSocket: " + err.Error())
+			Printing.PrintErrStr("Error writing to internal WebSocket: " + err.Error())
 			return
 		}
 	}
-}
-
-func requestRespond(w http.ResponseWriter, data []byte, headers ...http.Header) error {
-	_, error := w.Write(data)
-	return error
-}
-
-func requestRespondCode(w http.ResponseWriter, code int, headers ...http.Header) error {
-	w.WriteHeader(code)
-	return requestRespond(w, nil, headers...)
-}
-
-func requestRespondError(w http.ResponseWriter, err error, headers ...http.Header) error {
-	w.WriteHeader(http.StatusInternalServerError)
-	return requestRespond(w, []byte(err.Error()), headers...)
 }

@@ -3,31 +3,31 @@ package main
 import (
 	"net/http"
 
-	Coms "github.com/benjaminRoberts01375/Go-Communicate"
+	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func newUser(w http.ResponseWriter, r *http.Request) {
 	userData, _ := fileSystem.GetUserData()
 	if userData != "" {
-		Coms.ExternalPostRespondCode(http.StatusForbidden, w)
+		requestRespondCode(w, http.StatusForbidden)
 		return
 	}
 
-	newUserPassword, err := Coms.ExternalPostReceived[string](r)
+	newUserPassword, err := requestReceived[string](r)
 	if err != nil {
-		Coms.ExternalPostRespondCode(http.StatusBadRequest, w)
+		requestRespondCode(w, http.StatusBadRequest)
 		return
 	}
 	userPasswordHash, err := createPasswordHash(*newUserPassword)
 	if err != nil {
-		Coms.ExternalPostRespondCode(http.StatusBadRequest, w)
+		requestRespondCode(w, http.StatusBadRequest)
 		return
 	}
 	err = fileSystem.SetUserData(string(userPasswordHash))
 	if err != nil {
-		Coms.PrintErrStr("Could not set user data in file system: ", err.Error())
-		Coms.ExternalPostRespondCode(http.StatusInternalServerError, w)
+		Printing.PrintErrStr("Could not set user data in file system: ", err.Error())
+		requestRespondCode(w, http.StatusInternalServerError)
 		return
 	}
 }

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"slices"
 
-	Coms "github.com/benjaminRoberts01375/Go-Communicate"
+	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
 	"github.com/benjaminRoberts01375/Web-Tech-Stack/models"
 )
 
@@ -21,11 +21,11 @@ type ServiceLink struct {
 func (serviceLinks *ServiceLinks) Setup() {
 	diskServices, err := fileSystem.GetServices()
 	if err != nil {
-		Coms.PrintErrStr("Could not get services: " + err.Error())
+		Printing.PrintErrStr("Could not get services: " + err.Error())
 		return
 	}
 	*serviceLinks = diskServices
-	Coms.Println("Loaded services: ", serviceLinks)
+	Printing.Println("Loaded services: ", serviceLinks)
 }
 
 func (serviceLinks *ServiceLinks) String() string {
@@ -42,8 +42,8 @@ func servicesSet(w http.ResponseWriter, r *http.Request) {
 	// Check JWT
 	_, newServiceLinks, err := checkUserRequest[ServiceLinks](r)
 	if err != nil {
-		Coms.PrintErrStr("Could not add service: " + err.Error())
-		Coms.ExternalPostRespondCode(http.StatusForbidden, w)
+		Printing.PrintErrStr("Could not add service: " + err.Error())
+		requestRespondCode(w, http.StatusForbidden)
 		return
 	}
 
@@ -55,7 +55,7 @@ func servicesSet(w http.ResponseWriter, r *http.Request) {
 		if delVal {
 			err := cache.deleteService(existingService)
 			if err != nil {
-				Coms.PrintErrStr("Could not delete service from cache: " + err.Error())
+				Printing.PrintErrStr("Could not delete service from cache: " + err.Error())
 			}
 		}
 		return delVal
@@ -67,7 +67,7 @@ func servicesSet(w http.ResponseWriter, r *http.Request) {
 			return existingService.ID == newService.ID
 		})
 		if existingServiceI == -1 { // Add service
-			newService.ID = generateRandomString(models.Config.ServiceIDLength)
+			newService.ID = generateRandomString(models.ModelsConfig.ServiceIDLength)
 			serviceLinks = append(serviceLinks, newService)
 			continue
 		}
@@ -79,12 +79,12 @@ func servicesSet(w http.ResponseWriter, r *http.Request) {
 
 	err = fileSystem.SetServices(serviceLinks)
 	if err != nil {
-		Coms.PrintErrStr("Could not set services in file system: " + err.Error())
-		Coms.ExternalPostRespondCode(http.StatusInternalServerError, w)
+		Printing.PrintErrStr("Could not set services in file system: " + err.Error())
+		requestRespondCode(w, http.StatusInternalServerError)
 		return
 	}
 
-	Coms.ExternalPostRespond(serviceLinks, w)
+	requestRespond(w, serviceLinks)
 }
 
 // Search for a service by external URL

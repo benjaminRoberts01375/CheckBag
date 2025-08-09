@@ -3,27 +3,27 @@ package main
 import (
 	"net/http"
 
-	Coms "github.com/benjaminRoberts01375/Go-Communicate"
 	"github.com/benjaminRoberts01375/Web-Tech-Stack/jwt"
+	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
 )
 
 func userLogout(w http.ResponseWriter, r *http.Request) {
 	_, _, err := checkUserRequest[any](r)
 	if err != nil {
-		Coms.PrintErrStr("Could not log out user: " + err.Error())
-		Coms.ExternalPostRespondCode(http.StatusForbidden, w)
+		Printing.PrintErrStr("Could not log out user: " + err.Error())
+		requestRespondCode(w, http.StatusForbidden)
 		return
 	}
 	cookie, err := r.Cookie(jwt.CookieName)
 	if err != nil {
-		Coms.PrintErrStr("Could not get user JWT cookie: " + err.Error())
+		Printing.PrintErrStr("Could not get user JWT cookie: " + err.Error())
 		return
 	}
 
 	err = cache.deleteUserSignIn(cookie.Value)
 	if err != nil {
-		Coms.PrintErrStr("Could not delete user JWT: " + err.Error())
+		Printing.PrintErrStr("Could not delete user JWT: " + err.Error())
 		return
 	}
-	Coms.ExternalPostRespondCode(http.StatusOK, w)
+	requestRespondCode(w, http.StatusOK)
 }

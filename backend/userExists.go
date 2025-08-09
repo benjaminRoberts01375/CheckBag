@@ -3,16 +3,16 @@ package main
 import (
 	"net/http"
 
-	Coms "github.com/benjaminRoberts01375/Go-Communicate"
+	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
 )
 
 func userExists(w http.ResponseWriter, r *http.Request) {
 	data, err := fileSystem.GetUserData()
 	if err != nil || data == "" {
-		Coms.Println("User does not exist")
-		Coms.ExternalPostRespondCode(http.StatusGone, w)
+		Printing.Println("User does not exist")
+		requestRespondCode(w, http.StatusGone)
 		return
 	}
-	Coms.Println("User exists")
-	Coms.ExternalPostRespondCode(http.StatusOK, w)
+	Printing.Println("User exists")
+	requestRespondCode(w, http.StatusOK)
 }

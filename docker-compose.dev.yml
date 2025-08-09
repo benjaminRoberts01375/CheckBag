@@ -49,16 +49,13 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
-      secrets:
-        - source: git_env
     container_name: backend
     restart: unless-stopped
     networks:
       - network
     hostname: backend
     environment:
-      - GOPRIVATE=github.com/benjaminRoberts01375
-      - ROLE=DB
+      - ROLE=Backend
       - COLOR=blue
       - PORT=9001
       - CACHE_PORT=6379
@@ -70,10 +67,6 @@ services:
     ports:
       - "9001:9001"
     secrets:
-      - source: db_coms
-        target: config.json
-      - source: db
-        target: db.json
       - source: valkey_backend
         target: valkey.json
     volumes:
@@ -89,12 +82,6 @@ volumes:
     name: backend-data
 
 secrets:
-  git_env:
-    file: ./.secrets/go_build.env
-  db_coms:
-    file: ./.secrets/dbcoms.json
-  db:
-    file: ./.secrets/db.json
   valkey_backend:
     file: ./.secrets/valkey.json
   valkey_config:
