@@ -61,3 +61,12 @@
 	word-break: break-all;
 	overflow-wrap: break-word;
 }
+
+.clickable-row {
+	cursor: pointer;
+	transition-duration: 0.2s;
+}
+
+.clickable-row:active {
+	background-color: #444a !important;
+}

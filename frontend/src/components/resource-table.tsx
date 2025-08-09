@@ -8,6 +8,10 @@ interface ResourceTableProps {
 	title: string;
 }
 
+async function copy_path(path: string): Promise<void> {
+	await navigator.clipboard.writeText(path);
+}
+
 const ResourceTable = ({ data, title }: ResourceTableProps) => {
 	return (
 		<div id={GraphStyles["container"]}>
@@ -32,7 +36,13 @@ const ResourceTable = ({ data, title }: ResourceTableProps) => {
 					<tbody>
 						{data.map(resourceUsage => {
 							return (
-								<tr key={resourceUsage.service + resourceUsage.resource}>
+								<tr
+									onClick={() =>
+										copy_path(resourceUsage.service_url + "/" + resourceUsage.resource)
+									}
+									key={resourceUsage.service + resourceUsage.resource}
+									className={ResourceTableStyles["clickable-row"]}
+								>
 									<td>
 										<p className={ResourceTableStyles["service"]}>{resourceUsage.service}</p>
 									</td>
