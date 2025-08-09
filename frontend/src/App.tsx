@@ -22,6 +22,7 @@ createRoot(document.getElementById("root")!).render(
 						<Route path="services" element={<ServicesScreen />} />
 						<Route path="*" element={<Navigate to="/dashboard/home" replace />} />
 					</Route>
+					<Route path="*" element={<Navigate to="/signin" replace />} />
 				</Routes>
 			</ContextProvider>
 		</BrowserRouter>
