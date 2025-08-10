@@ -7,6 +7,22 @@
 	"files.insertFinalNewline": true,
 	"files.trimTrailingWhitespace": true,
 
+	"files.exclude": {
+		"**/.git": true,
+		".gitattributes": true,
+		"**/.DS_Store": true,
+		"frontend/node_modules": true,
+		"frontend/src/vite-env.d.ts": true,
+		"frontend/bun-env.d.ts": true,
+		"frontend/bun.lock": true,
+		"frontend/bunfig.toml": true,
+		"backend/go.sum": true,
+		"backend/tmp": true,
+		"art projects": true,
+		"LICENSE": true,
+		"README.md": true
+	},
+
 	"[go]": {
 		"editor.defaultFormatter": "golang.go"
 	},
