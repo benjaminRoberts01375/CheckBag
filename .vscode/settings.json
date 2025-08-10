@@ -21,7 +21,8 @@
 		"art projects": true,
 		"LICENSE": true,
 		"README.md": true,
-		"CONTRIBUTING.md": true
+		"CONTRIBUTING.md": true,
+		"SECURITY.md": true
 	},
 
 	"[go]": {
