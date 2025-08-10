@@ -20,7 +20,8 @@
 		"backend/tmp": true,
 		"art projects": true,
 		"LICENSE": true,
-		"README.md": true
+		"README.md": true,
+		"CONTRIBUTING.md": true
 	},
 
 	"[go]": {
