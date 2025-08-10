@@ -31,7 +31,9 @@ While the development environment can launch on its own, it's recommended to ins
 The rest should be handled automatically by the recommended Visual Studio Code extensions.
 
 ### Sending in Patches
+
 CheckBag uses the typical flow for contributing:
+
 1. Fork the repo
 2. Clone: `git clone https://github.com/<your-username>/CheckBag`
 3. Add this CheckBag repo as a remote to your version: `git remote add upstream https://github.com/benjaminRoberts01375/CheckBag`
