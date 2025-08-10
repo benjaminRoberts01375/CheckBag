@@ -22,7 +22,8 @@
 		"LICENSE": true,
 		"README.md": true,
 		"CONTRIBUTING.md": true,
-		"SECURITY.md": true
+		"SECURITY.md": true,
+		".github": true
 	},
 
 	"[go]": {
