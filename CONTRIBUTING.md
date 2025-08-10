@@ -15,7 +15,7 @@ For a nice simple way to reload the docker setup, you can simply run either:
 - `docker compose -f docker-compose.dev.yml down && docker compose -f docker-compose.dev.yml up -d --build`
 - `docker compose -f docker-compose.dev.yml down && docker compose up -d --build`
 
-depending if you need to launch either the development environment or production one. You can the `docker-compose.dev.yml` for tearing down either.
+depending if you need to launch either the development environment or production one. You can use the `docker-compose.dev.yml` for tearing down either.
 
 ### Hidden Files
 
@@ -29,3 +29,14 @@ While the development environment can launch on its own, it's recommended to ins
 - Frontend package manager: [Bun](https://bun.com/)
 
 The rest should be handled automatically by the recommended Visual Studio Code extensions.
+
+### Sending in Patches
+CheckBag uses the typical flow for contributing:
+1. Fork the repo
+2. Clone: `git clone https://github.com/<your-username>/CheckBag`
+3. Add this CheckBag repo as a remote to your version: `git remote add upstream https://github.com/benjaminRoberts01375/CheckBag`
+4. Create a new branch on your copy: `git checkout -b feature/my-new-feature`
+5. Make your changes
+6. Add your changes: `git add .` and `git commit -m "Fixed this bug"`
+7. Push your changes: `git push origin feature/my-new-feature`
+8. Then finally open a [pull request](https://github.com/benjaminRoberts01375/CheckBag/pulls).
