@@ -12,17 +12,19 @@ const PieChartComponent = ({ data, title }: PieChartProps) => {
 	return (
 		<div id={graphsStyles["container"]}>
 			<h2 className="header">{title}</h2>
-			<PieChart
-				series={[
-					{
-						data: data,
-						highlightScope: { highlight: "item" },
-					},
-				]}
-				width={170}
-				height={170}
-				margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
-			/>
+			<div id={graphsStyles["chart"]}>
+				<PieChart
+					series={[
+						{
+							data: data,
+							highlightScope: { highlight: "item" },
+						},
+					]}
+					width={175}
+					height={175}
+					margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+				/>
+			</div>
 		</div>
 	);
 };
