@@ -1,6 +1,10 @@
 import "../styles.css";
 import GraphData from "../types/graph-data";
+import graphsStyles from "./graphs.module.css";
+import { IoIosDownload } from "react-icons/io";
 import { BarChart } from "@mui/x-charts/BarChart";
+import html2canvas from "html2canvas";
+import { useRef } from "react";
 
 interface StackedBarChartProps {
 	graphData: GraphData[];
@@ -9,9 +13,59 @@ interface StackedBarChartProps {
 }
 
 const StackedBarChart = ({ graphData, yAxisLabel, title }: StackedBarChartProps) => {
+	const chartRef = useRef<HTMLDivElement>(null);
+
+	const exportToPNG = async () => {
+		if (chartRef.current) {
+			try {
+				// Find and hide the button temporarily
+				const saveButton = chartRef.current.querySelector(
+					"#" + graphsStyles["save-button"],
+				) as HTMLElement;
+				if (saveButton) {
+					saveButton.style.display = "none";
+				}
+
+				const canvas = await html2canvas(chartRef.current, {
+					backgroundColor: null,
+					scale: 5,
+					useCORS: true,
+				});
+
+				// Show the button again
+				if (saveButton) {
+					saveButton.style.display = "";
+				}
+
+				const link = document.createElement("a");
+				link.download = `${title.toLowerCase().replace(/\s+/g, "-")}-chart.png`;
+				link.href = canvas.toDataURL("image/png");
+				link.click();
+			} catch (error) {
+				console.error("Error exporting chart:", error);
+				// Make sure button is visible again even if there's an error
+				const saveButton = chartRef.current.querySelector(
+					"#" + graphsStyles["save-button"],
+				) as HTMLElement;
+				if (saveButton) {
+					saveButton.style.display = "";
+				}
+			}
+		}
+	};
 	return (
-		<div>
-			<h2 className="header">{title}</h2>
+		<div ref={chartRef}>
+			<div id={graphsStyles["header"]}>
+				<h2>{title}</h2>
+				<button
+					onClick={exportToPNG}
+					id={graphsStyles["save-button"]}
+					className="secondary"
+					title="Download chart"
+				>
+					<IoIosDownload />
+				</button>
+			</div>
 			<BarChart
 				xAxis={[
 					{

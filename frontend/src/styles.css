@@ -6,6 +6,11 @@ body {
 	background: #1d1a1b;
 }
 
+.secondary {
+	background: rgb(183, 160, 60);
+	color: rgb(183, 160, 60);
+}
+
 .secondary-background {
 	background: #343031;
 }
