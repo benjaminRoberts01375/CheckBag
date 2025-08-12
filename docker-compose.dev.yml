@@ -14,7 +14,7 @@ services:
     hostname: frontend
     volumes:
       - ./frontend:/app
-      - node-modules:/app/node_modules
+      - /app/node_modules
     environment:
       - NODE_ENV=development
 
@@ -75,8 +75,6 @@ services:
 volumes:
   valkey_data:
     name: valkey-data
-  node-modules:
-    name: frontend-node-modules
   backend-data:
     name: backend-data
 
