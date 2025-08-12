@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"io"
 	"net/http"
+	"strings"
 
 	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
 	"github.com/gorilla/websocket"
@@ -28,9 +30,129 @@ func requestForwarding(w http.ResponseWriter, r *http.Request) {
 	// Check for WebSocket upgrade
 	if websocket.IsWebSocketUpgrade(r) {
 		websocketProxy(w, r, internalAddress)
+	} else if isSSERequest(r) {
+		sseProxy(w, r, internalAddress)
 	} else {
 		restForwarding(w, r, internalAddress)
 	}
+}
+
+// isSSERequest checks if the request is for Server-Sent Events
+func isSSERequest(r *http.Request) bool {
+	accept := r.Header.Get("Accept")
+	return strings.Contains(strings.ToLower(accept), "text/event-stream")
+}
+
+// sseProxy handles Server-Sent Events proxying
+func sseProxy(w http.ResponseWriter, r *http.Request, internalAddress string) {
+	internalAddress = "http://" + internalAddress
+
+	// Preserve query parameters
+	if r.URL.RawQuery != "" {
+		internalAddress += "?" + r.URL.RawQuery
+	}
+
+	// Read request body if present
+	var bodyBytes []byte
+	var err error
+	if r.Body != nil {
+		bodyBytes, err = io.ReadAll(r.Body)
+		defer r.Body.Close()
+		if err != nil {
+			Printing.PrintErr(err)
+			requestRespondCode(w, http.StatusInternalServerError)
+			return
+		}
+	}
+
+	Printing.Println("Creating SSE " + r.Method + " request to: " + internalAddress)
+
+	// Create context for user cancellation
+	ctx, cancel := context.WithCancel(r.Context())
+	defer cancel()
+
+	// Create proxy request
+	proxyRequest, err := http.NewRequestWithContext(ctx, r.Method, internalAddress, bytes.NewBuffer(bodyBytes))
+	if err != nil {
+		Printing.PrintErrStr("Error creating SSE proxy request: " + err.Error())
+		requestRespondCode(w, http.StatusInternalServerError)
+		return
+	}
+
+	// Copy headers from original request
+	for name, values := range r.Header {
+		for _, value := range values {
+			proxyRequest.Header.Add(name, value)
+		}
+	}
+
+	// Create HTTP client with timeout disabled for streaming
+	client := &http.Client{
+		Timeout: 0, // Disable timeout for streaming connections
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
+	// Make the request to internal service
+	proxyResponse, err := client.Do(proxyRequest)
+	if err != nil {
+		Printing.PrintErrStr("Error sending SSE request: " + err.Error())
+		requestRespondCode(w, http.StatusInternalServerError)
+		return
+	}
+	defer proxyResponse.Body.Close()
+
+	// Record analytics
+	go analytics(r, proxyResponse.StatusCode)
+
+	// Copy all response headers from internal service
+	for name, values := range proxyResponse.Header {
+		for _, value := range values {
+			w.Header().Add(name, value)
+		}
+	}
+
+	// Write status code
+	w.WriteHeader(proxyResponse.StatusCode)
+
+	// Flush headers immediately
+	if flusher, ok := w.(http.Flusher); ok {
+		flusher.Flush()
+	}
+
+	// Stream the SSE data
+	scanner := bufio.NewScanner(proxyResponse.Body)
+	for scanner.Scan() {
+		select {
+		case <-ctx.Done():
+			Printing.Println("SSE proxy client disconnected")
+			return
+		default:
+		}
+
+		line := scanner.Text()
+
+		// Write the line to client
+		_, err := w.Write([]byte(line + "\n"))
+		if err != nil {
+			Printing.PrintErrStr("Error writing SSE data to client: " + err.Error())
+			cancel() // Cancel the context to stop the internal request
+			return
+		}
+
+		// Flush immediately for real-time streaming
+		if flusher, ok := w.(http.Flusher); ok {
+			flusher.Flush()
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		Printing.PrintErrStr("Error reading SSE stream: " + err.Error())
+		return
+	}
+
+	Printing.Println("SSE proxy connection closed")
 }
 
 // Handles typical HTTP requests like GET, POST, etc.
