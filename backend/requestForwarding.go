@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// Attempts act as a proxy server for external requests to internal services. Ex. dev.benlab.us/my/stuff -> 192.168.0.50:8154/my/stuff
+// Attempts act as a proxy server for external requests to internal services
 func requestForwarding(w http.ResponseWriter, r *http.Request) {
 	requestedService, err := serviceLinks.GetServiceFromExternalURL(r.Host)
 	if err != nil {
