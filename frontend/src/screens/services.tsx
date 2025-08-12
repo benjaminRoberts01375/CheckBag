@@ -12,7 +12,7 @@ const ServicesScreen = () => {
 	}, []);
 
 	return (
-		<div id={servicesStyles["container"]}>
+		<div id={DashboardStyles["container"]}>
 			<title>CheckBag - Services</title>
 			<div className={DashboardStyles["graph-group"]}>
 				<h2 className="header">Services</h2>
