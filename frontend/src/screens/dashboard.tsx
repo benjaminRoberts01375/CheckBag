@@ -1,5 +1,4 @@
 import "../styles.css";
-import servicesStyles from "./services.module.css";
 import DashboardStyles from "./dashboard.module.css";
 import { useList } from "../context-hook";
 import { useEffect } from "react";
@@ -35,7 +34,7 @@ const DashboardScreen = () => {
 	}, []);
 
 	return (
-		<div id={servicesStyles["container"]}>
+		<div id={DashboardStyles["container"]}>
 			<title>CheckBag - Dashboard</title>
 			<ThemeProvider theme={theme}>
 				<div className={DashboardStyles["graph-group"]}>
