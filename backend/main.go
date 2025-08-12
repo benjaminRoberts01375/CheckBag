@@ -31,13 +31,13 @@ func main() {
 }
 
 func setupEndpoints() {
-	http.HandleFunc("GET /api/user-exists", userExists)                 // Check if the user already exists
-	http.HandleFunc("POST /api/user-sign-up", newUser)                  // Sign up with username and password
-	http.HandleFunc("POST /api/user-sign-in", userSignIn)               // Sign in with username and password
-	http.HandleFunc("POST /api/user-sign-in-jwt", userJWTSignIn)        // Sign in with JWT
-	http.HandleFunc("POST /api/user-logout", userLogout)                // Invalidate the user's JWT
-	http.HandleFunc("POST /api/user-reset-password", userResetPassword) // Reset the user's password
-	http.HandleFunc("POST /api/services-set", servicesSet)              // Setting/replacing all services
-	http.HandleFunc("GET /api/service-data", getServiceData)            // Getting analytics
-	http.HandleFunc("/api/service/{path...}", requestForwarding)        // Proxying requests
+	http.HandleFunc("GET /api/user-exists", userExists)          // Check if the user already exists
+	http.HandleFunc("POST /api/user-sign-up", newUser)           // Sign up with username and password
+	http.HandleFunc("POST /api/user-sign-in", userSignIn)        // Sign in with username and password
+	http.HandleFunc("POST /api/user-sign-in-jwt", userJWTSignIn) // Sign in with JWT
+	http.HandleFunc("POST /api/user-logout", userLogout)         // Invalidate the user's JWT
+	// http.HandleFunc("POST /api/user-reset-password", userResetPassword) // Reset the user's password
+	http.HandleFunc("POST /api/services-set", servicesSet)       // Setting/replacing all services
+	http.HandleFunc("GET /api/service-data", getServiceData)     // Getting analytics
+	http.HandleFunc("/api/service/{path...}", requestForwarding) // Proxying requests
 }
