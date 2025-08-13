@@ -1,6 +1,7 @@
 # <img src="https://github.com/user-attachments/assets/c915c0fd-37a0-489f-a122-3f158348ef59" alt="CheckBag Logo" style="width: 49%;">
 
-![Filtering](https://github.com/user-attachments/assets/f73c90f1-1931-4bb4-aefb-c35b020e9092)
+![CheckBag Demo](https://github.com/user-attachments/assets/d92c5049-40ef-474f-ae05-7f73a6c6ef6a)
+
 
 ## What is CheckBag?
 CheckBag is an analytics dashboard designed for homelab owners, providing insights into who's accessing your services and from where.
