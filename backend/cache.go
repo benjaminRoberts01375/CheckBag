@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"time"
 
@@ -354,4 +357,80 @@ func (cache *CacheClient[client]) deleteService(service ServiceLink) error {
 		}
 	}
 	return nil
+}
+
+func (cache *CacheClient[client]) addAPIKey(APIKey string, keyID string, name string) error {
+	if name == "" {
+		name = "Unnamed API"
+	}
+	hash := map[string]string{
+		"name": name,
+		"id":   keyID,
+	}
+
+	err := cache.raw.SetHash("APIKey:"+APIKey, hash)
+	if err != nil {
+		return err
+	}
+	err = cache.raw.AddToList("APIKeys", APIKey)
+	if err != nil {
+		return err
+	}
+	Printing.Println("Added API key: " + APIKey)
+	return nil
+}
+
+func (cache *CacheClient[client]) removeAPIKey(APIKeyID string) error {
+	keys, err := cache.raw.GetList("APIKeys")
+	if err != nil {
+		return err
+	}
+	for _, key := range keys {
+		keyInfo, err := cache.raw.GetHash("APIKey:" + key)
+		if err != nil {
+			return err
+		}
+		data, _ := json.Marshal(keyInfo)
+		Printing.Println("Key info: " + string(data))
+
+		if keyInfo["id"] == APIKeyID {
+			err := cache.raw.DeleteHash("APIKey:" + key)
+			if err != nil {
+				return err
+			}
+			err = cache.raw.RemoveFromList("APIKeys", key)
+			if err != nil {
+				return err
+			}
+			Printing.Println("Removed API key: " + key)
+			return nil
+		}
+	}
+	return errors.New("API key not found")
+}
+
+func (cache *CacheClient[client]) getAPIKeyInfo() ([]APIKeyInfo, error) {
+	keys, err := cache.raw.GetList("APIKeys")
+	if err != nil {
+		return nil, err
+	}
+	keysInfo := make([]APIKeyInfo, len(keys))
+	for i, key := range keys {
+		keyInfo, err := cache.raw.GetHash("APIKey:" + key)
+		if err != nil {
+			return nil, err
+		}
+		keysInfo[i].Name = keyInfo["name"]
+		keysInfo[i].ID = keyInfo["id"]
+	}
+
+	return keysInfo, nil
+}
+
+func (cache *CacheClient[client]) apiKeyExists(APIKey string) bool {
+	keys, err := cache.raw.GetList("APIKeys")
+	if err != nil {
+		return false
+	}
+	return slices.Contains(keys, APIKey)
 }
