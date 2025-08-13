@@ -63,3 +63,19 @@ func APISet(w http.ResponseWriter, r *http.Request) {
 	}
 	requestRespond(w, newKeys)
 }
+
+func APIGet(w http.ResponseWriter, r *http.Request) {
+	_, _, err := checkUserRequest[any](r)
+	if err != nil {
+		Printing.PrintErrStr("Could not get API: " + err.Error())
+		requestRespondCode(w, http.StatusForbidden)
+		return
+	}
+	keysInfo, err := cache.getAPIKeyInfo()
+	if err != nil {
+		Printing.PrintErrStr("Could not get API keys: " + err.Error())
+		requestRespondCode(w, http.StatusInternalServerError)
+		return
+	}
+	requestRespond(w, keysInfo)
+}
