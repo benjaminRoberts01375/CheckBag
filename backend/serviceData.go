@@ -25,13 +25,16 @@ type Analytic struct {
 }
 
 func getServiceData(w http.ResponseWriter, r *http.Request) {
+	queryParams := r.URL.Query()
 	_, _, err := checkUserRequest[any](r)
 	if err != nil {
-		Printing.PrintErrStr("Could not verify user for analytic data: " + err.Error())
-		requestRespondCode(w, http.StatusForbidden)
-		return
+		if !(queryParams["api-key"][0] != "" && cache.apiKeyExists(queryParams["api-key"][0])) { // API key check
+			Printing.PrintErrStr("Could not verify user or API key for analytic data: " + err.Error())
+			requestRespondCode(w, http.StatusForbidden)
+			return
+		}
 	}
-	queryParams := r.URL.Query()
+
 	serviceData := make([]ServiceData, len(serviceLinks))
 
 	// Create a list of all services
