@@ -340,7 +340,6 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 	}
 
 	async function serverUpdateServices(servicesToSend: Service[] = services) {
-		console.log("Sending: " + JSON.stringify(servicesToSend));
 		try {
 			const response = await fetch("/api/services-set", {
 				method: "POST",
@@ -354,6 +353,18 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 			if (!response.ok) {
 				throw new Error("Failed to modify services - " + response.status);
 			}
+			// Update service IDs
+			const rawService: Service[] = await response.json();
+			setServices(existingServices => {
+				return existingServices.map(existingService => {
+					if (existingService.id === "") {
+						const newID =
+							rawService.find(service => existingService.title === service.title)?.id ?? "";
+						existingService.id = newID;
+					}
+					return existingService;
+				});
+			});
 			console.log("Successfully modified services");
 		} catch (error) {
 			console.error("Error modifying service:", error);
