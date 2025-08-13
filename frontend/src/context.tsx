@@ -323,10 +323,8 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 
 	function serviceDelete(serviceID: string): void {
 		const updatedServices = services.filter(service => service.clientID !== serviceID);
-		(async () => {
-			await serverUpdateServices(updatedServices);
-			requestServiceData();
-		})();
+		setServices(updatedServices);
+		serverUpdateServices(updatedServices);
 	}
 
 	function serviceUpdate(service: Service): void {
