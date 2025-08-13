@@ -40,4 +40,6 @@ func setupEndpoints() {
 	http.HandleFunc("POST /api/services-set", servicesSet)       // Setting/replacing all services
 	http.HandleFunc("GET /api/service-data", getServiceData)     // Getting analytics
 	http.HandleFunc("/api/service/{path...}", requestForwarding) // Proxying requests
+	http.HandleFunc("GET /api/api-keys", APIGet)                 // Getting API keys
+	http.HandleFunc("POST /api/api-keys", APISet)                // Setting API keys
 }
