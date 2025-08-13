@@ -29,7 +29,10 @@
 		"Upgrader",
 		"uuidv4",
 		"checkbag",
-		"appuser"
+		"appuser",
+		"Lpush",
+		"Lrem",
+		"Lrange"
 	],
 	"flagWords": ["hte"]
 }
