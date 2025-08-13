@@ -23,7 +23,8 @@
 		"README.md": true,
 		"CONTRIBUTING.md": true,
 		"SECURITY.md": true,
-		".github": true
+		".github": true,
+		"checkbag-volume-backup": true
 	},
 
 	"[go]": {
