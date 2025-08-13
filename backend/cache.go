@@ -31,6 +31,10 @@ type CacheSpec interface {
 
 	IncrementHashField(key string, field string, amount int, expiration time.Time) error
 	IncrementKey(key string, expiration time.Time) error
+
+	AddToList(key string, value string) error
+	RemoveFromList(key string, value string) error
+	GetList(key string) ([]string, error)
 }
 
 type CacheLayer struct { // Implements main 5 functions
@@ -179,6 +183,21 @@ func (cache CacheLayer) IncrementKey(key string, expiration time.Time) error {
 	}
 	remainingTime := time.Until(expiration)
 	return cache.DB.Do(ctx, cache.DB.B().Expire().Key(key).Seconds(int64(remainingTime.Seconds())).Build()).Error()
+}
+
+func (cache CacheLayer) AddToList(key string, value string) error {
+	ctx := context.Background()
+	return cache.DB.Do(ctx, cache.DB.B().Lpush().Key(key).Element(value).Build()).Error()
+}
+
+func (cache CacheLayer) RemoveFromList(key string, value string) error {
+	ctx := context.Background()
+	return cache.DB.Do(ctx, cache.DB.B().Lrem().Key(key).Count(1).Element(value).Build()).Error()
+}
+
+func (cache CacheLayer) GetList(key string) ([]string, error) {
+	ctx := context.Background()
+	return cache.DB.Do(ctx, cache.DB.B().Lrange().Key(key).Start(0).Stop(-1).Build()).AsStrSlice()
 }
 
 // Higher-level cache functions
