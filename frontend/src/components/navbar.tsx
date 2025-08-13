@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { Fade as Hamburger } from "hamburger-react";
 import { IoHome } from "react-icons/io5";
 import { FaShareAlt } from "react-icons/fa";
+import { PiAirplaneTiltFill } from "react-icons/pi";
 
 interface NavbarProps {
 	isMobileView: boolean;
@@ -88,6 +89,13 @@ const Navbar = ({ isMobileView, isMobileMenuOpen, setIsMobileMenuOpen }: NavbarP
 				>
 					<FaShareAlt className={NavbarStyles["entry-icon"]} />
 					<p>Services</p>
+				</button>
+				<button
+					className={`${NavbarStyles["entry"]} ${location.pathname === "/dashboard/api" ? NavbarStyles["active"] : ""}`}
+					onClick={() => navigate("/dashboard/api")}
+				>
+					<PiAirplaneTiltFill className={NavbarStyles["entry-icon"]} />
+					<p>API Keys</p>
 				</button>
 				<div id={NavbarStyles["divider"]}></div>
 				<div id={NavbarStyles["services"]}>
