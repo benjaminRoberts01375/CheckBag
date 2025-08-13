@@ -10,7 +10,31 @@ interface ResourceTableProps {
 }
 
 async function copy_path(path: string): Promise<void> {
-	await navigator.clipboard.writeText(path);
+	if (navigator.clipboard && window.isSecureContext) {
+		try {
+			await navigator.clipboard.writeText(path);
+			return;
+		} catch (err) {
+			console.log("Clipboard API failed:", err);
+		}
+	}
+	try {
+		const textArea = document.createElement("textarea");
+		textArea.value = path;
+		textArea.style.position = "fixed";
+		textArea.style.left = "-999999px";
+		textArea.style.top = "-999999px";
+		document.body.appendChild(textArea);
+		textArea.focus();
+		textArea.select();
+
+		document.execCommand("copy"); // I wish we had another way to do this >:(
+		document.body.removeChild(textArea);
+		return;
+	} catch (err) {
+		console.error("Fallback copy failed:", err);
+		return;
+	}
 }
 
 const ResourceTable = ({ data, title }: ResourceTableProps) => {
