@@ -6,6 +6,7 @@ import { CookieKeys, Timescale } from "./types/strings";
 import { useNavigate } from "react-router-dom";
 import ChartData from "./types/chart-data";
 import ResourceUsageData from "./types/resource-usage-data";
+import APIKey from "./types/api-key.tsx";
 
 interface Props {
 	children: ReactNode;
@@ -24,11 +25,14 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 	const [timescale, setTimescale] = useState<Timescale>("hour");
 	const navigate = useNavigate();
 
-	// Chart data states for each timespan - now cached and only recalculated when needed
+	// Chart data states for each time span - now cached and only recalculated when needed
 	const [hourData, setHourData] = useState<ProcessedChartData>(emptyChartData);
 	const [dayData, setDayData] = useState<ProcessedChartData>(emptyChartData);
 	const [monthData, setMonthData] = useState<ProcessedChartData>(emptyChartData);
 	const [yearData, setYearData] = useState<ProcessedChartData>(emptyChartData);
+
+	// API keys
+	const [APIKeys, setAPIKeys] = useState<APIKey[]>([]);
 
 	function cookieGet(key: CookieKeys): string | undefined {
 		const cookieString = document.cookie.split("; ").find(cookie => cookie.startsWith(`${key}=`));
@@ -138,7 +142,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		[services],
 	);
 
-	// Update all timespan data when services change
+	// Update all time span data when services change
 	useEffect(() => {
 		setHourData(combinePreProcessedData("hour"));
 		setDayData(combinePreProcessedData("day"));
@@ -161,6 +165,64 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 				return emptyChartData;
 		}
 	}, [timescale, hourData, dayData, monthData, yearData]);
+
+	function requestAPIKeys(): void {
+		(async () => {
+			try {
+				const response = await fetch("/api/api-keys", {
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					credentials: "include",
+				});
+
+				if (!response.ok) {
+					throw new Error("Failed to fetch API keys:" + response.status);
+				}
+
+				const newAPIKeys = await response.json();
+				setAPIKeys(newAPIKeys);
+			} catch (error) {
+				console.error("Error fetching API keys:", error);
+			}
+		})();
+	}
+
+	function updateServerAPIKeys(keys: APIKey[]): void {
+		(async () => {
+			try {
+				const response = await fetch("/api/api-keys", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(keys),
+					credentials: "include",
+				});
+
+				if (!response.ok) {
+					throw new Error("Failed to set API keys:" + response.status);
+				}
+				response.json().then(newKeys => {
+					setAPIKeys(_ => {
+						return newKeys;
+					});
+				});
+				console.log("Successfully set API keys");
+			} catch (error) {
+				console.error("Error setting API keys:", error);
+			}
+		})();
+	}
+
+	function addAPIKey(name: string): void {
+		updateServerAPIKeys([...APIKeys, new APIKey(name, uuidv4())]);
+	}
+
+	function removeAPIKey(key_id: string): void {
+		updateServerAPIKeys(APIKeys.filter(key => key.id !== key_id));
+	}
 
 	function requestServiceData(): void {
 		const time_steps: string[] = ["hour", "day", "month", "year"];
@@ -249,6 +311,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 				}
 				return updatedServices;
 			});
+			requestAPIKeys();
 		});
 	}
 
@@ -436,6 +499,9 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 
 	const contextShape: ContextType = {
 		services,
+		apiKeys: APIKeys,
+		addAPIKey,
+		removeAPIKey,
 		timescale,
 		setTimescale,
 		serviceAdd,

@@ -4,6 +4,7 @@ import { CookieKeys, Timescale } from "./types/strings";
 import GraphData from "./types/graph-data";
 import ChartData from "./types/chart-data";
 import ResourceUsageData from "./types/resource-usage-data";
+import ApiKey from "./types/api-key.tsx";
 
 export interface ProcessedChartData {
 	quantityData: GraphData[]; // Per service
@@ -15,6 +16,9 @@ export interface ProcessedChartData {
 
 export interface ContextType {
 	services: Service[];
+	apiKeys: ApiKey[];
+	addAPIKey: (name: string) => void;
+	removeAPIKey: (keyID: string) => void;
 	timescale: Timescale;
 	setTimescale: (timescale: Timescale) => void;
 	serviceAdd: (service: Service) => void;
@@ -25,7 +29,7 @@ export interface ContextType {
 	passwordReset: (newPassword: string) => void;
 	serviceToggle: (serviceID: string) => void;
 
-	// New chart data states for each timespan
+	// New chart data states for each time span
 	hourData: ProcessedChartData;
 	dayData: ProcessedChartData;
 	monthData: ProcessedChartData;
