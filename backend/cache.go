@@ -23,7 +23,7 @@ type CacheSpec interface {
 	Get(key string) (string, error)
 	Delete(key string) error
 
-	SetHash(key string, values map[string]string, duration time.Duration) error
+	SetHash(key string, values map[string]string) error
 	GetHash(key string) (map[string]string, error)
 	DeleteHash(key string) error
 
@@ -147,17 +147,13 @@ func (cache CacheLayer) Set(key string, value string, duration time.Duration) er
 	return cache.DB.Do(ctx, cache.DB.B().Set().Key(key).Value(value).Ex(duration).Build()).Error()
 }
 
-func (cache CacheLayer) SetHash(key string, values map[string]string, duration time.Duration) error {
+func (cache CacheLayer) SetHash(key string, values map[string]string) error {
 	ctx := context.Background()
 	hash := cache.DB.B().Hset().Key(key).FieldValue()
 	for field, value := range values {
 		hash = hash.FieldValue(field, value)
 	}
-	err := cache.DB.Do(ctx, hash.Build()).Error()
-	if err != nil {
-		return err
-	}
-	return cache.DB.Do(ctx, cache.DB.B().Expire().Key(key).Seconds(int64(duration.Seconds())).Build()).Error()
+	return cache.DB.Do(ctx, hash.Build()).Error()
 }
 
 func (cache CacheLayer) RenameKey(oldKey string, newKey string) error {
