@@ -7,6 +7,7 @@ import SignUp from "./screens/signup";
 import Dashboard from "./components/dashboard";
 import DashboardScreen from "./screens/dashboard";
 import ServicesScreen from "./screens/services";
+import APIScreen from "./screens/api";
 
 createRoot(document.getElementById("root")!).render(
 	<StrictMode>
@@ -19,6 +20,7 @@ createRoot(document.getElementById("root")!).render(
 						<Route index element={<Navigate to="/dashboard/home" replace />} />
 						<Route path="home" element={<DashboardScreen />} />
 						<Route path="services" element={<ServicesScreen />} />
+						<Route path="api" element={<APIScreen />} />
 						<Route path="*" element={<Navigate to="/dashboard/home" replace />} />
 					</Route>
 					<Route path="*" element={<Navigate to="/signin" replace />} />

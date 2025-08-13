@@ -1,0 +1,25 @@
+.row {
+	display: flex;
+	background: #464142aa;
+	padding: 5pt;
+	border-radius: 5pt;
+	gap: 5pt;
+	margin-bottom: 10pt;
+	align-items: center;
+}
+
+.raw-key {
+	margin-right: auto;
+	font-family: "Courier New", Courier, monospace;
+}
+
+.submit,
+.delete {
+	width: 100pt;
+	height: 25pt;
+}
+
+.text-field {
+	max-width: 150pt;
+	margin-right: auto;
+}
