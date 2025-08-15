@@ -101,6 +101,10 @@ func (cache *CacheLayer) Setup() {
 	if err != nil || cacheIDLength <= 0 {
 		panic("Failed to parse CACHE_ID_LENGTH: " + err.Error())
 	}
+	cacheEnvironmentVersion := os.Getenv("CACHE_VERSION")
+	if cacheEnvironmentVersion == "" {
+		panic("No cache environment version specified")
+	}
 
 	Config.ReadExternalConfig("valkey.json", &cache)
 	cache.Port = cachePort
@@ -120,6 +124,20 @@ func (cache *CacheLayer) Setup() {
 		panic("Could not connect to Valkey: " + err.Error())
 	}
 	cache.DB = client
+
+	cacheVersion, err := cache.Get("version")
+	if err != nil {
+		Printing.PrintErrStr("Could not get version from cache, setting it to v", cacheEnvironmentVersion)
+		err = cache.Set("version", cacheEnvironmentVersion, 0)
+		if err != nil {
+			panic("Could not set version in cache during setup: " + err.Error())
+		}
+	} else if cacheVersion != cacheEnvironmentVersion {
+		panic("Cache version mismatch, expected v" + cacheEnvironmentVersion + " but got v" + cacheVersion + " from cache")
+	} else {
+		Printing.Println("Cache version is v" + cacheVersion)
+	}
+
 	Printing.Println("Connected to Valkey")
 }
 
