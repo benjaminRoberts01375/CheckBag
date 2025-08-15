@@ -145,8 +145,12 @@ func (cache CacheLayer) DeleteHash(key string) error {
 	return cache.DB.Do(context.Background(), cache.DB.B().Hdel().Key(key).Field("purpose").Build()).Error()
 }
 
+// If duration is 0, the value is set without an expiration time
 func (cache CacheLayer) Set(key string, value string, duration time.Duration) error {
 	ctx := context.Background()
+	if duration == 0 {
+		return cache.DB.Do(ctx, cache.DB.B().Set().Key(key).Value(value).Build()).Error()
+	}
 	return cache.DB.Do(ctx, cache.DB.B().Set().Key(key).Value(value).Ex(duration).Build()).Error()
 }
 
