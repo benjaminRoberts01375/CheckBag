@@ -32,7 +32,8 @@
 		"appuser",
 		"Lpush",
 		"Lrem",
-		"Lrange"
+		"Lrange",
+		"vite"
 	],
 	"flagWords": ["hte"]
 }

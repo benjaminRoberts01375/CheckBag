@@ -2,6 +2,8 @@ package main
 
 import (
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -57,6 +59,13 @@ func spaHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Production mode: serve static files
+	// Development mode: proxy to Vite dev server
+	if models.ModelsConfig.DevMode {
+		proxyToVite(w, r)
+		return
+	}
+
 	// Construct the path to the requested file
 	path := filepath.Join("./static", r.URL.Path)
 
@@ -69,4 +78,33 @@ func spaHandler(w http.ResponseWriter, r *http.Request) {
 
 	// File exists, serve it normally
 	http.FileServer(http.Dir("./static")).ServeHTTP(w, r)
+}
+
+// A quick and dirty proxy for the Vite dev server
+func proxyToVite(w http.ResponseWriter, r *http.Request) {
+	// Parse Vite dev server URL
+	viteURL, err := url.Parse("http://frontend:5173")
+	if err != nil {
+		Printing.Printf("Failed to parse Vite URL: %v\n", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Create reverse proxy
+	proxy := httputil.NewSingleHostReverseProxy(viteURL)
+
+	// Add error handling for when Vite isn't ready
+	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
+		http.Error(w, "Frontend development server not ready", http.StatusBadGateway)
+		Printing.PrintErrStr("Proxy error to Vite dev server:", err.Error())
+	}
+
+	// Modify the request headers for proper proxying
+	r.URL.Host = viteURL.Host
+	r.URL.Scheme = viteURL.Scheme
+	r.Header.Set("X-Forwarded-Host", r.Header.Get("Host"))
+	r.Host = viteURL.Host
+
+	// Proxy the request
+	proxy.ServeHTTP(w, r)
 }
