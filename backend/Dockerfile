@@ -1,5 +1,22 @@
-# Build backend for production with Go and host with Alpine
-FROM golang:alpine AS builder
+# Build frontend
+FROM oven/bun:latest AS frontend-builder
+
+WORKDIR /app
+
+# Copy package files from frontend directory
+COPY ./frontend/package.json ./frontend/bun.lock ./
+
+# Install dependencies
+RUN bun install
+
+# Copy frontend source
+COPY ./frontend/ .
+
+# Build the frontend
+RUN bun run build
+
+# Build backend for production
+FROM golang:alpine AS backend-builder
 
 # Install git
 RUN apk add --no-cache git
@@ -8,13 +25,13 @@ RUN apk add --no-cache git
 WORKDIR /app
 
 # Copy go mod and sum files
-COPY go.mod go.sum ./
+COPY ./backend/go.mod ./backend/go.sum ./
 
 # Download dependencies
 RUN go mod download && go mod tidy
 
-# Copy source code
-COPY . .
+# Copy backend source code
+COPY ./backend/ .
 
 # Build the application
 RUN go build -o main .
@@ -28,8 +45,11 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 # Set working directory
 WORKDIR /home/appuser
 
-# Copy the binary from builder
-COPY --from=builder --chown=appuser:appgroup /app/main /home/appuser/main
+# Copy the Go binary from backend builder
+COPY --from=backend-builder --chown=appuser:appgroup /app/main /home/appuser/main
+
+# Copy the frontend static files from frontend builder
+COPY --from=frontend-builder --chown=appuser:appgroup /app/dist /home/appuser/static
 
 # Create the CheckBag directory and set proper permissions
 RUN mkdir -p /home/appuser/CheckBag && \
