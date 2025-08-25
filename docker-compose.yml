@@ -4,17 +4,6 @@ networks:
     internal: false
 
 services:
-  nginx:
-    build:
-      context: . # Allow NGINX to access the Frontend directory
-      dockerfile: ./router/Dockerfile
-    container_name: nginx
-    restart: unless-stopped
-    networks:
-      - network
-    ports:
-      - "8080:80"
-
   valkey:
     image: valkey/valkey:8.1.2-alpine
     container_name: valkey
@@ -29,8 +18,8 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: . # Allow the backend build steps access the Frontend directory
+      dockerfile: ./backend/Dockerfile
     container_name: backend
     restart: unless-stopped
     networks:
@@ -39,18 +28,19 @@ services:
     environment:
       - ROLE=Backend
       - COLOR=blue
-      - PORT=9001
+      - PORT=8080
       - CACHE_PORT=6379
       - CACHE_CONTAINER_NAME=valkey
       - CACHE_ID_LENGTH=15
       - CACHE_VERSION=1
       - SERVICE_ID_LENGTH=15
       - DEV_MODE=false
+    ports:
+      - "8080:8080"
     secrets:
       - source: valkey_backend
         target: valkey.json
     volumes:
-      - ./backend:/app
       - backend-data:/home/appuser/CheckBag
 
 volumes:
