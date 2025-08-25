@@ -13,6 +13,7 @@ export default defineConfig({
 		outDir: "dist",
 	},
 	server: {
+		allowedHosts: ["frontend"],
 		host: "0.0.0.0",
 		port: 5173,
 	},
