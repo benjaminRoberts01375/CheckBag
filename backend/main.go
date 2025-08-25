@@ -2,7 +2,10 @@ package main
 
 import (
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
 	"github.com/benjaminRoberts01375/Web-Tech-Stack/models"
@@ -42,4 +45,28 @@ func setupEndpoints() {
 	http.HandleFunc("/api/service/{path...}", requestForwarding) // Proxying requests
 	http.HandleFunc("GET /api/api-keys", APIGet)                 // Getting API keys
 	http.HandleFunc("POST /api/api-keys", APISet)                // Setting API keys
+
+	http.HandleFunc("/", spaHandler) // Serve the frontend
+}
+
+// spaHandler serves the React SPA and handles client-side routing
+func spaHandler(w http.ResponseWriter, r *http.Request) {
+	// Skip API routes - something's wrong :(
+	if strings.HasPrefix(r.URL.Path, "/api/") {
+		http.NotFound(w, r)
+		return
+	}
+
+	// Construct the path to the requested file
+	path := filepath.Join("./static", r.URL.Path)
+
+	// Check if the file exists
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		// File doesn't exist, serve index.html for React routing
+		http.ServeFile(w, r, "./static/index.html")
+		return
+	}
+
+	// File exists, serve it normally
+	http.FileServer(http.Dir("./static")).ServeHTTP(w, r)
 }
