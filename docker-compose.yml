@@ -10,8 +10,6 @@ services:
     restart: unless-stopped
     networks:
       - network
-    ports:
-      - "${CACHE_PORT}:6379"
     volumes:
       - valkey_data:/data
     command: valkey-server --requirepass ${CACHE_PASSWORD}
