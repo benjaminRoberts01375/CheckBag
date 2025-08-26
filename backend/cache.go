@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"time"
 
-	Config "github.com/benjaminRoberts01375/Web-Tech-Stack/config"
 	JWT "github.com/benjaminRoberts01375/Web-Tech-Stack/jwt"
 	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
 	"github.com/valkey-io/valkey-go"
@@ -40,11 +39,10 @@ type CacheSpec interface {
 	GetList(key string) ([]string, error)
 }
 
-type CacheLayer struct { // Implements main 5 functions
-	DB            valkey.Client
-	ContainerName string
-	Port          int
-	Password      string `json:"password"`
+type CacheLayer struct { // Satisfies CacheSpec interface
+	DB      valkey.Client
+	Address string
+	Port    int
 }
 
 type CacheClient[client CacheSpec] struct { // Holds some DB that satisfies the CacheSpec interface. Action functions here
@@ -93,8 +91,8 @@ func (cache *CacheLayer) Setup() {
 	if err != nil || cachePort <= 0 {
 		panic("Failed to parse CACHE_PORT: " + err.Error())
 	}
-	cacheContainerName := os.Getenv("CACHE_CONTAINER_NAME")
-	if cacheContainerName == "" {
+	cacheAddress := os.Getenv("CACHE_ADDRESS")
+	if cacheAddress == "" {
 		panic("No cache container name specified")
 	}
 	cacheIDLength, err := strconv.Atoi(os.Getenv("CACHE_ID_LENGTH"))
@@ -105,18 +103,18 @@ func (cache *CacheLayer) Setup() {
 	if cacheEnvironmentVersion == "" {
 		panic("No cache environment version specified")
 	}
+	cachePassword := os.Getenv("CACHE_PASSWORD")
+	if cachePassword == "" {
+		panic("No cache password specified")
+	}
 
-	Config.ReadExternalConfig("valkey.json", &cache)
 	cache.Port = cachePort
-	cache.ContainerName = cacheContainerName
+	cache.Address = cacheAddress
 
-	// TODO: Handle username and client name
-	url := fmt.Sprintf("%s:%d", cache.ContainerName, cache.Port)
+	url := fmt.Sprintf("%s:%d", cache.Address, cache.Port)
 	options := valkey.ClientOption{
 		InitAddress: []string{url},
-		// Username:    config.CacheUsername,
-		Password: cache.Password,
-		// ClientName:  config.CacheClientName
+		Password:    cachePassword,
 	}
 	client, err := valkey.NewClient(options)
 	if err != nil {
