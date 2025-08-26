@@ -10,11 +10,11 @@ services:
     restart: unless-stopped
     networks:
       - network
+    ports:
+      - "${CACHE_PORT}:6379"
     volumes:
       - valkey_data:/data
-    secrets:
-      - valkey_config
-    command: valkey-server /run/secrets/valkey_config
+    command: valkey-server --requirepass ${CACHE_PASSWORD}
 
   backend:
     build:
@@ -29,17 +29,12 @@ services:
       - ROLE=Backend
       - COLOR=blue
       - PORT=8080
-      - CACHE_PORT=6379
-      - CACHE_CONTAINER_NAME=valkey
       - CACHE_ID_LENGTH=15
       - CACHE_VERSION=1
       - SERVICE_ID_LENGTH=15
       - DEV_MODE=false
     ports:
-      - "8080:8080"
-    secrets:
-      - source: valkey_backend
-        target: valkey.json
+      - "${WEB_UI_PORT}:8080"
     volumes:
       - backend-data:/home/appuser/CheckBag
 
@@ -48,9 +43,3 @@ volumes:
     name: valkey-data
   backend-data:
     name: backend-data
-
-secrets:
-  valkey_backend:
-    file: ./.secrets/valkey.json
-  valkey_config:
-    file: ./.secrets/valkey.conf
