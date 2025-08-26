@@ -24,8 +24,8 @@
 		"CONTRIBUTING.md": true,
 		"SECURITY.md": true,
 		".github": true,
-		"checkbag-volume-backup": true
-		".markdownlint.json": true,
+		"checkbag-volume-backup": true,
+		".markdownlint.json": true
 	},
 
 	"[go]": {
