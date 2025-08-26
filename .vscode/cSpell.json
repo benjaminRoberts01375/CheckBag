@@ -34,7 +34,8 @@
 		"Lrem",
 		"Lrange",
 		"vite",
-		"requirepass"
+		"requirepass",
+		"homelab"
 	],
 	"flagWords": ["hte"]
 }
