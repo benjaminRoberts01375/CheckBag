@@ -35,7 +35,9 @@
 		"Lrange",
 		"vite",
 		"requirepass",
-		"homelab"
+		"homelab",
+		"buildx",
+		"benjaminroberts01375"
 	],
 	"flagWords": ["hte"]
 }
