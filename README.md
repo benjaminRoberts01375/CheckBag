@@ -16,7 +16,7 @@ To collect these insights, CheckBag is a proxy that sits between your reverse pr
 
 # Installation
 
-CheckBag is deployed via [Docker](https://docs.docker.com/desktop/setup/install/linux/), and requires little configuration to get up and going.
+CheckBag is deployed via [Docker](https://docs.docker.com/desktop/setup/install/linux/), and requires a little configuration to get up and going.
 
 ### Step 1: Install Docker
 
@@ -50,7 +50,6 @@ Point each of your endpoints listed in your reverse proxy at CheckBag. You'll ne
 In this example, you'll need to use a Custom Location at the location `/` for your proxy host. An example can be found below. Replace `YOUR-IP-HERE` and `YOUR-PORT-HERE` with your own, keeping the rest the same for all proxy hosts.
 
 ```conf
-
 location / {
     proxy_set_header Host $host;
     proxy_pass http://YOUR-IP-HERE:YOUR-PORT-HERE/api/service/;
@@ -65,4 +64,5 @@ location / {
 # Compatibility
 
 - CheckBag has been tested with CloudFlare for the domain provider and proxy, which provides headers for some information like country of origin. CheckBag may not be out of the box compatible with other proxy hosts, and may require some additional tuning in your reverse proxy. It's highly recommended to add an issue for such problems.
-- The provided Docker Image in the release page is built for Linux x86/ARM
+- The provided Docker Image in the release page is built for Linux x86/ARM.
+- If you're using CloudFlare, ensure your domain has Rules > Settings > `Remove "X-Powered-By" header` and `Remove visitor IP headers` disabled, and enabled `Add visitor location headers`.
