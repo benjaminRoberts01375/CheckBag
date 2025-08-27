@@ -23,7 +23,9 @@ func analytics(r *http.Request, responseCode int) {
 		// Cloudflare headers have both "country" and "ip" in the header name for country
 		if strings.Contains(name, "country") {
 			country = values[0]
-		} else if strings.Contains(name, "ip") {
+		} else if ip != "" && strings.HasSuffix(name, "ip") { // Get the client's IP address
+			ip = values[0]
+		} else if name == "x-forwarded-for" { // Get the client's IP address
 			ip = values[0]
 		}
 	}
