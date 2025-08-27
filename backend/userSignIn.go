@@ -29,7 +29,11 @@ func userSignIn(w http.ResponseWriter, r *http.Request) {
 		requestRespondCode(w, http.StatusBadRequest) // Intentionally obscure the error to prevent username guessing
 		return
 	}
+	setJWTCookie(w)
+	requestRespondCode(w, http.StatusOK)
+}
 
+func setJWTCookie(w http.ResponseWriter) {
 	// If the password is correct, generate a JWT
 	token, err := jwt.GenerateJWT(jwt.LoginDuration)
 	if err != nil {
@@ -60,5 +64,4 @@ func userSignIn(w http.ResponseWriter, r *http.Request) {
 			Path:     "/",
 		})
 	}
-	requestRespondCode(w, http.StatusOK)
 }

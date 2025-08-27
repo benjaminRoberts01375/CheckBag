@@ -30,6 +30,8 @@ func newUser(w http.ResponseWriter, r *http.Request) {
 		requestRespondCode(w, http.StatusInternalServerError)
 		return
 	}
+	setJWTCookie(w)
+	requestRespondCode(w, http.StatusOK)
 }
 
 func createPasswordHash(password string) ([]byte, error) {
