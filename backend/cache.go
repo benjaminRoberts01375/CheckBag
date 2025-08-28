@@ -87,6 +87,8 @@ const cacheDataValid = "valid"
 // Basic cache functions
 
 func (cache *CacheLayer) Setup() {
+	cacheEnvironmentVersion := "1"
+
 	cachePort, err := strconv.Atoi(os.Getenv("CACHE_PORT"))
 	if err != nil || cachePort <= 0 {
 		panic("Failed to parse CACHE_PORT: " + err.Error())
@@ -98,10 +100,6 @@ func (cache *CacheLayer) Setup() {
 	cacheIDLength, err := strconv.Atoi(os.Getenv("CACHE_ID_LENGTH"))
 	if err != nil || cacheIDLength <= 0 {
 		panic("Failed to parse CACHE_ID_LENGTH: " + err.Error())
-	}
-	cacheEnvironmentVersion := os.Getenv("CACHE_VERSION")
-	if cacheEnvironmentVersion == "" {
-		panic("No cache environment version specified")
 	}
 	cachePassword := os.Getenv("CACHE_PASSWORD")
 	if cachePassword == "" {

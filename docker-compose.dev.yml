@@ -44,7 +44,6 @@ services:
       - COLOR=blue
       - PORT=8080
       - CACHE_ID_LENGTH=15
-      - CACHE_VERSION=1
       - SERVICE_ID_LENGTH=15
       - DEV_MODE=true
     env_file:
