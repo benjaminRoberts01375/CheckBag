@@ -3,6 +3,8 @@ package models
 import (
 	"os"
 	"strconv"
+
+	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
 )
 
 type config struct {
@@ -16,7 +18,8 @@ var ModelsConfig config
 func Setup() {
 	devMode, err := strconv.ParseBool(os.Getenv("DEV_MODE"))
 	if err != nil {
-		panic("Failed to parse DEV_MODE: " + err.Error())
+		Printing.PrintErrStr("Failed to parse DEV_MODE: ", err.Error(), ", defaulting to false")
+		devMode = false
 	}
 	serviceIDLen, err := strconv.Atoi(os.Getenv("SERVICE_ID_LENGTH"))
 	if err != nil {
