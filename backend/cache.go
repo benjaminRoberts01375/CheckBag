@@ -103,7 +103,7 @@ func (cache *CacheLayer) Setup() {
 	}
 	cachePassword := os.Getenv("CACHE_PASSWORD")
 	if cachePassword == "" {
-		panic("No cache password specified")
+		Printing.Println("No cache password specified")
 	}
 
 	cache.Port = cachePort
@@ -112,7 +112,7 @@ func (cache *CacheLayer) Setup() {
 	url := fmt.Sprintf("%s:%d", cache.Address, cache.Port)
 	options := valkey.ClientOption{
 		InitAddress: []string{url},
-		Password:    cachePassword,
+		Password:    cachePassword, // Empty string for no password
 	}
 	client, err := valkey.NewClient(options)
 	if err != nil {
