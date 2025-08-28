@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"time"
 
-	JWT "github.com/benjaminRoberts01375/Web-Tech-Stack/jwt"
-	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
+	JWT "github.com/benjaminRoberts01375/CheckBag/backend/jwt"
+	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
 	"github.com/valkey-io/valkey-go"
 )
 

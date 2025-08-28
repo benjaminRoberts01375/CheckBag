@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"slices"
 
-	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
-	"github.com/benjaminRoberts01375/Web-Tech-Stack/models"
+	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
+	"github.com/benjaminRoberts01375/CheckBag/backend/models"
 )
 
 type ServiceLinks []ServiceLink

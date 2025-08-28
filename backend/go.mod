@@ -1,4 +1,4 @@
-module github.com/benjaminRoberts01375/Web-Tech-Stack
+module github.com/benjaminRoberts01375/CheckBag/backend
 
 go 1.24.4
 

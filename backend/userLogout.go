@@ -3,8 +3,8 @@ package main
 import (
 	"net/http"
 
-	"github.com/benjaminRoberts01375/Web-Tech-Stack/jwt"
-	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
+	"github.com/benjaminRoberts01375/CheckBag/backend/jwt"
+	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
 )
 
 func userLogout(w http.ResponseWriter, r *http.Request) {

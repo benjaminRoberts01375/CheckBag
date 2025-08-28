@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"slices"
 
-	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
+	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
 )
 
 type APIKeyInfo struct {

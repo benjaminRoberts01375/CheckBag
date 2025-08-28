@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
+	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
 )
 
 func userExists(w http.ResponseWriter, r *http.Request) {

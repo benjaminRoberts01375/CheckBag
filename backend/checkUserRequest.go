@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/benjaminRoberts01375/Web-Tech-Stack/jwt"
+	"github.com/benjaminRoberts01375/CheckBag/backend/jwt"
 )
 
 func checkUserRequest[ReturnType any](r *http.Request) (*jwt.Claims, *ReturnType, error) {

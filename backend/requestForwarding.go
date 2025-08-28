@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
+	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
 	"github.com/gorilla/websocket"
 )
 

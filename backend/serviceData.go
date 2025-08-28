@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
+	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
 )
 
 type ServiceData struct {

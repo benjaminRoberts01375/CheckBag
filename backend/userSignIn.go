@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/benjaminRoberts01375/Web-Tech-Stack/jwt"
-	Printing "github.com/benjaminRoberts01375/Web-Tech-Stack/logging"
-	"github.com/benjaminRoberts01375/Web-Tech-Stack/models"
+	"github.com/benjaminRoberts01375/CheckBag/backend/jwt"
+	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
+	"github.com/benjaminRoberts01375/CheckBag/backend/models"
 	"golang.org/x/crypto/bcrypt"
 )
 

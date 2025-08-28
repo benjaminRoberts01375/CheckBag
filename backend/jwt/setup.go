@@ -1,7 +1,7 @@
 package jwt
 
 import (
-	Config "github.com/benjaminRoberts01375/Web-Tech-Stack/config"
+	Config "github.com/benjaminRoberts01375/CheckBag/backend/config"
 )
 
 type config struct {
