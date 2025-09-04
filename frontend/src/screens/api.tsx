@@ -65,10 +65,10 @@ const APIKeyAdd = () => {
 				placeholder="Name"
 				value={name}
 				onChange={e => setName(e.target.value)}
-				className={`${ServiceEditStyles["input"]} ${APIStyles["text-field"]}`}
+				className={`${ServicesStyles["input"]} ${APIStyles["text-field"]}`}
 			/>
 			<button
-				className={`${ServiceEditStyles.submit} primary ${APIStyles["submit"]}`}
+				className={`${ServicesStyles.submit} primary ${APIStyles["submit"]}`}
 				onClick={() => {
 					addAPIKey(name);
 					setName("");
