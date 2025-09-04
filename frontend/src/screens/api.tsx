@@ -1,7 +1,7 @@
 import "../styles.css";
 import DashboardStyles from "./dashboard.module.css";
 import APIStyles from "./api.module.css";
-import ServiceEditStyles from "../components/service-edit.module.css";
+import ServicesStyles from "./services.module.css";
 import { useList } from "../context-hook";
 import APIKey from "../types/api-key.tsx";
 import { useState, useEffect } from "react";
@@ -45,7 +45,7 @@ const APIKeyItem = ({ apiKey }: APIKeyItemProps) => {
 			<p id={APIStyles["delete"]}>{apiKey.key ? apiKey.name + ": " : apiKey.name}</p>
 			<p className={APIStyles["raw-key"]}>{apiKey.key ? apiKey.key : ""}</p>
 			<button
-				className={`${ServiceEditStyles.delete} primary ${APIStyles["delete"]}`}
+				className={`${ServicesStyles.delete} primary ${APIStyles["delete"]}`}
 				onClick={() => deleteKey()}
 			>
 				Delete
