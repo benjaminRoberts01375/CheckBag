@@ -16,12 +16,10 @@ const ServicesScreen = () => {
 			<title>CheckBag - Services</title>
 			<div className={DashboardStyles["graph-group"]}>
 				<h2 className="header">Services</h2>
-				<div id={ServicesStyles["services"]}>
-					{services.map(service => (
-						<ServiceEdit service={service} key={service.clientID} />
-					))}
-					<ServiceEdit service={undefined} key={"new"} />
-				</div>
+				{services.map(service => (
+					<ServiceEdit service={service} key={service.clientID} />
+				))}
+				<ServiceEdit service={undefined} key={"new"} />
 			</div>
 		</div>
 	);
