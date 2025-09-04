@@ -83,7 +83,7 @@ func servicesSet(w http.ResponseWriter, r *http.Request) {
 		requestRespondCode(w, http.StatusInternalServerError)
 		return
 	}
-
+	Printing.Println("Updated service links")
 	requestRespond(w, serviceLinks)
 }
 
