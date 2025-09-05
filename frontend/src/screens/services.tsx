@@ -40,7 +40,7 @@ const ServiceEntry = ({ service }: ServiceListEntryProps) => {
 			<div className={ServicesStyles["connection-info"]}>
 				<div id={ServicesStyles["service-endpoints"]}>
 					{service?.external_address.map(externalAddress => (
-						<ServiceStatus address={externalAddress} />
+						<ServiceStatus address={externalAddress} key={service.clientID} />
 					))}
 				</div>
 				{service?.internal_address ? <ServiceStatus address={service.internal_address} /> : null}
