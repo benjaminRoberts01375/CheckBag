@@ -1,4 +1,4 @@
-#input-container {
+#service-container {
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1;
@@ -6,6 +6,45 @@
 	margin: 0pt;
 	padding: 10pt;
 	border-radius: 5pt;
+}
+
+.connection-info {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+#service-endpoints {
+	display: flex;
+	flex-direction: row;
+	margin: 0pt auto 0pt 0pt;
+	flex-wrap: wrap;
+}
+
+#service-internal-url {
+	display: flex;
+}
+
+#service-container > h2 {
+	margin-bottom: 10pt;
+}
+
+.service-status {
+	background: #777;
+	border-radius: 3pt;
+	width: fit-content;
+	padding: 3pt;
+	margin: 2.5pt 2.5pt;
+}
+
+#menu-icon {
+	font-size: 25pt;
+	margin-left: 5pt;
+}
+
+#menu-icon:hover {
+	background: #777;
+	cursor: pointer;
 }
 
 #buttons {
@@ -23,13 +62,18 @@
 	background: #f99;
 }
 
+.submit {
+	display: block;
+	margin: 10pt 0pt 0pt auto;
+}
+
 .submit,
 .delete {
 	color: black;
-	padding: 5pt;
+	padding: 5pt 10pt;
 	font-size: 12pt;
 	border-radius: 6pt;
-	width: 100%;
+	width: fit-content;
 }
 
 .input {
