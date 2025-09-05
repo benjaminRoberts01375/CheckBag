@@ -53,12 +53,6 @@
 	justify-content: left;
 }
 
-.entry-icon {
-	color: #ffd20a;
-	font-size: 15pt;
-	border-radius: 5pt;
-}
-
 .active {
 	background: #464142;
 }

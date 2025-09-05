@@ -74,3 +74,9 @@ button:disabled {
 	width: 100%;
 	text-align: center;
 }
+
+.icon {
+	color: #ffd20a;
+	font-size: 15pt;
+	border-radius: 5pt;
+}
