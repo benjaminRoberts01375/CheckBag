@@ -51,9 +51,9 @@ COPY --from=backend-builder --chown=appuser:appgroup /app/main /home/appuser/mai
 # Copy the frontend static files from frontend builder
 COPY --from=frontend-builder --chown=appuser:appgroup /app/dist /home/appuser/static
 
-# Create the CheckBag directory and set proper permissions
+# Create the CheckBag directory and make it world-writable to handle volume mounts
 RUN mkdir -p /home/appuser/CheckBag && \
-    chown -R appuser:appgroup /home/appuser/CheckBag
+    chmod 777 /home/appuser/CheckBag
 
 # Switch to non-root user
 USER appuser
