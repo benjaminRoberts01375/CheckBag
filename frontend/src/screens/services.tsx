@@ -2,7 +2,7 @@ import "../styles.css";
 import ServicesStyles from "./services.module.css";
 import DashboardStyles from "./dashboard.module.css";
 import { useList } from "../context-hook";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Service from "../types/service.tsx";
 import { CgMoreVerticalAlt } from "react-icons/cg";
 
@@ -33,8 +33,22 @@ interface ServiceListEntryProps {
 }
 
 const ServiceEntry = ({ service }: ServiceListEntryProps) => {
+	const dialogRef = useRef<HTMLDialogElement | null>(null);
+
+	function openDialog(): void {
+		console.log("Opening dialog");
+		dialogRef.current?.showModal();
+	}
+
+	function closeDialog(): void {
+		dialogRef.current?.close();
+	}
+
 	return (
 		<div id={ServicesStyles["service-container"]}>
+			<dialog ref={dialogRef}>
+				<EditService service={service} />
+			</dialog>
 			<h2>{service ? service.title : "Untitled Service"}</h2>
 			<div className={ServicesStyles["connection-info"]}>
 				<div id={ServicesStyles["service-endpoints"]}>
@@ -43,7 +57,7 @@ const ServiceEntry = ({ service }: ServiceListEntryProps) => {
 					))}
 				</div>
 				{service?.internal_address ? <ServiceStatus address={service.internal_address} /> : null}
-				<button>
+				<button onClick={() => openDialog()}>
 					<CgMoreVerticalAlt className="icon" id={ServicesStyles["menu-icon"]} />
 				</button>
 			</div>
@@ -57,4 +71,12 @@ interface ServiceURLProps {
 
 const ServiceStatus = ({ address }: ServiceURLProps) => {
 	return <p className={ServicesStyles["service-status"]}>{address}</p>;
+};
+
+const EditService = ({ service }: ServiceListEntryProps) => {
+	return (
+		<div>
+			<h1>Edit Service</h1>
+		</div>
+	);
 };
