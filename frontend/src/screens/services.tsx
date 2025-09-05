@@ -3,6 +3,7 @@ import ServicesStyles from "./services.module.css";
 import DashboardStyles from "./dashboard.module.css";
 import { useList } from "../context-hook";
 import { useEffect } from "react";
+import Service from "../types/service.tsx";
 import { CgMoreVerticalAlt } from "react-icons/cg";
 
 const ServicesScreen = () => {
@@ -26,8 +27,6 @@ const ServicesScreen = () => {
 };
 
 export default ServicesScreen;
-
-import Service from "../types/service.tsx";
 
 interface ServiceListEntryProps {
 	service: Service;
