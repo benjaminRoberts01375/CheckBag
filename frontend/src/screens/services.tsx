@@ -30,7 +30,7 @@ export default ServicesScreen;
 import Service from "../types/service.tsx";
 
 interface ServiceListEntryProps {
-	service: Service | undefined;
+	service: Service;
 }
 
 const ServiceEntry = ({ service }: ServiceListEntryProps) => {
