@@ -2,6 +2,7 @@ import logo from "../assets/CheckBag.svg";
 import PasswordStyles from "./password.module.css";
 import { FormEvent, useState, useRef, useEffect } from "react";
 import AnimatedBackground from "./animated-background";
+import Version from "./version";
 
 interface IPAddressProps {
 	duration: number;
@@ -138,6 +139,7 @@ const PasswordScreen = ({ buttonText, passwordSubmit, error }: PasswordScreenPro
 						</button>
 						{error !== "" ? <p id={PasswordStyles["error"]}>{error}</p> : null}
 					</form>
+					<Version />
 				</div>
 			</div>
 		</>

@@ -28,7 +28,7 @@ func getServiceData(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
 	_, _, err := checkUserRequest[any](r)
 	if err != nil {
-		if !(queryParams["api-key"][0] != "" && cache.apiKeyExists(queryParams["api-key"][0])) { // API key check
+		if !(len(queryParams["api-key"]) > 0 && cache.apiKeyExists(queryParams["api-key"][0])) { // Check if API key is invalid
 			Printing.PrintErrStr("Could not verify user or API key for analytic data: " + err.Error())
 			requestRespondCode(w, http.StatusForbidden)
 			return

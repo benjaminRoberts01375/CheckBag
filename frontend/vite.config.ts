@@ -17,4 +17,7 @@ export default defineConfig({
 		host: "0.0.0.0",
 		port: 5173,
 	},
+	define: {
+		__CHECKBAG_VERSION__: JSON.stringify(process.env.VITE_CHECKBAG_VERSION || "dev"),
+	},
 });

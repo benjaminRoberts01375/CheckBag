@@ -15,14 +15,25 @@
 
 #title-container {
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
 	align-items: center;
+	user-select: none;
+}
+
+#title-container > p {
+	margin: 0pt 5pt 0pt auto;
+	font-size: 8pt;
+	font-weight: bold;
+	margin-bottom: 2pt;
+}
+
+#title-container > * {
+	margin: 0pt;
 }
 
 #title {
-	height: 50pt;
 	width: 100%;
-	padding: 5pt 5pt;
+	padding: 5pt;
 	display: flex;
 	align-items: center;
 	justify-content: center;
