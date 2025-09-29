@@ -3,6 +3,10 @@ FROM oven/bun:latest AS frontend-builder
 
 WORKDIR /app
 
+# Pass version to frontend build
+ARG CHECKBAG_VERSION
+ENV VITE_CHECKBAG_VERSION=${CHECKBAG_VERSION}
+
 # Copy package files from frontend directory
 COPY ./frontend/package.json ./frontend/bun.lock ./
 
