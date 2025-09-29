@@ -53,6 +53,7 @@ const SignInScreen = () => {
 	}
 
 	useEffect(() => {
+		console.log("CheckBag Version:", __CHECKBAG_VERSION__);
 		if (cookieGet("session-token")) {
 			jwtSignIn();
 		}
