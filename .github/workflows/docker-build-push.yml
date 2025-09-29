@@ -34,6 +34,12 @@ jobs:
             type=raw,value=latest
             type=raw,value=test-{{sha}},enable={{is_default_branch}}
 
+      - name: Extract version
+        id: version
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -44,3 +50,5 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            CHECKBAG_VERSION=${{ steps.version.outputs.version }}
