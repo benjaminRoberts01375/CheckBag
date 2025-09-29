@@ -74,13 +74,13 @@ const Navbar = ({ isMobileView, isMobileMenuOpen, setIsMobileMenuOpen }: NavbarP
 					<h1 id={NavbarStyles["title"]} className="primary">
 						CheckBag
 					</h1>
-					<p>
+					<div>
 						{__CHECKBAG_VERSION__ == "dev" ? (
 							<p>Development Build</p>
 						) : (
 							<p>{__CHECKBAG_VERSION__}</p>
 						)}
-					</p>
+					</div>
 				</div>
 				<div id={NavbarStyles["divider"]}></div>
 				<button
