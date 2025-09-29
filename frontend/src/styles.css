@@ -74,3 +74,23 @@ button:disabled {
 	width: 100%;
 	text-align: center;
 }
+
+.version > p:first-child {
+	font-weight: bold;
+	color: #ffd20a;
+}
+
+.version > a {
+	color: white;
+}
+
+.version > a:hover {
+	color: #ffe989;
+	text-decoration: underline;
+}
+
+.version {
+	display: flex;
+	flex-direction: row;
+	gap: 5pt;
+}
