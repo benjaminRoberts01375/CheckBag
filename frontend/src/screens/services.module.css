@@ -77,3 +77,45 @@
 .input:focus {
 	outline: solid 2pt #aaa;
 }
+
+#edit-service-container {
+	display: flex;
+	flex-direction: column;
+	background-color: #343031f8;
+	height: 400pt;
+	width: 400pt;
+	border-radius: 10pt;
+	text-align: left;
+	padding: 10pt;
+}
+
+#edit-service-container > input {
+	width: 150pt;
+}
+
+#edit-service-container > input:first-of-type {
+	margin: 15pt auto;
+	padding: 10pt;
+	display: block;
+	font-size: 18pt;
+	width: 250pt;
+}
+
+#edit-service-container > p {
+	padding-top: 10pt;
+}
+
+#edit-service-container > p:first-child {
+	margin: 0pt;
+}
+
+#submission-buttons {
+	display: flex;
+	flex-direction: row;
+	gap: 10pt;
+	margin-top: auto;
+}
+
+#submission-buttons > :first-child {
+	margin-right: auto;
+}
