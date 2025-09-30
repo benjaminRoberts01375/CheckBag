@@ -54,28 +54,6 @@
 	margin: 3pt;
 }
 
-.delete {
-	background: red;
-}
-
-.delete:hover {
-	background: #f99;
-}
-
-.submit {
-	display: block;
-	margin: 10pt 0pt 0pt auto;
-}
-
-.submit,
-.delete {
-	color: black;
-	padding: 5pt 10pt;
-	font-size: 12pt;
-	border-radius: 6pt;
-	width: fit-content;
-}
-
 .input {
 	padding: 5pt;
 	background: #0005;
@@ -83,8 +61,12 @@
 	border: none;
 	border-radius: 5pt;
 	transition-duration: 0.5s;
-	flex: 1;
 	margin: 3pt;
+}
+
+#add-service-button {
+	display: block;
+	margin: 10pt 0pt 0pt auto;
 }
 
 .input:hover {

@@ -20,7 +20,9 @@ const ServicesScreen = () => {
 				{services.map(service => (
 					<ServiceEntry service={service} key={service.clientID} />
 				))}
-				<button className={`${ServicesStyles.submit} primary`}>Add Service</button>
+				<button className="submit" id={ServicesStyles["add-service-button"]}>
+					Add Service
+				</button>
 			</div>
 		</div>
 	);

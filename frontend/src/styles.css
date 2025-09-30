@@ -20,13 +20,43 @@ body {
 }
 
 .primary,
+.submit,
 flavor-button:active {
 	background: #ffd20a;
 	color: #ffd20a;
 }
 
+.submit:hover,
 .primary:hover {
 	background: #ffe989;
+}
+
+.delete {
+	background: rgb(255, 57, 57);
+}
+
+.delete:hover {
+	background: #f77;
+}
+
+.cancel {
+	background: #888;
+}
+
+.cancel:hover {
+	background: #bbb;
+}
+
+.button,
+.delete,
+.cancel,
+.submit {
+	color: black;
+	padding: 5pt 10pt;
+	font-size: 12pt;
+	border-radius: 6pt;
+	width: fit-content;
+	transition: 0.25s;
 }
 
 * {
