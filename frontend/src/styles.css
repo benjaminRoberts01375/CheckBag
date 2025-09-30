@@ -81,6 +81,8 @@ dialog[open] {
 	justify-content: center;
 	text-align: center;
 	display: flex;
+	margin: 0;
+	inset: 0;
 }
 
 .header {
