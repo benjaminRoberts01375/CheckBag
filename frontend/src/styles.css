@@ -71,7 +71,7 @@ button:disabled {
 	cursor: not-allowed;
 }
 
-dialog {
+dialog[open] {
 	background: #0004;
 	width: 100vw;
 	height: 100vh;
