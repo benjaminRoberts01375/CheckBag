@@ -93,20 +93,25 @@
 	width: 150pt;
 }
 
-#edit-service-container > input:first-of-type {
-	margin: 15pt auto;
-	padding: 10pt;
-	display: block;
-	font-size: 18pt;
-	width: 250pt;
-}
-
 #edit-service-container > p {
 	padding-top: 10pt;
 }
 
 #edit-service-container > p:first-child {
 	margin: 0pt;
+}
+
+#edit-service-header {
+	display: flex;
+	align-items: center;
+	gap: 10pt;
+}
+
+#edit-service-header > input {
+	padding: 10pt;
+	display: block;
+	font-size: 18pt;
+	width: 100%;
 }
 
 #submission-buttons {

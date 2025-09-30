@@ -82,14 +82,16 @@ const EditService = ({ service }: ServiceListEntryProps) => {
 
 	return (
 		<form id={ServicesStyles["edit-service-container"]}>
-			<h1>Editing "{title}"</h1>
-			<input
-				type="text"
-				placeholder="Service Name"
-				value={title}
-				onChange={e => setTitle(e.target.value)}
-				className={ServicesStyles["input"]}
-			/>
+			<div id={ServicesStyles["edit-service-header"]}>
+				<h1>Editing</h1>
+				<input
+					type="text"
+					placeholder="Service Name"
+					value={title}
+					onChange={e => setTitle(e.target.value)}
+					className={ServicesStyles["input"]}
+				/>
+			</div>
 			<p>From:</p>
 			<input
 				type="text"
