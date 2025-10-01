@@ -37,19 +37,10 @@ interface ServiceListEntryProps {
 const ServiceEntry = ({ service }: ServiceListEntryProps) => {
 	const dialogRef = useRef<HTMLDialogElement | null>(null);
 
-	function openDialog(): void {
-		console.log("Opening dialog");
-		dialogRef.current?.showModal();
-	}
-
-	function closeDialog(): void {
-		dialogRef.current?.close();
-	}
-
 	return (
 		<div id={ServicesStyles["service-container"]}>
 			<dialog ref={dialogRef}>
-				<EditService service={service} />
+				<EditService service={service} finish={() => dialogRef.current?.close()} />
 			</dialog>
 			<h2>{service ? service.title : "Untitled Service"}</h2>
 			<div className={ServicesStyles["connection-info"]}>
@@ -59,7 +50,7 @@ const ServiceEntry = ({ service }: ServiceListEntryProps) => {
 					))}
 				</div>
 				{service?.internal_address ? <ServiceStatus address={service.internal_address} /> : null}
-				<button onClick={() => openDialog()}>
+				<button onClick={() => dialogRef.current?.showModal()}>
 					<CgMoreVerticalAlt className="icon" id={ServicesStyles["menu-icon"]} />
 				</button>
 			</div>
@@ -75,10 +66,35 @@ const ServiceStatus = ({ address }: ServiceURLProps) => {
 	return <p className={ServicesStyles["service-status"]}>{address}</p>;
 };
 
-const EditService = ({ service }: ServiceListEntryProps) => {
+interface EditServiceProps {
+	service: Service;
+	finish: () => void;
+}
+
+const EditService = ({ service, finish }: EditServiceProps) => {
 	const [title, setTitle] = useState(service.title || "Untitled Service");
 	const [incomingAddress, setIncomingAddress] = useState(service.external_address[0] || "");
 	const [outgoingAddress, setOutgoingAddress] = useState(service.internal_address || "");
+
+	function submit(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+		e.preventDefault();
+		console.log("Submitting");
+		finish();
+	}
+	function cancel(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+		e.preventDefault();
+		console.log("Cancelling");
+		finish();
+		setTitle(service.title);
+		setIncomingAddress(service.external_address[0]);
+		setOutgoingAddress(service.internal_address);
+	}
+
+	function deleteService(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+		e.preventDefault();
+		console.log("Deleting");
+		finish();
+	}
 
 	return (
 		<form id={ServicesStyles["edit-service-container"]}>
@@ -109,9 +125,33 @@ const EditService = ({ service }: ServiceListEntryProps) => {
 				className={ServicesStyles["input"]}
 			/>
 			<div id={ServicesStyles["submission-buttons"]}>
-				<button className="delete">Delete</button>
-				<button className="cancel">Cancel</button>
-				<button className="submit">Submit</button>
+				<button
+					className="delete"
+					role="delete"
+					onClick={e => {
+						deleteService(e);
+					}}
+				>
+					Delete
+				</button>
+				<button
+					className="cancel"
+					role="cancel"
+					onClick={e => {
+						cancel(e);
+					}}
+				>
+					Cancel
+				</button>
+				<button
+					className="submit"
+					role="submit"
+					onClick={e => {
+						submit(e);
+					}}
+				>
+					Submit
+				</button>
 			</div>
 		</form>
 	);
