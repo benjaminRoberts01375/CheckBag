@@ -11,16 +11,24 @@ const ServicesScreen = () => {
 	useEffect(() => {
 		requestServiceData();
 	}, []);
+	const dialogRef = useRef<HTMLDialogElement | null>(null);
 
 	return (
 		<div id={DashboardStyles["container"]}>
 			<title>CheckBag - Services</title>
+			<dialog ref={dialogRef}>
+				<EditService service={undefined} finish={() => dialogRef.current?.close()} />
+			</dialog>
 			<div className={DashboardStyles["graph-group"]}>
 				<h2 className="header">Services</h2>
 				{services.map(service => (
 					<ServiceEntry service={service} key={service.clientID} />
 				))}
-				<button className="submit" id={ServicesStyles["add-service-button"]}>
+				<button
+					className="submit"
+					id={ServicesStyles["add-service-button"]}
+					onClick={() => dialogRef.current?.showModal()}
+				>
 					Add Service
 				</button>
 			</div>
