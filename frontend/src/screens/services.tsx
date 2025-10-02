@@ -81,7 +81,7 @@ interface EditServiceProps {
 
 const EditService = ({ service, finish }: EditServiceProps) => {
 	const [title, setTitle] = useState(service?.title ?? "");
-	const [incomingAddress, setIncomingAddress] = useState(service?.external_address[0] ?? "");
+	const [incomingAddresses, setIncomingAddress] = useState(service?.external_address ?? []);
 	const [outgoingAddress, setOutgoingAddress] = useState(service?.internal_address ?? "");
 
 	function submit(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
@@ -94,7 +94,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 		console.log("Cancelling");
 		finish();
 		setTitle(service?.title ?? "");
-		setIncomingAddress(service?.external_address[0] ?? "");
+		setIncomingAddress(service?.external_address ?? []);
 		setOutgoingAddress(service?.internal_address ?? "");
 	}
 
@@ -120,8 +120,8 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 			<input
 				type="text"
 				placeholder="Forward Address"
-				value={incomingAddress}
-				onChange={e => setIncomingAddress(e.target.value)}
+				value={incomingAddresses}
+				onChange={e => setIncomingAddress([e.target.value])}
 				className={ServicesStyles["input"]}
 			/>
 			<p>To:</p>
