@@ -150,7 +150,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 						submit(e);
 					}}
 				>
-					Submit
+					{service == undefined ? "Create" : "Update"}
 				</button>
 			</div>
 		</form>
