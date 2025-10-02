@@ -67,14 +67,14 @@ const ServiceStatus = ({ address }: ServiceURLProps) => {
 };
 
 interface EditServiceProps {
-	service: Service;
+	service: Service | undefined;
 	finish: () => void;
 }
 
 const EditService = ({ service, finish }: EditServiceProps) => {
-	const [title, setTitle] = useState(service.title || "Untitled Service");
-	const [incomingAddress, setIncomingAddress] = useState(service.external_address[0] || "");
-	const [outgoingAddress, setOutgoingAddress] = useState(service.internal_address || "");
+	const [title, setTitle] = useState(service?.title ?? "");
+	const [incomingAddress, setIncomingAddress] = useState(service?.external_address[0] ?? "");
+	const [outgoingAddress, setOutgoingAddress] = useState(service?.internal_address ?? "");
 
 	function submit(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
 		e.preventDefault();
@@ -85,9 +85,9 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 		e.preventDefault();
 		console.log("Cancelling");
 		finish();
-		setTitle(service.title);
-		setIncomingAddress(service.external_address[0]);
-		setOutgoingAddress(service.internal_address);
+		setTitle(service?.title ?? "");
+		setIncomingAddress(service?.external_address[0] ?? "");
+		setOutgoingAddress(service?.internal_address ?? "");
 	}
 
 	function deleteService(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
