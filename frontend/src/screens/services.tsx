@@ -80,15 +80,28 @@ interface EditServiceProps {
 }
 
 const EditService = ({ service, finish }: EditServiceProps) => {
+	const { serviceAdd, serviceDelete, serviceUpdate } = useList();
 	const [title, setTitle] = useState(service?.title ?? "");
 	const [incomingAddresses, setIncomingAddress] = useState(service?.external_address ?? []);
 	const [outgoingAddress, setOutgoingAddress] = useState(service?.internal_address ?? "");
 
 	function submit(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
 		e.preventDefault();
-		console.log("Submitting");
+		service == undefined ? createService() : updateService(service);
 		finish();
 	}
+
+	function createService() {
+		serviceAdd(new Service(outgoingAddress, incomingAddresses, title));
+	}
+
+	function updateService(service: Service) {
+		service.title = title;
+		service.external_address = incomingAddresses;
+		service.internal_address = outgoingAddress;
+		serviceUpdate(service);
+	}
+
 	function cancel(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
 		e.preventDefault();
 		console.log("Cancelling");
@@ -101,6 +114,9 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 	function deleteService(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
 		e.preventDefault();
 		console.log("Deleting");
+		if (service) {
+			serviceDelete(service.clientID);
+		}
 		finish();
 	}
 
@@ -133,15 +149,18 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 				className={ServicesStyles["input"]}
 			/>
 			<div id={ServicesStyles["submission-buttons"]}>
-				<button
-					className="delete"
-					role="delete"
-					onClick={e => {
-						deleteService(e);
-					}}
-				>
-					Delete
-				</button>
+				{service ? (
+					<button
+						className="delete"
+						role="delete"
+						onClick={e => {
+							deleteService(e);
+						}}
+					>
+						Delete
+					</button>
+				) : null}
+
 				<button
 					className="cancel"
 					role="cancel"
