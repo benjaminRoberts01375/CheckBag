@@ -132,7 +132,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 					className={ServicesStyles["input"]}
 				/>
 			</div>
-			<p>From:</p>
+			<h3>From:</h3>
 			<input
 				type="text"
 				placeholder="Forward Address"
@@ -140,7 +140,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 				onChange={e => setIncomingAddress([e.target.value])}
 				className={ServicesStyles["input"]}
 			/>
-			<p>To:</p>
+			<h3>To:</h3>
 			<input
 				type="text"
 				placeholder="Forward Address"
