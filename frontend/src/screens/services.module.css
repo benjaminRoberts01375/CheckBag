@@ -55,13 +55,14 @@
 }
 
 .input {
-	padding: 5pt;
+	padding: 7pt;
 	background: #0005;
 	color: white;
 	border: none;
 	border-radius: 5pt;
 	transition-duration: 0.5s;
 	margin: 3pt;
+	font-size: 12pt;
 }
 
 #add-service-button {
