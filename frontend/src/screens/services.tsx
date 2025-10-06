@@ -22,7 +22,7 @@ const ServicesScreen = () => {
 			<div className={DashboardStyles["graph-group"]}>
 				<h2 className="header">Services</h2>
 				{services.map(service => (
-					<ServiceEntry service={service} key={service.clientID} />
+					<ServiceEntry servicePass={service} key={service.clientID} />
 				))}
 				<button
 					className="submit"
@@ -39,11 +39,12 @@ const ServicesScreen = () => {
 export default ServicesScreen;
 
 interface ServiceListEntryProps {
-	service: Service;
+	servicePass: Service;
 }
 
-const ServiceEntry = ({ service }: ServiceListEntryProps) => {
+const ServiceEntry = ({ servicePass }: ServiceListEntryProps) => {
 	const dialogRef = useRef<HTMLDialogElement | null>(null);
+	const [service, _] = useState<Service>(servicePass);
 
 	return (
 		<div id={ServicesStyles["service-container"]}>
