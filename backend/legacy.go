@@ -1,5 +1,10 @@
 package main
 
+import (
+	"strconv"
+	"strings"
+)
+
 // *** Legacy data types and conversions ***
 
 // Service Link
@@ -11,11 +16,32 @@ type ServiceLinkV1 struct {
 }
 
 func (serviceLink ServiceLinkV1) Migrate() ServiceLink {
+	internalAddressParts := strings.Split(serviceLink.InternalAddress, ":")
+	if len(internalAddressParts) != 2 {
+		return ServiceLink{}
+	} else if len(serviceLink.ExternalAddress) != 1 {
+		return ServiceLink{}
+	}
+	internalPort, err := strconv.Atoi(internalAddressParts[1])
+	if err != nil {
+		return ServiceLink{}
+	}
+
 	return ServiceLink{
-		IncomingAddresses: serviceLink.ExternalAddress,
-		OutgoingAddress:   serviceLink.InternalAddress,
-		Title:             serviceLink.Title,
-		ID:                serviceLink.ID,
+		IncomingAddresses: []ServiceAddress{ // Always uses https, port 443
+			{
+				Protocol: "https",
+				Hostname: serviceLink.ExternalAddress[0],
+				Port:     443,
+			},
+		},
+		OutgoingAddress: ServiceAddress{ // Always uses http on some port
+			Protocol: "http",
+			Hostname: internalAddressParts[0],
+			Port:     internalPort,
+		},
+		Title: serviceLink.Title,
+		ID:    serviceLink.ID,
 	}
 }
 

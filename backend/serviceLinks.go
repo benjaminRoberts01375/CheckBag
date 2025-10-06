@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"slices"
 
@@ -12,10 +13,20 @@ import (
 type ServiceLinks []ServiceLink
 
 type ServiceLink struct {
-	OutgoingAddress   string   `json:"outgoing_address"`
-	IncomingAddresses []string `json:"incoming_address"`
-	Title             string   `json:"title"`
-	ID                string   `json:"id"`
+	OutgoingAddress   ServiceAddress   `json:"outgoing_address"`
+	IncomingAddresses []ServiceAddress `json:"incoming_address"`
+	Title             string           `json:"title"`
+	ID                string           `json:"id"`
+}
+
+type ServiceAddress struct {
+	Protocol string `json:"protocol"`
+	Hostname string `json:"hostname"`
+	Port     int    `json:"port"`
+}
+
+func (address ServiceAddress) String() string {
+	return fmt.Sprintf("%s://%s:%d", address.Protocol, address.Hostname, address.Port)
 }
 
 func (serviceLinks *ServiceLinks) Setup() {
@@ -31,7 +42,9 @@ func (serviceLinks *ServiceLinks) Setup() {
 func (serviceLinks *ServiceLinks) String() string {
 	var retVal string
 	for _, serviceLink := range *serviceLinks {
-		retVal += serviceLink.IncomingAddresses[0] + " → " + serviceLink.OutgoingAddress + "\n"
+		for _, incomingAddress := range serviceLink.IncomingAddresses {
+			retVal += incomingAddress.String() + " → " + serviceLink.OutgoingAddress.String() + "\n"
+		}
 	}
 	return retVal
 }
@@ -89,9 +102,11 @@ func servicesSet(w http.ResponseWriter, r *http.Request) {
 
 // Search for a service by incoming URL
 func (services *ServiceLinks) GetServiceFromIncomingURL(service string) (*ServiceLink, error) {
-	for _, serviceLink := range *services {
-		if slices.Contains(serviceLink.IncomingAddresses, service) {
-			return &serviceLink, nil
+	for _, serviceLink := range *services { // Check all services
+		for _, incomingAddress := range serviceLink.IncomingAddresses { // Check all incoming URLs
+			if incomingAddress.String() == service {
+				return &serviceLink, nil
+			}
 		}
 	}
 	return nil, errors.New("no service found")
@@ -100,7 +115,7 @@ func (services *ServiceLinks) GetServiceFromIncomingURL(service string) (*Servic
 // Search for a service by outgoing URL
 func (services *ServiceLinks) GetServiceFromOutgoingURL(service string) (*ServiceLink, error) {
 	for _, serviceLink := range *services {
-		if serviceLink.OutgoingAddress == service {
+		if serviceLink.OutgoingAddress.String() == service {
 			return &serviceLink, nil
 		}
 	}

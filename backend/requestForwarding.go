@@ -20,7 +20,7 @@ func requestForwarding(w http.ResponseWriter, r *http.Request) {
 		requestRespondCode(w, http.StatusNotFound)
 		return
 	}
-	outgoingAddress := requestedService.OutgoingAddress
+	outgoingAddress := requestedService.OutgoingAddress.String()
 	path := r.PathValue("path")
 	if len(path) > 0 && path[0] != '/' { // Add leading slash
 		path = "/" + path
