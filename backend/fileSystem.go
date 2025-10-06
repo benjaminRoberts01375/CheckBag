@@ -5,6 +5,9 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strconv"
+
+	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
 )
 
 func init() {
@@ -34,6 +37,13 @@ func (fs *FileSystem) Setup() {
 	}
 }
 
+type FileServiceLinks struct {
+	Version int `json:"version"`
+	ServiceLinks
+}
+
+const FileServiceLinksVersion = 2
+
 func (fs *FileSystem) Write(path string, data string) error {
 	newFile, err := os.Create(path)
 	if err != nil {
@@ -57,7 +67,12 @@ func (fs *FileSystem) SetUserData(data string) error {
 }
 
 func (fs *FileSystem) SetServices(services ServiceLinks) error {
-	data, err := json.Marshal(services)
+	updatedServices := FileServiceLinks{
+		FileServiceLinksVersion, // Version
+		services,                // Existing data
+	}
+
+	data, err := json.Marshal(updatedServices)
 	if err != nil {
 		return errors.New("Could not marshal services: " + err.Error())
 	}
@@ -65,14 +80,43 @@ func (fs *FileSystem) SetServices(services ServiceLinks) error {
 }
 
 func (fs *FileSystem) GetServices() (ServiceLinks, error) {
+	// Read data - Check if the file exists
 	data, err := os.ReadFile(filepath.Join(fs.BasePath, fs.Services))
 	if err != nil {
 		return ServiceLinks{}, errors.New("Could not read services: " + err.Error())
 	}
-	var services ServiceLinks
-	err = json.Unmarshal(data, &services)
-	if err != nil {
-		return ServiceLinks{}, errors.New("Could not unmarshal services: " + err.Error())
+
+	// Read just the version from the file
+	type ServiceVersion struct {
+		Version int `json:"version"`
 	}
-	return services, nil
+	var version ServiceVersion
+	err = json.Unmarshal(data, &version)
+	if err != nil { // Assume v0 services
+		version = ServiceVersion{0}
+	}
+
+	// Handle version differences
+	switch version.Version {
+	case 0, 1:
+		Printing.Println("v0/v1 services detected, migrating")
+		var services ServiceLinksV1
+		err = json.Unmarshal(data, &services)
+		if err != nil {
+			return ServiceLinks{}, errors.New("Could not unmarshal v0/v1 services: " + err.Error())
+		}
+		migratedServices := services.Migrate()
+		fs.SetServices(migratedServices) // Overwrite old services with new version
+		return migratedServices, nil
+	case 2:
+		Printing.Println("Services are up-to-date (v2)")
+		var services FileServiceLinks
+		err = json.Unmarshal(data, &services)
+		if err != nil {
+			return ServiceLinks{}, errors.New("Could not unmarshal v2 services: " + err.Error())
+		}
+		return services.ServiceLinks, nil
+	}
+
+	return ServiceLinks{}, errors.New("Unknown services version: " + strconv.Itoa(version.Version))
 }
