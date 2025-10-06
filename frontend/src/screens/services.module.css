@@ -87,7 +87,7 @@
 	width: 400pt;
 	border-radius: 10pt;
 	text-align: left;
-	padding: 10pt;
+	padding: 10pt 15pt 15pt 15pt;
 }
 
 #edit-service-container > input {
