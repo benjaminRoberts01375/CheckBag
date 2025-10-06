@@ -134,7 +134,8 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 			</div>
 			<h3>From:</h3>
 			<input
-				type="text"
+				type="url"
+				autoComplete="off"
 				placeholder="Forward Address"
 				value={incomingAddresses}
 				onChange={e => setIncomingAddress([e.target.value])}
@@ -142,7 +143,8 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 			/>
 			<h3>To:</h3>
 			<input
-				type="text"
+				type="url"
+				autoComplete="off"
 				placeholder="Forward Address"
 				value={outgoingAddress}
 				onChange={e => setOutgoingAddress(e.target.value)}
