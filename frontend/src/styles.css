@@ -94,6 +94,8 @@ h5,
 h6,
 button {
 	color: #ccc;
+	user-select: none;
+	-webkit-user-select: none;
 }
 
 button:disabled {
