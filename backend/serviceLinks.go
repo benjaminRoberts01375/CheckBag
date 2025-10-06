@@ -116,21 +116,3 @@ func (services *ServiceLinks) GetServiceByID(serviceID string) (*ServiceLink, er
 	}
 	return nil, errors.New("no service found")
 }
-
-// Widely search for a service. Supports incoming URLs, outgoing URLs, and service IDs
-func (services *ServiceLinks) GetService(serviceInfo string) (*ServiceLink, error) {
-	potentialService, _ := services.GetServiceFromIncomingURL(serviceInfo)
-	if potentialService != nil {
-		return potentialService, nil
-	}
-	potentialService, _ = services.GetServiceFromOutgoingURL(serviceInfo)
-	if potentialService != nil {
-		return potentialService, nil
-	}
-	potentialService, _ = services.GetServiceByID(serviceInfo)
-	if potentialService != nil {
-		return potentialService, nil
-	}
-
-	return nil, errors.New("no service found")
-}
