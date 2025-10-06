@@ -50,14 +50,14 @@ const ServiceEntry = ({ service }: ServiceListEntryProps) => {
 			<dialog ref={dialogRef}>
 				<EditService service={service} finish={() => dialogRef.current?.close()} />
 			</dialog>
-			<h2>{service ? service.title : "Untitled Service"}</h2>
+			<h2>{service.title}</h2>
 			<div className={ServicesStyles["connection-info"]}>
 				<div id={ServicesStyles["service-endpoints"]}>
-					{service?.external_address.map(externalAddress => (
+					{service.external_address.map(externalAddress => (
 						<ServiceStatus address={externalAddress} key={service.clientID} />
 					))}
 				</div>
-				{service?.internal_address ? <ServiceStatus address={service.internal_address} /> : null}
+				{service.internal_address ? <ServiceStatus address={service.internal_address} /> : null}
 				<button onClick={() => dialogRef.current?.showModal()}>
 					<CgMoreVerticalAlt className="icon" id={ServicesStyles["menu-icon"]} />
 				</button>
