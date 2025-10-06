@@ -17,7 +17,6 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	user-select: none;
 }
 
 #title-container > p {
@@ -62,12 +61,6 @@
 	gap: 5pt;
 	align-items: center;
 	justify-content: left;
-}
-
-.entry-icon {
-	color: #ffd20a;
-	font-size: 15pt;
-	border-radius: 5pt;
 }
 
 .active {

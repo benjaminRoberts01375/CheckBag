@@ -55,6 +55,7 @@ services:
     volumes:
       - ./backend:/app
       - backend-data:/home/appuser/CheckBag
+      - backend-data:/root/CheckBag
 
 volumes:
   valkey_data:

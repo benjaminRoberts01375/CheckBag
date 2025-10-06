@@ -1,4 +1,127 @@
-#services {
+#service-container {
 	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+	background: #464142aa;
+	margin: 0pt;
+	padding: 10pt;
+	border-radius: 5pt;
+}
+
+.connection-info {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+#service-endpoints {
+	display: flex;
+	flex-direction: row;
+	margin: 0pt auto 0pt 0pt;
 	flex-wrap: wrap;
+}
+
+#service-internal-url {
+	display: flex;
+}
+
+#service-container > h2 {
+	margin-bottom: 10pt;
+}
+
+.service-status {
+	background: #777;
+	border-radius: 3pt;
+	width: fit-content;
+	padding: 3pt;
+	margin: 2.5pt 2.5pt;
+}
+
+#menu-icon {
+	font-size: 25pt;
+	margin-left: 5pt;
+}
+
+#menu-icon:hover {
+	background: #777;
+	cursor: pointer;
+}
+
+#buttons {
+	display: flex;
+	flex-wrap: nowrap;
+	gap: 5pt;
+	margin: 3pt;
+}
+
+.input {
+	padding: 7pt;
+	background: #0005;
+	color: white;
+	border: none;
+	border-radius: 5pt;
+	transition-duration: 0.5s;
+	margin: 3pt;
+	font-size: 12pt;
+}
+
+#add-service-button {
+	display: block;
+	margin: 10pt 0pt 0pt auto;
+}
+
+.input:hover {
+	box-shadow: 0pt 0pt 3pt #555a;
+	transition-duration: 0s;
+}
+
+.input:focus {
+	outline: solid 2pt #aaa;
+}
+
+#edit-service-container {
+	display: flex;
+	flex-direction: column;
+	background-color: #343031f8;
+	height: 400pt;
+	width: 400pt;
+	border-radius: 10pt;
+	text-align: left;
+	padding: 10pt 15pt 15pt 15pt;
+}
+
+#edit-service-container > input {
+	width: 150pt;
+}
+
+#edit-service-container > h3 {
+	padding-top: 10pt;
+}
+
+#edit-service-container > p:first-child {
+	margin: 0pt;
+}
+
+#edit-service-header {
+	display: flex;
+	align-items: center;
+	gap: 10pt;
+}
+
+#edit-service-header > input {
+	padding: 10pt;
+	display: block;
+	font-size: 18pt;
+	width: 100%;
+}
+
+#submission-buttons {
+	display: flex;
+	flex-direction: row;
+	gap: 10pt;
+	margin-top: auto;
+}
+
+#submission-buttons > :first-child {
+	margin-right: auto;
 }

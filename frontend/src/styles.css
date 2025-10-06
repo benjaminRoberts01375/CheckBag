@@ -20,13 +20,43 @@ body {
 }
 
 .primary,
+.submit,
 flavor-button:active {
 	background: #ffd20a;
 	color: #ffd20a;
 }
 
+.submit:hover,
 .primary:hover {
 	background: #ffe989;
+}
+
+.delete {
+	background: rgb(255, 57, 57);
+}
+
+.delete:hover {
+	background: #f77;
+}
+
+.cancel {
+	background: #888;
+}
+
+.cancel:hover {
+	background: #bbb;
+}
+
+.button,
+.delete,
+.cancel,
+.submit {
+	color: black;
+	padding: 5pt 10pt;
+	font-size: 12pt;
+	border-radius: 6pt;
+	width: fit-content;
+	transition: 0.25s;
 }
 
 * {
@@ -34,6 +64,8 @@ flavor-button:active {
 	margin: 0pt;
 	font-family: "Arial", sans-serif;
 	box-sizing: border-box;
+	background: none;
+	border: none;
 }
 
 a {
@@ -62,6 +94,8 @@ h5,
 h6,
 button {
 	color: #ccc;
+	user-select: none;
+	-webkit-user-select: none;
 }
 
 button:disabled {
@@ -69,10 +103,30 @@ button:disabled {
 	cursor: not-allowed;
 }
 
+dialog[open] {
+	background: #0004;
+	width: 100vw;
+	height: 100vh;
+	max-width: none;
+	max-height: none;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	display: flex;
+	margin: 0;
+	inset: 0;
+}
+
 .header {
 	padding: 10pt;
 	width: 100%;
 	text-align: center;
+}
+
+.icon {
+	color: #ffd20a;
+	font-size: 15pt;
+	border-radius: 5pt;
 }
 
 .version > p:first-child {

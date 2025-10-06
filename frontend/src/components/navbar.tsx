@@ -87,21 +87,21 @@ const Navbar = ({ isMobileView, isMobileMenuOpen, setIsMobileMenuOpen }: NavbarP
 					className={`${NavbarStyles["entry"]} ${location.pathname === "/dashboard/home" ? NavbarStyles["active"] : ""}`}
 					onClick={() => navigate("/dashboard/home")}
 				>
-					<IoHome className={NavbarStyles["entry-icon"]} />
+					<IoHome className="icon" />
 					<p>Home</p>
 				</button>
 				<button
 					className={`${NavbarStyles["entry"]} ${location.pathname === "/dashboard/services" ? NavbarStyles["active"] : ""}`}
 					onClick={() => navigate("/dashboard/services")}
 				>
-					<FaShareAlt className={NavbarStyles["entry-icon"]} />
+					<FaShareAlt className="icon" />
 					<p>Services</p>
 				</button>
 				<button
 					className={`${NavbarStyles["entry"]} ${location.pathname === "/dashboard/api" ? NavbarStyles["active"] : ""}`}
 					onClick={() => navigate("/dashboard/api")}
 				>
-					<PiAirplaneTiltFill className={NavbarStyles["entry-icon"]} />
+					<PiAirplaneTiltFill className="icon" />
 					<p>API Keys</p>
 				</button>
 				<div id={NavbarStyles["divider"]}></div>
