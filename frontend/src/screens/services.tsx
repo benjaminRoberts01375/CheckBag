@@ -179,7 +179,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 						submit(e);
 					}}
 				>
-					{service == undefined ? "Create" : "Update"}
+					{service == undefined ? "Create" : "Save"}
 				</button>
 			</div>
 		</form>
