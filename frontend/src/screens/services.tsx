@@ -54,11 +54,11 @@ const ServiceEntry = ({ servicePass }: ServiceListEntryProps) => {
 			<h2>{service.title}</h2>
 			<div className={ServicesStyles["connection-info"]}>
 				<div id={ServicesStyles["service-endpoints"]}>
-					{service.external_address.map(externalAddress => (
+					{service.incoming_addresses.map(externalAddress => (
 						<ServiceStatus address={externalAddress} key={service.clientID} />
 					))}
 				</div>
-				{service.internal_address ? <ServiceStatus address={service.internal_address} /> : null}
+				{service.outgoing_address ? <ServiceStatus address={service.outgoing_address} /> : null}
 				<button onClick={() => dialogRef.current?.showModal()}>
 					<CgMoreVerticalAlt className="icon" id={ServicesStyles["menu-icon"]} />
 				</button>
@@ -83,8 +83,8 @@ interface EditServiceProps {
 const EditService = ({ service, finish }: EditServiceProps) => {
 	const { serviceAdd, serviceDelete, serviceUpdate } = useList();
 	const [title, setTitle] = useState(service?.title ?? "");
-	const [incomingAddresses, setIncomingAddress] = useState(service?.external_address ?? []);
-	const [outgoingAddress, setOutgoingAddress] = useState(service?.internal_address ?? "");
+	const [incomingAddresses, setIncomingAddress] = useState(service?.incoming_addresses ?? []);
+	const [outgoingAddress, setOutgoingAddress] = useState(service?.outgoing_address ?? "");
 
 	function submit(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
 		e.preventDefault();
@@ -98,8 +98,8 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 
 	function updateService(service: Service) {
 		service.title = title;
-		service.external_address = incomingAddresses;
-		service.internal_address = outgoingAddress;
+		service.incoming_addresses = incomingAddresses;
+		service.outgoing_address = outgoingAddress;
 		serviceUpdate(service);
 	}
 
@@ -108,8 +108,8 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 		console.log("Cancelling");
 		finish();
 		setTitle(service?.title ?? "");
-		setIncomingAddress(service?.external_address ?? []);
-		setOutgoingAddress(service?.internal_address ?? "");
+		setIncomingAddress(service?.incoming_addresses ?? []);
+		setOutgoingAddress(service?.outgoing_address ?? "");
 	}
 
 	function deleteService(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
