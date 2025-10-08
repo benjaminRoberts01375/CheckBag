@@ -5,6 +5,7 @@ import { useList } from "../context-hook";
 import { useState, useEffect, useRef } from "react";
 import Service from "../types/service.tsx";
 import { CgMoreVerticalAlt } from "react-icons/cg";
+import { CommunicationProtocols, CommunicationProtocol } from "../types/strings";
 
 const ServicesScreen = () => {
 	const { services, requestServiceData } = useList();
@@ -84,22 +85,43 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 	const { serviceAdd, serviceDelete, serviceUpdate } = useList();
 	const [title, setTitle] = useState(service?.title ?? "");
 	const [incomingAddresses, setIncomingAddress] = useState(service?.external_address ?? []);
-	const [outgoingAddress, setOutgoingAddress] = useState(service?.internal_address ?? "");
+
+	const [outgoingProtocol, setOutgoingProtocol] = useState<CommunicationProtocol>(
+		service?.internal_address?.startsWith("http") ? "http" : "https",
+	);
+	const [outgoingDomain, setOutgoingDomain] = useState(
+		service?.internal_address.split(":")[1]?.substring(2) ?? "", // ex. https://www.google.com - splits on ":" and removes `//`
+	);
+	const [outgoingPort, setOutgoingPort] = useState(service?.internal_address.split(":")[2] ?? "80");
 
 	function submit(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
 		e.preventDefault();
 		service == undefined ? createService() : updateService(service);
 		finish();
+
+		// Reset the form
+		setOutgoingProtocol("http");
+		setOutgoingDomain("");
+		setOutgoingPort("80");
+		setIncomingAddress([]);
+		setTitle("");
 	}
 
 	function createService() {
-		serviceAdd(new Service(outgoingAddress, incomingAddresses, title));
+		console.log("Adding service:", outgoingProtocol + "://" + outgoingDomain + ":" + outgoingPort);
+		serviceAdd(
+			new Service(
+				outgoingProtocol + "://" + outgoingDomain + ":" + outgoingPort,
+				incomingAddresses,
+				title,
+			),
+		);
 	}
 
 	function updateService(service: Service) {
 		service.title = title;
 		service.external_address = incomingAddresses;
-		service.internal_address = outgoingAddress;
+		service.internal_address = outgoingProtocol + "://" + outgoingDomain + ":" + outgoingPort;
 		serviceUpdate(service);
 	}
 
@@ -107,9 +129,12 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 		e.preventDefault();
 		console.log("Cancelling");
 		finish();
-		setTitle(service?.title ?? "");
-		setIncomingAddress(service?.external_address ?? []);
-		setOutgoingAddress(service?.internal_address ?? "");
+		// Reset the form
+		setOutgoingProtocol("http");
+		setOutgoingDomain("");
+		setOutgoingPort("80");
+		setIncomingAddress([]);
+		setTitle("");
 	}
 
 	function deleteService(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
@@ -119,6 +144,12 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 			serviceDelete(service.clientID);
 		}
 		finish();
+		// Reset the form
+		setOutgoingProtocol("http");
+		setOutgoingDomain("");
+		setOutgoingPort("80");
+		setIncomingAddress([]);
+		setTitle("");
 	}
 
 	return (
@@ -143,12 +174,37 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 				className={ServicesStyles["input"]}
 			/>
 			<h3>To:</h3>
+			<select
+				value={outgoingProtocol}
+				onChange={e => setOutgoingProtocol(e.target.value as CommunicationProtocol)}
+			>
+				{CommunicationProtocols.map(protocol => (
+					<option value={protocol} key={protocol}>
+						{protocol}
+					</option>
+				))}
+			</select>
 			<input
 				type="url"
 				autoComplete="off"
-				placeholder="Forward Address"
-				value={outgoingAddress}
-				onChange={e => setOutgoingAddress(e.target.value)}
+				placeholder="Forward Domain"
+				value={outgoingDomain}
+				onChange={e => setOutgoingDomain(e.target.value)}
+				className={ServicesStyles["input"]}
+			/>
+			<input
+				type="number"
+				autoComplete="off"
+				placeholder="Forward Port"
+				value={outgoingPort}
+				onChange={e => {
+					var newPort = Number(e.target.value);
+					if (newPort > 0 && newPort <= 65535) {
+						setOutgoingPort(e.target.value);
+					}
+				}}
+				min={1}
+				max={65535}
 				className={ServicesStyles["input"]}
 			/>
 			<div id={ServicesStyles["submission-buttons"]}>
