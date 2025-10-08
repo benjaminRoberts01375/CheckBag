@@ -164,49 +164,57 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 					className={ServicesStyles["input"]}
 				/>
 			</div>
-			<h3>From:</h3>
-			<input
-				type="url"
-				autoComplete="off"
-				placeholder="Forward Address"
-				value={incomingAddresses}
-				onChange={e => setIncomingAddress([e.target.value])}
-				className={ServicesStyles["input"]}
-			/>
-			<h3>To:</h3>
-			<select
-				value={outgoingProtocol}
-				onChange={e => setOutgoingProtocol(e.target.value as CommunicationProtocol)}
-			>
-				{CommunicationProtocols.map(protocol => (
-					<option value={protocol} key={protocol}>
-						{protocol}
-					</option>
-				))}
-			</select>
-			<input
-				type="url"
-				autoComplete="off"
-				placeholder="Forward Domain"
-				value={outgoingDomain}
-				onChange={e => setOutgoingDomain(e.target.value)}
-				className={ServicesStyles["input"]}
-			/>
-			<input
-				type="number"
-				autoComplete="off"
-				placeholder="Forward Port"
-				value={outgoingPort}
-				onChange={e => {
-					var newPort = Number(e.target.value);
-					if (newPort > 0 && newPort <= 65535) {
-						setOutgoingPort(e.target.value);
-					}
-				}}
-				min={1}
-				max={65535}
-				className={ServicesStyles["input"]}
-			/>
+
+			<div className={ServicesStyles["url-container"]}>
+				<h3>From:</h3>
+				<input
+					type="url"
+					autoComplete="off"
+					placeholder="Forward Address"
+					value={incomingAddresses}
+					onChange={e => setIncomingAddress([e.target.value])}
+					className={ServicesStyles["input"]}
+				/>
+			</div>
+			<div className={ServicesStyles["url-container"]}>
+				<h3>To:</h3>
+				<select
+					value={outgoingProtocol}
+					onChange={e => setOutgoingProtocol(e.target.value as CommunicationProtocol)}
+					className={ServicesStyles["input"]}
+				>
+					{CommunicationProtocols.map(protocol => (
+						<option value={protocol} key={protocol}>
+							{protocol}
+						</option>
+					))}
+				</select>
+				<p>://</p>
+				<input
+					type="url"
+					autoComplete="off"
+					placeholder="Forward Domain"
+					value={outgoingDomain}
+					onChange={e => setOutgoingDomain(e.target.value)}
+					className={ServicesStyles["input"]}
+				/>
+				<p>:</p>
+				<input
+					type="number"
+					autoComplete="off"
+					placeholder="Port"
+					value={outgoingPort}
+					onChange={e => {
+						var newPort = Number(e.target.value);
+						if ((newPort > 0 && newPort <= 65535) || e.target.value == "") {
+							setOutgoingPort(e.target.value);
+						}
+					}}
+					min={1}
+					max={65535}
+					className={`${ServicesStyles["input"]} ${ServicesStyles["port"]}`}
+				/>
+			</div>
 			<div id={ServicesStyles["submission-buttons"]}>
 				{service ? (
 					<button

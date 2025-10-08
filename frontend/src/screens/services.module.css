@@ -88,6 +88,7 @@
 	border-radius: 10pt;
 	text-align: left;
 	padding: 10pt 15pt 15pt 15pt;
+	gap: 10pt;
 }
 
 #edit-service-container > input {
@@ -124,4 +125,13 @@
 
 #submission-buttons > :first-child {
 	margin-right: auto;
+}
+
+.url-container {
+	display: flex;
+	align-items: center;
+}
+
+.url-container > h3 {
+	margin-right: 10pt;
 }
