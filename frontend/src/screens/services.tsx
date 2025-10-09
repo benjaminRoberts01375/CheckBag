@@ -92,19 +92,15 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 	const [outgoingDomain, setOutgoingDomain] = useState(
 		service?.internal_address.split(":")[0] ?? "", // ex. TODO: Get entry 1 from split and remove first two characters
 	);
-	const [outgoingPort, setOutgoingPort] = useState(service?.internal_address.split(":")[1] ?? "80"); // TODO: Get entry 2 from split
+	const [outgoingPort, setOutgoingPort] = useState(() => {
+		console.log("Checking port:", service?.internal_address.split(":")[1]);
+		return service?.internal_address.split(":")[1] ?? "80";
+	}); // TODO: Get entry 2 from split
 
 	function submit(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
 		e.preventDefault();
 		service == undefined ? createService() : updateService(service);
 		finish();
-
-		// Reset the form
-		setOutgoingProtocol("http");
-		setOutgoingDomain("");
-		setOutgoingPort("80");
-		setIncomingAddress([]);
-		setTitle("");
 	}
 
 	function createService() {
@@ -129,12 +125,6 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 		e.preventDefault();
 		console.log("Cancelling");
 		finish();
-		// Reset the form
-		setOutgoingProtocol("http");
-		setOutgoingDomain("");
-		setOutgoingPort("80");
-		setIncomingAddress([]);
-		setTitle("");
 	}
 
 	function deleteService(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
@@ -144,12 +134,6 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 			serviceDelete(service.clientID);
 		}
 		finish();
-		// Reset the form
-		setOutgoingProtocol("http");
-		setOutgoingDomain("");
-		setOutgoingPort("80");
-		setIncomingAddress([]);
-		setTitle("");
 	}
 
 	return (
