@@ -2,6 +2,7 @@ import Analytic from "./analytic";
 import { v4 as uuidv4 } from "uuid";
 import GraphData from "./graph-data";
 import { Timescale } from "./strings";
+import ServiceURL from "./service-url";
 
 // Individual service's processed data for a specific timescale
 export interface ServiceProcessedData {
@@ -13,7 +14,7 @@ export interface ServiceProcessedData {
 }
 
 class Service {
-	outgoing_address: string;
+	outgoing_address: ServiceURL;
 	incoming_addresses: string[];
 	title: string;
 	id: string;
@@ -27,7 +28,7 @@ class Service {
 	yearProcessed: ServiceProcessedData;
 
 	constructor(
-		outgoing_address: string,
+		outgoing_address: ServiceURL,
 		incoming_addresses: string[],
 		title: string,
 		id: string = "",
@@ -38,27 +39,18 @@ class Service {
 		month: Map<string, Analytic> = new Map<string, Analytic>(),
 		year: Map<string, Analytic> = new Map<string, Analytic>(),
 	) {
-		if (outgoing_address.substring(0, 4) !== "http") {
-			outgoing_address = "http://" + outgoing_address;
-		}
-
-		// Preserve hostname and port for outgoing address
-		const outgoingURL = new URL(outgoing_address);
-		this.outgoing_address = outgoingURL.port
-			? `${outgoingURL.hostname}:${outgoingURL.port}`
-			: outgoingURL.hostname;
-
-		// Handle external addresses similarly
+		// Handle incoming addresses similarly
 		incoming_addresses.forEach((address, index) => {
 			if (address.substring(0, 4) !== "http") {
 				address = "http://" + address;
 			}
-			const externalUrl = new URL(address);
-			incoming_addresses[index] = externalUrl.port
-				? `${externalUrl.hostname}:${externalUrl.port}`
-				: externalUrl.hostname;
+			const incomingURL = new URL(address);
+			incoming_addresses[index] = incomingURL.port
+				? `${incomingURL.hostname}:${incomingURL.port}`
+				: incomingURL.hostname;
 		});
 
+		this.outgoing_address = outgoing_address;
 		this.incoming_addresses = incoming_addresses;
 		this.title = title;
 		this.enabled = enabled;
@@ -212,10 +204,13 @@ class Service {
 			id: this.id,
 		};
 	}
-
 	static fromJSON(data: any): Service {
 		return new Service(
-			data.outgoing_address,
+			new ServiceURL(
+				data.outgoing_address.protocol,
+				data.outgoing_address.domain,
+				data.outgoing_address.port,
+			),
 			data.incoming_addresses,
 			data.title,
 			data.id || "",

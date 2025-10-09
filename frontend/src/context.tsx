@@ -86,7 +86,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 				// Add resource usage data
 				serviceData.resourceUsage.forEach((value, key) => {
 					resourceUsage.push(
-						new ResourceUsageData(service.title, service.outgoing_address, key, value),
+						new ResourceUsageData(service.title, service.outgoing_address.toString(), key, value),
 					);
 				});
 			});
