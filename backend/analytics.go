@@ -6,7 +6,7 @@ import (
 )
 
 func analytics(r *http.Request, responseCode int) {
-	service, err := serviceLinks.GetServiceFromExternalURL(r.Host)
+	service, err := serviceLinks.GetServiceFromIncomingURL(r.Host)
 	var serviceID string
 	if err != nil {
 		serviceID = "Unknown"

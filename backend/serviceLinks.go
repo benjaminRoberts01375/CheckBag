@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"slices"
 
@@ -12,10 +13,20 @@ import (
 type ServiceLinks []ServiceLink
 
 type ServiceLink struct {
-	InternalAddress string   `json:"internal_address"`
-	ExternalAddress []string `json:"external_address"`
-	Title           string   `json:"title"`
-	ID              string   `json:"id"`
+	OutgoingAddress   ServiceAddress   `json:"outgoing_address"`
+	IncomingAddresses []ServiceAddress `json:"incoming_address"`
+	Title             string           `json:"title"`
+	ID                string           `json:"id"`
+}
+
+type ServiceAddress struct {
+	Protocol string `json:"protocol"`
+	Hostname string `json:"hostname"`
+	Port     int    `json:"port"`
+}
+
+func (address ServiceAddress) String() string {
+	return fmt.Sprintf("%s://%s:%d", address.Protocol, address.Hostname, address.Port)
 }
 
 func (serviceLinks *ServiceLinks) Setup() {
@@ -31,7 +42,9 @@ func (serviceLinks *ServiceLinks) Setup() {
 func (serviceLinks *ServiceLinks) String() string {
 	var retVal string
 	for _, serviceLink := range *serviceLinks {
-		retVal += serviceLink.ExternalAddress[0] + " → " + serviceLink.InternalAddress + "\n"
+		for _, incomingAddress := range serviceLink.IncomingAddresses {
+			retVal += incomingAddress.String() + " → " + serviceLink.OutgoingAddress.String() + "\n"
+		}
 	}
 	return retVal
 }
@@ -72,9 +85,9 @@ func servicesSet(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		// Update service - Don't update ID
-		serviceLinks[existingServiceI].ExternalAddress = newService.ExternalAddress
+		serviceLinks[existingServiceI].IncomingAddresses = newService.IncomingAddresses
 		serviceLinks[existingServiceI].Title = newService.Title
-		serviceLinks[existingServiceI].InternalAddress = newService.InternalAddress
+		serviceLinks[existingServiceI].OutgoingAddress = newService.OutgoingAddress
 	}
 
 	err = fileSystem.SetServices(serviceLinks)
@@ -87,20 +100,22 @@ func servicesSet(w http.ResponseWriter, r *http.Request) {
 	requestRespond(w, serviceLinks)
 }
 
-// Search for a service by external URL
-func (services *ServiceLinks) GetServiceFromExternalURL(service string) (*ServiceLink, error) {
-	for _, serviceLink := range *services {
-		if slices.Contains(serviceLink.ExternalAddress, service) {
-			return &serviceLink, nil
+// Search for a service by incoming URL
+func (services *ServiceLinks) GetServiceFromIncomingURL(service string) (*ServiceLink, error) {
+	for _, serviceLink := range *services { // Check all services
+		for _, incomingAddress := range serviceLink.IncomingAddresses { // Check all incoming URLs
+			if incomingAddress.String() == service {
+				return &serviceLink, nil
+			}
 		}
 	}
 	return nil, errors.New("no service found")
 }
 
-// Search for a service by internal URL
-func (services *ServiceLinks) GetServiceFromInternalURL(service string) (*ServiceLink, error) {
+// Search for a service by outgoing URL
+func (services *ServiceLinks) GetServiceFromOutgoingURL(service string) (*ServiceLink, error) {
 	for _, serviceLink := range *services {
-		if serviceLink.InternalAddress == service {
+		if serviceLink.OutgoingAddress.String() == service {
 			return &serviceLink, nil
 		}
 	}
@@ -114,23 +129,5 @@ func (services *ServiceLinks) GetServiceByID(serviceID string) (*ServiceLink, er
 			return &serviceLink, nil
 		}
 	}
-	return nil, errors.New("no service found")
-}
-
-// Widely search for a service. Supports external URLs, internal URLs, and service IDs
-func (services *ServiceLinks) GetService(serviceInfo string) (*ServiceLink, error) {
-	potentialService, _ := services.GetServiceFromExternalURL(serviceInfo)
-	if potentialService != nil {
-		return potentialService, nil
-	}
-	potentialService, _ = services.GetServiceFromInternalURL(serviceInfo)
-	if potentialService != nil {
-		return potentialService, nil
-	}
-	potentialService, _ = services.GetServiceByID(serviceInfo)
-	if potentialService != nil {
-		return potentialService, nil
-	}
-
 	return nil, errors.New("no service found")
 }
