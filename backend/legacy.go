@@ -28,13 +28,7 @@ func (serviceLink ServiceLinkV1) Migrate() ServiceLink {
 	}
 
 	return ServiceLink{
-		IncomingAddresses: []ServiceAddress{ // Always uses https, port 443
-			{
-				Protocol: "https",
-				Domain:   serviceLink.ExternalAddress[0],
-				Port:     443,
-			},
-		},
+		IncomingAddresses: serviceLink.ExternalAddress,
 		OutgoingAddress: ServiceAddress{ // Always uses http on some port
 			Protocol: "http",
 			Domain:   internalAddressParts[0],
