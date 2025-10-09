@@ -129,20 +129,13 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 	}
 
 	function createService() {
-		console.log("Adding service:", outgoingProtocol + "://" + outgoingDomain + ":" + outgoingPort);
-		serviceAdd(
-			new Service(
-				outgoingProtocol + "://" + outgoingDomain + ":" + outgoingPort,
-				incomingAddresses,
-				title,
-			),
-		);
+		serviceAdd(new Service(createURL(), incomingAddresses, title));
 	}
 
 	function updateService(service: Service) {
 		service.title = title;
 		service.external_address = incomingAddresses;
-		service.internal_address = outgoingProtocol + "://" + outgoingDomain + ":" + outgoingPort;
+		service.internal_address = createURL();
 		serviceUpdate(service);
 	}
 
@@ -159,6 +152,18 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 			serviceDelete(service.clientID);
 		}
 		finish();
+	}
+
+	function createURL(): string {
+		var fixedOutgoingPort = outgoingPort;
+		if (fixedOutgoingPort == "") {
+			if (outgoingProtocol == "http") {
+				fixedOutgoingPort = "80";
+			} else {
+				fixedOutgoingPort = "443";
+			}
+		}
+		return outgoingProtocol + "://" + outgoingDomain + ":" + fixedOutgoingPort;
 	}
 
 	return (
