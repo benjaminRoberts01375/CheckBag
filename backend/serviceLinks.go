@@ -21,12 +21,12 @@ type ServiceLink struct {
 
 type ServiceAddress struct {
 	Protocol string `json:"protocol"`
-	Hostname string `json:"hostname"`
+	Domain   string `json:"hostname"`
 	Port     int    `json:"port"`
 }
 
 func (address ServiceAddress) String() string {
-	return fmt.Sprintf("%s://%s:%d", address.Protocol, address.Hostname, address.Port)
+	return fmt.Sprintf("%s://%s:%d", address.Protocol, address.Domain, address.Port)
 }
 
 func (serviceLinks *ServiceLinks) Setup() {
