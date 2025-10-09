@@ -68,7 +68,7 @@ func getServiceData(w http.ResponseWriter, r *http.Request) {
 	// Handle service requests
 	for _, requestedServiceString := range queryParams["service"] {
 		// Find the service index of the requested service from the list of all service data
-		requestedServiceLink, _ := serviceLinks.GetService(requestedServiceString)
+		requestedServiceLink, _ := serviceLinks.GetServiceFromIncomingURL(requestedServiceString)
 		var requestedServiceIndex int = -1
 		for i, service := range serviceData {
 			if service.ServiceLink.ID == requestedServiceLink.ID {
