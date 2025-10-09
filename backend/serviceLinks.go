@@ -13,10 +13,10 @@ import (
 type ServiceLinks []ServiceLink
 
 type ServiceLink struct {
-	OutgoingAddress   ServiceAddress   `json:"outgoing_address"`
-	IncomingAddresses []ServiceAddress `json:"incoming_address"`
-	Title             string           `json:"title"`
-	ID                string           `json:"id"`
+	OutgoingAddress   ServiceAddress `json:"outgoing_address"`
+	IncomingAddresses []string       `json:"incoming_address"`
+	Title             string         `json:"title"`
+	ID                string         `json:"id"`
 }
 
 type ServiceAddress struct {
@@ -43,7 +43,7 @@ func (serviceLinks *ServiceLinks) String() string {
 	var retVal string
 	for _, serviceLink := range *serviceLinks {
 		for _, incomingAddress := range serviceLink.IncomingAddresses {
-			retVal += incomingAddress.String() + " → " + serviceLink.OutgoingAddress.String() + "\n"
+			retVal += incomingAddress + " → " + serviceLink.OutgoingAddress.String() + "\n"
 		}
 	}
 	return retVal
@@ -104,7 +104,7 @@ func servicesSet(w http.ResponseWriter, r *http.Request) {
 func (services *ServiceLinks) GetServiceFromIncomingURL(service string) (*ServiceLink, error) {
 	for _, serviceLink := range *services { // Check all services
 		for _, incomingAddress := range serviceLink.IncomingAddresses { // Check all incoming URLs
-			if incomingAddress.String() == service {
+			if incomingAddress == service {
 				return &serviceLink, nil
 			}
 		}
