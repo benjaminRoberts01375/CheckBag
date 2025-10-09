@@ -13,8 +13,8 @@ export interface ServiceProcessedData {
 }
 
 class Service {
-	internal_address: string;
-	external_address: string[];
+	outgoing_address: string;
+	incoming_addresses: string[];
 	title: string;
 	id: string;
 	clientID: string;
@@ -27,8 +27,8 @@ class Service {
 	yearProcessed: ServiceProcessedData;
 
 	constructor(
-		internal_address: string,
-		external_address: string[],
+		outgoing_address: string,
+		incoming_addresses: string[],
 		title: string,
 		id: string = "",
 		enabled: boolean = true,
@@ -38,28 +38,28 @@ class Service {
 		month: Map<string, Analytic> = new Map<string, Analytic>(),
 		year: Map<string, Analytic> = new Map<string, Analytic>(),
 	) {
-		if (internal_address.substring(0, 4) !== "http") {
-			internal_address = "http://" + internal_address;
+		if (outgoing_address.substring(0, 4) !== "http") {
+			outgoing_address = "http://" + outgoing_address;
 		}
 
-		// Preserve hostname and port for internal address
-		const internalUrl = new URL(internal_address);
-		this.internal_address = internalUrl.port
-			? `${internalUrl.hostname}:${internalUrl.port}`
-			: internalUrl.hostname;
+		// Preserve hostname and port for outgoing address
+		const outgoingURL = new URL(outgoing_address);
+		this.outgoing_address = outgoingURL.port
+			? `${outgoingURL.hostname}:${outgoingURL.port}`
+			: outgoingURL.hostname;
 
 		// Handle external addresses similarly
-		external_address.forEach((address, index) => {
+		incoming_addresses.forEach((address, index) => {
 			if (address.substring(0, 4) !== "http") {
 				address = "http://" + address;
 			}
 			const externalUrl = new URL(address);
-			external_address[index] = externalUrl.port
+			incoming_addresses[index] = externalUrl.port
 				? `${externalUrl.hostname}:${externalUrl.port}`
 				: externalUrl.hostname;
 		});
 
-		this.external_address = external_address;
+		this.incoming_addresses = incoming_addresses;
 		this.title = title;
 		this.enabled = enabled;
 		this.id = id;
@@ -206,8 +206,8 @@ class Service {
 	// Convert to JSON for server communication (only service config, no analytics)
 	toJSON() {
 		return {
-			internal_address: this.internal_address,
-			external_address: this.external_address,
+			outgoing_address: this.outgoing_address,
+			incoming_addresses: this.incoming_addresses,
 			title: this.title,
 			id: this.id,
 		};
@@ -215,8 +215,8 @@ class Service {
 
 	static fromJSON(data: any): Service {
 		return new Service(
-			data.internal_address,
-			data.external_address,
+			data.outgoing_address,
+			data.incoming_addresses,
 			data.title,
 			data.id || "",
 			true,

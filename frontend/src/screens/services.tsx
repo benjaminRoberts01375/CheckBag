@@ -78,11 +78,11 @@ const ServiceEntry = ({ servicePass }: ServiceListEntryProps) => {
 			<h2>{service.title}</h2>
 			<div className={ServicesStyles["connection-info"]}>
 				<div id={ServicesStyles["service-endpoints"]}>
-					{service.external_address.map(externalAddress => (
+					{service.incoming_addresses.map(externalAddress => (
 						<ServiceStatus address={externalAddress} key={service.clientID} />
 					))}
 				</div>
-				{service.internal_address ? <ServiceStatus address={service.internal_address} /> : null}
+				{service.outgoing_address ? <ServiceStatus address={service.outgoing_address} /> : null}
 				<button
 					onClick={() => {
 						setIsDialogOpen(true);
@@ -112,16 +112,16 @@ interface EditServiceProps {
 const EditService = ({ service, finish }: EditServiceProps) => {
 	const { serviceAdd, serviceDelete, serviceUpdate } = useList();
 	const [title, setTitle] = useState(service?.title ?? "");
-	const [incomingAddresses, setIncomingAddress] = useState(service?.external_address ?? []);
+	const [incomingAddresses, setIncomingAddress] = useState(service?.incoming_addresses ?? []);
 
 	const [outgoingProtocol, setOutgoingProtocol] = useState<CommunicationProtocol>(
-		service?.internal_address?.startsWith("https") ? "https" : "http",
+		service?.outgoing_address?.startsWith("https") ? "https" : "http",
 	);
 	const [outgoingDomain, setOutgoingDomain] = useState<string>(
-		service?.internal_address.split(":")[0] ?? "", // ex. TODO: Get entry 1 from split and remove first two characters
+		service?.outgoing_address.split(":")[0] ?? "", // ex. TODO: Get entry 1 from split and remove first two characters
 	);
 	const [outgoingPort, setOutgoingPort] = useState<string>(() => {
-		return service?.internal_address.split(":")[1] ?? "80";
+		return service?.outgoing_address.split(":")[1] ?? "80";
 	}); // TODO: Get entry 2 from split
 
 	function submit(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
@@ -136,8 +136,8 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 
 	function updateService(service: Service) {
 		service.title = title;
-		service.external_address = incomingAddresses;
-		service.internal_address = createURL();
+		service.incoming_addresses = incomingAddresses;
+		service.outgoing_address = createURL();
 		serviceUpdate(service);
 	}
 
