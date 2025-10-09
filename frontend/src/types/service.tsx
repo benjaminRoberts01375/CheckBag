@@ -2,6 +2,7 @@ import Analytic from "./analytic";
 import { v4 as uuidv4 } from "uuid";
 import GraphData from "./graph-data";
 import { Timescale } from "./strings";
+import ServiceURL from "./service-url";
 
 // Individual service's processed data for a specific timescale
 export interface ServiceProcessedData {
@@ -13,7 +14,7 @@ export interface ServiceProcessedData {
 }
 
 class Service {
-	outgoing_address: string;
+	outgoing_address: ServiceURL;
 	incoming_addresses: string[];
 	title: string;
 	id: string;
@@ -27,7 +28,7 @@ class Service {
 	yearProcessed: ServiceProcessedData;
 
 	constructor(
-		outgoing_address: string,
+		outgoing_address: ServiceURL,
 		incoming_addresses: string[],
 		title: string,
 		id: string = "",
@@ -38,26 +39,8 @@ class Service {
 		month: Map<string, Analytic> = new Map<string, Analytic>(),
 		year: Map<string, Analytic> = new Map<string, Analytic>(),
 	) {
-		if (outgoing_address.substring(0, 4) !== "http") {
-			outgoing_address = "http://" + outgoing_address;
-		}
-
 		// Preserve hostname and port for outgoing address
-		const outgoing_address_url = new URL(outgoing_address);
-		this.outgoing_address = outgoing_address_url.port
-			? `${outgoing_address_url.hostname}:${outgoing_address_url.port}`
-			: outgoing_address_url.hostname;
-
-		// Handle incoming addresses similarly
-		incoming_addresses.forEach((address, index) => {
-			if (address.substring(0, 4) !== "http") {
-				address = "http://" + address;
-			}
-			const incoming_address_urls = new URL(address);
-			incoming_addresses[index] = incoming_address_urls.port
-				? `${incoming_address_urls.hostname}:${incoming_address_urls.port}`
-				: incoming_address_urls.hostname;
-		});
+		this.outgoing_address = outgoing_address;
 
 		this.incoming_addresses = incoming_addresses;
 		this.title = title;

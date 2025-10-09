@@ -5,6 +5,8 @@ import { useList } from "../context-hook";
 import { useState, useEffect, useRef } from "react";
 import Service from "../types/service.tsx";
 import { CgMoreVerticalAlt } from "react-icons/cg";
+import ServiceURL from "../types/service-url.tsx";
+import { CommunicationProtocols } from "../types/strings";
 
 const ServicesScreen = () => {
 	const { services, requestServiceData } = useList();
@@ -68,11 +70,11 @@ const ServiceEntry = ({ servicePass }: ServiceListEntryProps) => {
 };
 
 interface ServiceURLProps {
-	address: string;
+	address: ServiceURL;
 }
 
 const ServiceStatus = ({ address }: ServiceURLProps) => {
-	return <p className={ServicesStyles["service-status"]}>{address}</p>;
+	return <p className={ServicesStyles["service-status"]}>{address.toString()}</p>;
 };
 
 interface EditServiceProps {
@@ -83,8 +85,18 @@ interface EditServiceProps {
 const EditService = ({ service, finish }: EditServiceProps) => {
 	const { serviceAdd, serviceDelete, serviceUpdate } = useList();
 	const [title, setTitle] = useState(service?.title ?? "");
-	const [incomingAddresses, setIncomingAddress] = useState(service?.incoming_addresses ?? []);
-	const [outgoingAddress, setOutgoingAddress] = useState(service?.outgoing_address ?? "");
+
+	const [outgoingAddressProtocol, setOutgoingAddressProtocol] = useState(
+		service?.outgoing_address?.protocol ?? "http",
+	);
+	const [outgoingAddressDomain, setOutgoingAddressDomain] = useState(
+		service?.outgoing_address?.hostname ?? "",
+	);
+	const [outgoingAddressPort, setOutgoingAddressPort] = useState(
+		service?.outgoing_address?.port ?? 80,
+	);
+
+	const [incomingAddress, setIncomingAddress] = useState<string>("");
 
 	function submit(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
 		e.preventDefault();
@@ -108,8 +120,10 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 		console.log("Cancelling");
 		finish();
 		setTitle(service?.title ?? "");
-		setIncomingAddress(service?.incoming_addresses ?? []);
-		setOutgoingAddress(service?.outgoing_address ?? "");
+		setIncomingAddress("");
+		setOutgoingAddressProtocol(service?.outgoing_address?.protocol ?? "http");
+		setOutgoingAddressDomain(service?.outgoing_address?.hostname ?? "");
+		setOutgoingAddressPort(service?.outgoing_address?.port ?? 80);
 	}
 
 	function deleteService(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
@@ -138,17 +152,30 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 				type="url"
 				autoComplete="off"
 				placeholder="Forward Address"
-				value={incomingAddresses}
-				onChange={e => setIncomingAddress([e.target.value])}
+				value={incomingAddress}
+				onChange={e => setIncomingAddress(e.target.value)}
 				className={ServicesStyles["input"]}
 			/>
 			<h3>To:</h3>
+			<select value={outgoingAddressProtocol}>
+				{CommunicationProtocols.map(protocol => (
+					<option value={protocol}>{protocol}</option>
+				))}
+			</select>
 			<input
 				type="url"
 				autoComplete="off"
-				placeholder="Forward Address"
-				value={outgoingAddress}
-				onChange={e => setOutgoingAddress(e.target.value)}
+				placeholder="Domain"
+				value={outgoingAddressDomain}
+				onChange={e => setOutgoingAddressDomain(e.target.value)}
+				className={ServicesStyles["input"]}
+			/>
+			<input
+				type="number"
+				autoComplete="off"
+				placeholder="Port"
+				value={outgoingAddressPort}
+				onChange={e => setOutgoingAddressPort(parseInt(e.target.value))}
 				className={ServicesStyles["input"]}
 			/>
 			<div id={ServicesStyles["submission-buttons"]}>
