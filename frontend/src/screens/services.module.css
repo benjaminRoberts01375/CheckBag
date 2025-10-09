@@ -29,10 +29,6 @@
 	flex-wrap: wrap;
 }
 
-#service-internal-url {
-	display: flex;
-}
-
 #service-container > h2 {
 	margin-bottom: 10pt;
 }

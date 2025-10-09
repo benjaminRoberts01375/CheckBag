@@ -78,8 +78,8 @@ const ServiceEntry = ({ servicePass }: ServiceListEntryProps) => {
 			<h2>{service.title}</h2>
 			<div className={ServicesStyles["connection-info"]}>
 				<div id={ServicesStyles["service-endpoints"]}>
-					{service.incoming_addresses.map(externalAddress => (
-						<ServiceStatus address={externalAddress} key={service.clientID} />
+					{service.incoming_addresses.map(incomingAddress => (
+						<ServiceStatus address={incomingAddress} key={service.clientID} />
 					))}
 				</div>
 				{service.outgoing_address ? <ServiceStatus address={service.outgoing_address} /> : null}
