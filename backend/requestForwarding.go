@@ -234,7 +234,11 @@ func restForwarding(w http.ResponseWriter, r *http.Request, outgoingService Serv
 // websocketProxy handles the WebSocket connection upgrade and message forwarding.
 func websocketProxy(w http.ResponseWriter, r *http.Request, outgoingService ServiceAddress, path string) {
 	// Convert HTTP URL to WebSocket URL and preserve query parameters
-	wsURL := "ws://" + outgoingService.Domain + ":" + strconv.Itoa(outgoingService.Port) + path
+	wsProtocol := "ws://"
+	if outgoingService.Protocol == "https" {
+		wsProtocol = "wss://"
+	}
+	wsURL := wsProtocol + outgoingService.Domain + ":" + strconv.Itoa(outgoingService.Port) + path
 	if r.URL.RawQuery != "" {
 		wsURL += "?" + r.URL.RawQuery
 	}
