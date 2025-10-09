@@ -86,7 +86,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 				// Add resource usage data
 				serviceData.resourceUsage.forEach((value, key) => {
 					resourceUsage.push(
-						new ResourceUsageData(service.title, service.internal_address, key, value),
+						new ResourceUsageData(service.title, service.outgoing_address, key, value),
 					);
 				});
 			});
@@ -397,8 +397,8 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 			return services.map(existingService => {
 				if (existingService.clientID === serviceID) {
 					const updated_service = new Service(
-						existingService.internal_address,
-						existingService.external_address,
+						existingService.outgoing_address,
+						existingService.incoming_addresses,
 						existingService.title,
 						existingService.id,
 						!existingService.enabled,
