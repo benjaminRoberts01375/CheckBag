@@ -14,14 +14,14 @@ type ServiceLinks []ServiceLink
 
 type ServiceLink struct {
 	OutgoingAddress   ServiceAddress `json:"outgoing_address"`
-	IncomingAddresses []string       `json:"incoming_address"`
+	IncomingAddresses []string       `json:"incoming_addresses"`
 	Title             string         `json:"title"`
 	ID                string         `json:"id"`
 }
 
 type ServiceAddress struct {
 	Protocol string `json:"protocol"`
-	Domain   string `json:"hostname"`
+	Domain   string `json:"domain"`
 	Port     int    `json:"port"`
 }
 
