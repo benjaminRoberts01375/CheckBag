@@ -87,7 +87,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 	const [incomingAddresses, setIncomingAddress] = useState(service?.external_address ?? []);
 
 	const [outgoingProtocol, setOutgoingProtocol] = useState<CommunicationProtocol>(
-		service?.internal_address?.startsWith("http") ? "http" : "https",
+		service?.internal_address?.startsWith("https") ? "https" : "http",
 	);
 	const [outgoingDomain, setOutgoingDomain] = useState(
 		service?.internal_address.split(":")[1]?.substring(2) ?? "", // ex. https://www.google.com - splits on ":" and removes `//`
