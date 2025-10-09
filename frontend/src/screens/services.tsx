@@ -90,9 +90,9 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 		service?.internal_address?.startsWith("https") ? "https" : "http",
 	);
 	const [outgoingDomain, setOutgoingDomain] = useState(
-		service?.internal_address.split(":")[1]?.substring(2) ?? "", // ex. https://www.google.com - splits on ":" and removes `//`
+		service?.internal_address.split(":")[0] ?? "", // ex. TODO: Get entry 1 from split and remove first two characters
 	);
-	const [outgoingPort, setOutgoingPort] = useState(service?.internal_address.split(":")[2] ?? "80");
+	const [outgoingPort, setOutgoingPort] = useState(service?.internal_address.split(":")[1] ?? "80"); // TODO: Get entry 2 from split
 
 	function submit(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
 		e.preventDefault();
@@ -178,7 +178,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 			</div>
 			<div className={ServicesStyles["url-container"]}>
 				<h3>To:</h3>
-				<select
+				{/* <select
 					value={outgoingProtocol}
 					onChange={e => setOutgoingProtocol(e.target.value as CommunicationProtocol)}
 					className={ServicesStyles["input"]}
@@ -189,7 +189,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 						</option>
 					))}
 				</select>
-				<p>://</p>
+				<p>://</p> */}
 				<input
 					type="url"
 					autoComplete="off"
