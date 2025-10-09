@@ -14,6 +14,14 @@
 	align-items: center;
 }
 
+#service-entries > * {
+	margin-top: 10pt;
+}
+
+#service-entries > *:first-child {
+	margin-top: 0pt;
+}
+
 #service-endpoints {
 	display: flex;
 	flex-direction: row;

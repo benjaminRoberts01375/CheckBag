@@ -31,9 +31,11 @@ const ServicesScreen = () => {
 			</dialog>
 			<div className={DashboardStyles["graph-group"]}>
 				<h2 className="header">Services</h2>
-				{services.map(service => (
-					<ServiceEntry servicePass={service} key={service.clientID} />
-				))}
+				<div id={ServicesStyles["service-entries"]}>
+					{services.map(service => (
+						<ServiceEntry servicePass={service} key={service.clientID} />
+					))}
+				</div>
 				<button
 					className="submit"
 					id={ServicesStyles["add-service-button"]}
