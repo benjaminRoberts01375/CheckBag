@@ -257,6 +257,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 					onClick={e => {
 						submit(e);
 					}}
+					disabled={!title || incomingAddresses.length == 0 || !outgoingDomain}
 				>
 					{service == undefined ? "Create" : "Save"}
 				</button>
