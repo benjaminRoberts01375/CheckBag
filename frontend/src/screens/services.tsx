@@ -115,11 +115,10 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 	const [outgoingProtocol, setOutgoingProtocol] = useState<CommunicationProtocol>(
 		service?.internal_address?.startsWith("https") ? "https" : "http",
 	);
-	const [outgoingDomain, setOutgoingDomain] = useState(
+	const [outgoingDomain, setOutgoingDomain] = useState<string>(
 		service?.internal_address.split(":")[0] ?? "", // ex. TODO: Get entry 1 from split and remove first two characters
 	);
-	const [outgoingPort, setOutgoingPort] = useState(() => {
-		console.log("Checking port:", service?.internal_address.split(":")[1]);
+	const [outgoingPort, setOutgoingPort] = useState<string>(() => {
 		return service?.internal_address.split(":")[1] ?? "80";
 	}); // TODO: Get entry 2 from split
 
