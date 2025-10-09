@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import Service from "../types/service.tsx";
 import { CgMoreVerticalAlt } from "react-icons/cg";
 import { CommunicationProtocols, CommunicationProtocol } from "../types/strings";
+import ServiceURL from "../types/service-url.tsx";
 
 const ServicesScreen = () => {
 	const { services, requestServiceData } = useList();
@@ -82,7 +83,9 @@ const ServiceEntry = ({ servicePass }: ServiceListEntryProps) => {
 						<ServiceStatus address={incomingAddress} key={service.clientID} />
 					))}
 				</div>
-				{service.outgoing_address ? <ServiceStatus address={service.outgoing_address} /> : null}
+				{service.outgoing_address ? (
+					<ServiceStatus address={service.outgoing_address.doWhatIWantYouTo()} />
+				) : null}
 				<button
 					onClick={() => {
 						setIsDialogOpen(true);
@@ -115,13 +118,13 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 	const [incomingAddresses, setIncomingAddress] = useState(service?.incoming_addresses ?? []);
 
 	const [outgoingProtocol, setOutgoingProtocol] = useState<CommunicationProtocol>(
-		service?.outgoing_address?.startsWith("https") ? "https" : "http",
+		service?.outgoing_address?.protocol ?? "http",
 	);
 	const [outgoingDomain, setOutgoingDomain] = useState<string>(
-		service?.outgoing_address.split(":")[0] ?? "", // ex. TODO: Get entry 1 from split and remove first two characters
+		service?.outgoing_address.domain ?? "", // TODO: Get entry 1 from split and remove first two characters
 	);
 	const [outgoingPort, setOutgoingPort] = useState<string>(() => {
-		return service?.outgoing_address.split(":")[1] ?? "80";
+		return service?.outgoing_address.port.toString() ?? "80";
 	}); // TODO: Get entry 2 from split
 
 	function submit(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
@@ -156,7 +159,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 		finish();
 	}
 
-	function createURL(): string {
+	function createURL(): ServiceURL {
 		var fixedOutgoingPort = outgoingPort;
 		if (fixedOutgoingPort == "") {
 			if (outgoingProtocol == "http") {
@@ -165,7 +168,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 				fixedOutgoingPort = "443";
 			}
 		}
-		return outgoingProtocol + "://" + outgoingDomain + ":" + fixedOutgoingPort;
+		return new ServiceURL(outgoingProtocol, outgoingDomain, Number(fixedOutgoingPort));
 	}
 
 	return (
