@@ -13,12 +13,21 @@ const ServicesScreen = () => {
 		requestServiceData();
 	}, []);
 	const dialogRef = useRef<HTMLDialogElement | null>(null);
+	const [isDialogOpen, setIsDialogOpen] = useState(false);
 
 	return (
 		<div id={DashboardStyles["container"]}>
 			<title>CheckBag - Services</title>
 			<dialog ref={dialogRef}>
-				<EditService service={undefined} finish={() => dialogRef.current?.close()} />
+				{isDialogOpen && (
+					<EditService
+						service={undefined}
+						finish={() => {
+							dialogRef.current?.close();
+							setIsDialogOpen(false);
+						}}
+					/>
+				)}
 			</dialog>
 			<div className={DashboardStyles["graph-group"]}>
 				<h2 className="header">Services</h2>
@@ -28,7 +37,10 @@ const ServicesScreen = () => {
 				<button
 					className="submit"
 					id={ServicesStyles["add-service-button"]}
-					onClick={() => dialogRef.current?.showModal()}
+					onClick={() => {
+						setIsDialogOpen(true);
+						dialogRef.current?.showModal();
+					}}
 				>
 					Add Service
 				</button>
@@ -46,11 +58,20 @@ interface ServiceListEntryProps {
 const ServiceEntry = ({ servicePass }: ServiceListEntryProps) => {
 	const dialogRef = useRef<HTMLDialogElement | null>(null);
 	const [service, _] = useState<Service>(servicePass);
+	const [isDialogOpen, setIsDialogOpen] = useState(false);
 
 	return (
 		<div id={ServicesStyles["service-container"]}>
 			<dialog ref={dialogRef}>
-				<EditService service={service} finish={() => dialogRef.current?.close()} />
+				{isDialogOpen && (
+					<EditService
+						service={service}
+						finish={() => {
+							dialogRef.current?.close();
+							setIsDialogOpen(false);
+						}}
+					/>
+				)}
 			</dialog>
 			<h2>{service.title}</h2>
 			<div className={ServicesStyles["connection-info"]}>
@@ -60,7 +81,12 @@ const ServiceEntry = ({ servicePass }: ServiceListEntryProps) => {
 					))}
 				</div>
 				{service.internal_address ? <ServiceStatus address={service.internal_address} /> : null}
-				<button onClick={() => dialogRef.current?.showModal()}>
+				<button
+					onClick={() => {
+						setIsDialogOpen(true);
+						dialogRef.current?.showModal();
+					}}
+				>
 					<CgMoreVerticalAlt className="icon" id={ServicesStyles["menu-icon"]} />
 				</button>
 			</div>
