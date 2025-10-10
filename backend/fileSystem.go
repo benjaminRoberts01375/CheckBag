@@ -42,7 +42,7 @@ type FileServiceLinks struct {
 	ServiceLinks
 }
 
-const FileServiceLinksVersion = 2
+const FileServiceLinksVersion = 1
 
 func (fs *FileSystem) Write(path string, data string) error {
 	newFile, err := os.Create(path)
@@ -98,22 +98,22 @@ func (fs *FileSystem) GetServices() (ServiceLinks, error) {
 
 	// Handle version differences
 	switch version.Version {
-	case 0, 1:
-		Printing.Println("v0/v1 services detected, migrating")
+	case 0:
+		Printing.Println("v0 services detected, migrating")
 		var services ServiceLinksV1
 		err = json.Unmarshal(data, &services)
 		if err != nil {
-			return ServiceLinks{}, errors.New("Could not unmarshal v0/v1 services: " + err.Error())
+			return ServiceLinks{}, errors.New("Could not unmarshal v0 services: " + err.Error())
 		}
 		migratedServices := services.Migrate()
 		fs.SetServices(migratedServices) // Overwrite old services with new version
 		return migratedServices, nil
-	case 2:
-		Printing.Println("Services are up-to-date (v2)")
+	case 1:
+		Printing.Println("Services are up-to-date (v1)")
 		var services FileServiceLinks
 		err = json.Unmarshal(data, &services)
 		if err != nil {
-			return ServiceLinks{}, errors.New("Could not unmarshal v2 services: " + err.Error())
+			return ServiceLinks{}, errors.New("Could not unmarshal v1 services: " + err.Error())
 		}
 		return services.ServiceLinks, nil
 	}
