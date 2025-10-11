@@ -33,6 +33,7 @@ type CacheSpec interface {
 
 	IncrementHashField(key string, field string, amount int, expiration time.Time) error
 	IncrementKey(key string, expiration time.Time) error
+	IncrementKeyBy(key string, amount int, expiration time.Time) error
 
 	AddToList(key string, value string) error
 	RemoveFromList(key string, value string) error
@@ -195,6 +196,16 @@ func (cache CacheLayer) IncrementHashField(key string, field string, amount int,
 func (cache CacheLayer) IncrementKey(key string, expiration time.Time) error {
 	ctx := context.Background()
 	err := cache.DB.Do(ctx, cache.DB.B().Incr().Key(key).Build()).Error()
+	if err != nil {
+		return err
+	}
+	remainingTime := time.Until(expiration)
+	return cache.DB.Do(ctx, cache.DB.B().Expire().Key(key).Seconds(int64(remainingTime.Seconds())).Build()).Error()
+}
+
+func (cache CacheLayer) IncrementKeyBy(key string, amount int, expiration time.Time) error {
+	ctx := context.Background()
+	err := cache.DB.Do(ctx, cache.DB.B().Incrby().Key(key).Increment(int64(amount)).Build()).Error()
 	if err != nil {
 		return err
 	}
