@@ -84,7 +84,7 @@ const ServiceEntry = ({ servicePass }: ServiceListEntryProps) => {
 					))}
 				</div>
 				{service.outgoing_address ? (
-					<ServiceStatus address={service.outgoing_address.doWhatIWantYouTo()} />
+					<ServiceStatus address={service.outgoing_address.toString()} />
 				) : null}
 				<button
 					onClick={() => {

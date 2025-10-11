@@ -13,8 +13,7 @@ class ServiceURL {
 			this.port = this.protocol === "http" ? 80 : 443;
 		}
 	}
-	public doWhatIWantYouTo(): string {
-		console.log("Calling doWhatIWantYouTo");
+	public toString(): string {
 		return `${this.protocol}://${this.domain}:${this.port}`;
 	}
 }
