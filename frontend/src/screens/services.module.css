@@ -152,3 +152,12 @@
 .incoming-addresses > button {
 	margin-left: 10pt;
 }
+
+.url-token {
+	background: #0005;
+	font-size: 12pt;
+	padding: 3pt 5pt;
+	border-radius: 5pt;
+	transition-duration: 0.5s;
+	margin-right: 3pt;
+}
