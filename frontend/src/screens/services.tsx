@@ -122,11 +122,11 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 		service?.outgoing_address?.protocol ?? "http",
 	);
 	const [outgoingDomain, setOutgoingDomain] = useState<string>(
-		service?.outgoing_address.domain ?? "", // TODO: Get entry 1 from split and remove first two characters
+		service?.outgoing_address.domain ?? "",
 	);
 	const [outgoingPort, setOutgoingPort] = useState<string>(() => {
 		return service?.outgoing_address.port.toString() ?? "80";
-	}); // TODO: Get entry 2 from split
+	});
 
 	function submit(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
 		e.preventDefault();
