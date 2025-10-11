@@ -125,7 +125,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 		return service?.outgoing_address.port.toString() ?? "80";
 	});
 
-	function submit(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+	function submit(e: React.FormEvent<HTMLFormElement>): void {
 		e.preventDefault();
 		service == undefined ? createService() : updateService(service);
 		finish();
@@ -144,13 +144,11 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 
 	function cancel(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
 		e.preventDefault();
-		console.log("Cancelling");
 		finish();
 	}
 
 	function deleteService(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
 		e.preventDefault();
-		console.log("Deleting");
 		if (service) {
 			serviceDelete(service.clientID);
 		}
@@ -178,8 +176,19 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 		setIncomingAddress(incomingAddresses.filter(incomingAddress => incomingAddress != url));
 	}
 
+	function handleIncomingAddressKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+		if (e.key === "Enter") {
+			// Check if the input has valid text (not empty and contains a dot)
+			if (workingIncomingAddresses && workingIncomingAddresses.includes(".")) {
+				e.preventDefault();
+				addURL();
+			}
+			// If invalid, let the default behavior happen (form submission)
+		}
+	}
+
 	return (
-		<form id={ServicesStyles["edit-service-container"]}>
+		<form id={ServicesStyles["edit-service-container"]} onSubmit={submit}>
 			<div id={ServicesStyles["edit-service-header"]}>
 				<h1>Editing</h1>
 				<input
@@ -196,6 +205,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 					<h3>From:</h3>
 					{incomingAddresses.map(incomingAddress => (
 						<button
+							type="button"
 							className={`${ServicesStyles["url-token"]} secondary-background`}
 							onClick={() => deleteURL(incomingAddress)}
 							key={incomingAddress}
@@ -210,9 +220,11 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 					placeholder="subdomain.domain.com"
 					value={workingIncomingAddresses}
 					onChange={e => setWorkingIncomingAddresses(e.target.value)}
+					onKeyDown={handleIncomingAddressKeyDown}
 					className={ServicesStyles["input"]}
 				/>
 				<button
+					type="button"
 					className="submit"
 					onClick={() => {
 						addURL();
@@ -265,6 +277,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 			<div id={ServicesStyles["submission-buttons"]}>
 				{service ? (
 					<button
+						type="button"
 						className="delete"
 						role="delete"
 						onClick={e => {
@@ -276,6 +289,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 				) : null}
 
 				<button
+					type="button"
 					className="cancel"
 					role="cancel"
 					onClick={e => {
@@ -285,11 +299,9 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 					Cancel
 				</button>
 				<button
+					type="submit"
 					className="submit"
 					role="submit"
-					onClick={e => {
-						submit(e);
-					}}
 					disabled={!title || incomingAddresses.length == 0 || !outgoingDomain}
 				>
 					{service == undefined ? "Create" : "Save"}
