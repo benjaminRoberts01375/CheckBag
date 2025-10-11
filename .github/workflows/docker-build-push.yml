@@ -52,3 +52,11 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             CHECKBAG_VERSION=${{ steps.version.outputs.version }}
+
+      - name: Upload files to release
+        uses: softprops/action-gh-release@v1
+        if: github.event_name == 'release'
+        with:
+          files: |
+            .github/workflows/example.env
+            .github/workflows/docker-compose.yml

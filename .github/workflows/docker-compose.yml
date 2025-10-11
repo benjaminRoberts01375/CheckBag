@@ -1,0 +1,32 @@
+services:
+  valkey:
+    image: valkey/valkey:8.1.2-alpine
+    container_name: valkey
+    restart: unless-stopped
+    volumes:
+      - CheckBag-valkey-data:/data
+    command: valkey-server --requirepass ${CACHE_PASSWORD}
+
+  backend:
+    image: ghcr.io/benjaminroberts01375/checkbag:${CHECKBAG_VERSION}
+    container_name: backend
+    restart: unless-stopped
+    hostname: backend
+    environment:
+      - ROLE=Backend
+      - COLOR=blue
+      - PORT=8080
+      - CACHE_ID_LENGTH=15
+      - SERVICE_ID_LENGTH=15
+    env_file:
+      - .env
+    ports:
+      - "${WEB_UI_PORT}:8080"
+    volumes:
+      - CheckBag-backend-data:/home/appuser/CheckBag
+
+volumes:
+  CheckBag-valkey-data:
+    name: valkey-data
+  CheckBag-backend-data:
+    name: backend-data
