@@ -116,6 +116,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 	const { serviceAdd, serviceDelete, serviceUpdate } = useList();
 	const [title, setTitle] = useState(service?.title ?? "");
 	const [incomingAddresses, setIncomingAddress] = useState(service?.incoming_addresses ?? []);
+	const [workingIncomingAddresses, setWorkingIncomingAddresses] = useState<string>("");
 
 	const [outgoingProtocol, setOutgoingProtocol] = useState<CommunicationProtocol>(
 		service?.outgoing_address?.protocol ?? "http",
@@ -194,9 +195,9 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 				<input
 					type="url"
 					autoComplete="off"
-					placeholder="Forward Address"
-					value={incomingAddresses}
-					onChange={e => setIncomingAddress([e.target.value])}
+					placeholder="From Domain"
+					value={workingIncomingAddresses}
+					onChange={e => setWorkingIncomingAddresses(e.target.value)}
 					className={ServicesStyles["input"]}
 				/>
 			</div>
