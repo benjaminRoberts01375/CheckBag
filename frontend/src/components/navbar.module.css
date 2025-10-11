@@ -82,6 +82,11 @@
 	margin-bottom: auto;
 }
 
+#version {
+	margin-left: auto;
+	margin-right: 5pt;
+}
+
 /* Mobile overlay */
 .mobile-overlay {
 	display: none;
