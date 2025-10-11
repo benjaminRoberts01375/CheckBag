@@ -147,11 +147,11 @@
 }
 
 .incoming-addresses {
-	margin: 10pt 0pt;
+	margin: 10pt 0pt 20pt 0pt;
 }
 
 .incoming-addresses > input {
-	margin: 3pt 0pt;
+	margin: 10pt 0pt 0pt 0pt;
 }
 
 .incoming-addresses > button {
@@ -164,7 +164,7 @@
 	padding: 3pt 5pt;
 	border-radius: 5pt;
 	transition-duration: 0.5s;
-	margin-right: 3pt;
+	margin: 3pt 1.5pt 0pt 1.5pt;
 }
 
 .url-token:hover {
