@@ -12,11 +12,16 @@ body {
 }
 
 .secondary-background {
-	background: #343031;
+	background: #444;
 }
 
 .tertiary-background {
-	background: #4e494a;
+	background: #5f5f5f;
+}
+
+.test-thing {
+	padding: 30pt;
+	margin: 30pt;
 }
 
 .primary,
