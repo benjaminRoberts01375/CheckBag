@@ -16,11 +16,8 @@ const APIScreen = () => {
 	return (
 		<div id={DashboardStyles["container"]}>
 			<title>CheckBag - API Keys</title>
-			<div className={DashboardStyles["graph-group"]}>
-				<h2 className="header">API Keys</h2>
-				{apiKeys ? apiKeys.map(key => <APIKeyItem apiKey={key} key={key.id} />) : null}
-				<APIKeyAdd key={"new"} />
-			</div>
+			{apiKeys ? apiKeys.map(key => <APIKeyItem apiKey={key} key={key.id} />) : null}
+			<APIKeyAdd key={"new"} />
 		</div>
 	);
 };
@@ -41,11 +38,11 @@ const APIKeyItem = ({ apiKey }: APIKeyItemProps) => {
 	}
 
 	return (
-		<div className={APIStyles["row"]}>
+		<div className={`${APIStyles["row"]} ${DashboardStyles["graph-group"]} secondary-background`}>
 			<p id={APIStyles["delete"]}>{apiKey.key ? apiKey.name + ": " : apiKey.name}</p>
 			<p className={APIStyles["raw-key"]}>{apiKey.key ? apiKey.key : ""}</p>
 			<button
-				className={`${ServicesStyles.delete} primary ${APIStyles["delete"]}`}
+				className={`${ServicesStyles.delete} primary ${APIStyles["delete"]} delete`}
 				onClick={() => deleteKey()}
 			>
 				Delete
@@ -59,23 +56,23 @@ const APIKeyAdd = () => {
 	const { addAPIKey } = useList();
 
 	return (
-		<div className={APIStyles["row"]}>
+		<div className={`${APIStyles["row"]} ${DashboardStyles["graph-group"]} secondary-background`}>
 			<input
 				type="text"
-				placeholder="Name"
+				placeholder="API Key Name"
 				value={name}
 				onChange={e => setName(e.target.value)}
 				className={`${ServicesStyles["input"]} ${APIStyles["text-field"]}`}
 			/>
 			<button
-				className={`${ServicesStyles.submit} primary ${APIStyles["submit"]}`}
+				className={`${ServicesStyles.submit} primary ${APIStyles["submit"]} submit`}
 				onClick={() => {
 					addAPIKey(name);
 					setName("");
 				}}
 				disabled={name === ""}
 			>
-				Add
+				Create Key
 			</button>
 		</div>
 	);

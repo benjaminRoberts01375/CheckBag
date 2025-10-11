@@ -1,6 +1,5 @@
 .row {
 	display: flex;
-	background: #464142aa;
 	padding: 5pt;
 	border-radius: 5pt;
 	gap: 5pt;
@@ -17,6 +16,8 @@
 .delete {
 	width: 100pt;
 	height: 25pt;
+	color: black;
+	border-radius: 5pt;
 }
 
 .text-field {

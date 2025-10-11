@@ -2,7 +2,6 @@
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1;
-	background: #464142aa;
 	margin: 0pt;
 	padding: 10pt;
 	border-radius: 5pt;
@@ -34,7 +33,6 @@
 }
 
 .service-status {
-	background: #777;
 	border-radius: 3pt;
 	width: fit-content;
 	padding: 3pt;
@@ -159,7 +157,7 @@
 }
 
 .url-token {
-	background: #0005;
+	/* background: #0005; */
 	font-size: 12pt;
 	padding: 3pt 5pt;
 	border-radius: 5pt;

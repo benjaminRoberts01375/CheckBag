@@ -20,17 +20,16 @@
 }
 
 .passive {
-	background: none;
 	color: white;
 }
 
 .passive:not(:first-child) {
-	border-left: 2pt solid #555;
+	border-left: 2pt solid #777;
 }
 
 .passive:hover,
 .passive:focus-visible {
-	background: #686162;
+	background: #676767;
 	color: white;
 	outline: none;
 }

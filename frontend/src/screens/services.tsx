@@ -30,24 +30,21 @@ const ServicesScreen = () => {
 					/>
 				)}
 			</dialog>
-			<div className={DashboardStyles["graph-group"]}>
-				<h2 className="header">Services</h2>
-				<div id={ServicesStyles["service-entries"]}>
-					{services.map(service => (
-						<ServiceEntry servicePass={service} key={service.clientID} />
-					))}
-				</div>
-				<button
-					className="submit"
-					id={ServicesStyles["add-service-button"]}
-					onClick={() => {
-						setIsDialogOpen(true);
-						dialogRef.current?.showModal();
-					}}
-				>
-					Add Service
-				</button>
+			<div id={ServicesStyles["service-entries"]}>
+				{services.map(service => (
+					<ServiceEntry servicePass={service} key={service.clientID} />
+				))}
 			</div>
+			<button
+				className="submit"
+				id={ServicesStyles["add-service-button"]}
+				onClick={() => {
+					setIsDialogOpen(true);
+					dialogRef.current?.showModal();
+				}}
+			>
+				Add Service
+			</button>
 		</div>
 	);
 };
@@ -64,7 +61,7 @@ const ServiceEntry = ({ servicePass }: ServiceListEntryProps) => {
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 
 	return (
-		<div id={ServicesStyles["service-container"]}>
+		<div id={ServicesStyles["service-container"]} className={DashboardStyles["graph-group"]}>
 			<dialog ref={dialogRef}>
 				{isDialogOpen && (
 					<EditService
@@ -104,7 +101,7 @@ interface ServiceURLProps {
 }
 
 const ServiceStatus = ({ address }: ServiceURLProps) => {
-	return <p className={ServicesStyles["service-status"]}>{address}</p>;
+	return <p className={`${ServicesStyles["service-status"]} secondary-background`}>{address}</p>;
 };
 
 interface EditServiceProps {
@@ -199,7 +196,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 					<h3>From:</h3>
 					{incomingAddresses.map(incomingAddress => (
 						<button
-							className={`${ServicesStyles["url-token"]}`}
+							className={`${ServicesStyles["url-token"]} secondary-background`}
 							onClick={() => deleteURL(incomingAddress)}
 							key={incomingAddress}
 						>

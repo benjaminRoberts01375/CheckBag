@@ -1,7 +1,7 @@
 #navbar-container {
 	display: flex;
 	flex-direction: column;
-	background: #343031;
+	background: #333333;
 	width: 175pt;
 	height: 100vh;
 	position: fixed;
@@ -52,7 +52,7 @@
 }
 
 .entry:hover {
-	background: #575052;
+	background: #555;
 }
 
 .entryService {
@@ -64,7 +64,7 @@
 }
 
 .active {
-	background: #464142;
+	background: #434343;
 }
 
 #divider {
