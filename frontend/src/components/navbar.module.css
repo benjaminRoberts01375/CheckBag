@@ -91,6 +91,10 @@
 	display: flex;
 }
 
+#hamburger-menu {
+	background: green;
+}
+
 /* Mobile overlay */
 .mobile-overlay {
 	display: none;

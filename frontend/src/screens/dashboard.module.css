@@ -33,4 +33,8 @@
 	.graph-group {
 		padding: 0pt 10pt 10pt 10pt;
 	}
+	#container {
+		margin-top: 60pt;
+		height: calc(100% - 60pt);
+	}
 }
