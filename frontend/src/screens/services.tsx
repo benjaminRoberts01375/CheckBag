@@ -210,7 +210,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 				<input
 					type="url"
 					autoComplete="off"
-					placeholder="From Domain"
+					placeholder="subdomain.domain.com"
 					value={workingIncomingAddresses}
 					onChange={e => setWorkingIncomingAddresses(e.target.value)}
 					className={ServicesStyles["input"]}
