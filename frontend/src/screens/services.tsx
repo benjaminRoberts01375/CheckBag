@@ -172,6 +172,11 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 		return new ServiceURL(outgoingProtocol, outgoingDomain, Number(fixedOutgoingPort));
 	}
 
+	function addURL() {
+		setIncomingAddress([...incomingAddresses, workingIncomingAddresses]);
+		setWorkingIncomingAddresses("");
+	}
+
 	return (
 		<form id={ServicesStyles["edit-service-container"]}>
 			<div id={ServicesStyles["edit-service-header"]}>
@@ -200,6 +205,15 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 					onChange={e => setWorkingIncomingAddresses(e.target.value)}
 					className={ServicesStyles["input"]}
 				/>
+				<button
+					className="submit"
+					onClick={() => {
+						addURL();
+					}}
+					disabled={workingIncomingAddresses == "" || !workingIncomingAddresses.includes(".")}
+				>
+					{"Add"}
+				</button>
 			</div>
 			<div className={ServicesStyles["url-container"]}>
 				<h3>To:</h3>
