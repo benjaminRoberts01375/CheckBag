@@ -148,3 +148,7 @@
 .incoming-addresses > input {
 	margin: 3pt 0pt;
 }
+
+.incoming-addresses > button {
+	margin-left: 10pt;
+}
