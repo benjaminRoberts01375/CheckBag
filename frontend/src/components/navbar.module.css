@@ -87,6 +87,10 @@
 	margin-right: 5pt;
 }
 
+#hamburger-container {
+	display: flex;
+}
+
 /* Mobile overlay */
 .mobile-overlay {
 	display: none;

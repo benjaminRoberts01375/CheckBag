@@ -68,12 +68,14 @@ const Navbar = ({ isMobileView, isMobileMenuOpen, setIsMobileMenuOpen }: NavbarP
 				className={`${isMobileMenuOpen && isMobileView ? NavbarStyles["mobile-open"] : ""}`}
 			>
 				<div id={NavbarStyles["title-container"]}>
-					{isMobileView && ( // Only render hamburger if in mobile view
-						<Hamburger toggled={isMobileMenuOpen} toggle={setIsMobileMenuOpen} />
-					)}
-					<h1 id={NavbarStyles["title"]} className="primary">
-						CheckBag
-					</h1>
+					<div id={NavbarStyles["hamburger-container"]}>
+						{isMobileView && ( // Only render hamburger if in mobile view
+							<Hamburger toggled={isMobileMenuOpen} toggle={setIsMobileMenuOpen} />
+						)}
+						<h1 id={NavbarStyles["title"]} className="primary">
+							CheckBag
+						</h1>
+					</div>
 					<div id={NavbarStyles["version"]}>
 						{__CHECKBAG_VERSION__ == "dev" ? (
 							<p>Development Build</p>
