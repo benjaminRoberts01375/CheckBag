@@ -65,7 +65,6 @@
 	border: none;
 	border-radius: 5pt;
 	transition-duration: 0.5s;
-	margin: 3pt;
 	font-size: 12pt;
 }
 
@@ -133,9 +132,19 @@
 
 .url-container {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
+	flex-direction: row;
 }
 
 .url-container > h3 {
 	margin-right: 10pt;
+}
+
+.incoming-addresses {
+	margin: 10pt 0pt;
+}
+
+.incoming-addresses > input {
+	margin: 3pt 0pt;
 }

@@ -184,11 +184,13 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 				/>
 			</div>
 
-			<div className={ServicesStyles["url-container"]}>
-				<h3>From:</h3>
-				{incomingAddresses.map(incomingAddress => (
-					<ServiceStatus address={incomingAddress} key={incomingAddress} />
-				))}
+			<div className={ServicesStyles["incoming-addresses"]}>
+				<div className={ServicesStyles["url-container"]}>
+					<h3>From:</h3>
+					{incomingAddresses.map(incomingAddress => (
+						<ServiceStatus address={incomingAddress} key={incomingAddress} />
+					))}
+				</div>
 				<input
 					type="url"
 					autoComplete="off"
