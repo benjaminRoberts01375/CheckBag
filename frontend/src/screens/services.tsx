@@ -80,7 +80,7 @@ const ServiceEntry = ({ servicePass }: ServiceListEntryProps) => {
 			<div className={ServicesStyles["connection-info"]}>
 				<div id={ServicesStyles["service-endpoints"]}>
 					{service.incoming_addresses.map(incomingAddress => (
-						<ServiceStatus address={incomingAddress} key={service.clientID} />
+						<ServiceStatus address={incomingAddress} key={service.clientID + incomingAddress} />
 					))}
 				</div>
 				{service.outgoing_address ? (
