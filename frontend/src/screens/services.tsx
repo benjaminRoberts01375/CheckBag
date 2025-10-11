@@ -177,6 +177,10 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 		setWorkingIncomingAddresses("");
 	}
 
+	function deleteURL(url: string) {
+		setIncomingAddress(incomingAddresses.filter(incomingAddress => incomingAddress != url));
+	}
+
 	return (
 		<form id={ServicesStyles["edit-service-container"]}>
 			<div id={ServicesStyles["edit-service-header"]}>
@@ -196,6 +200,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 					{incomingAddresses.map(incomingAddress => (
 						<button
 							className={`${ServicesStyles["url-token"]}`}
+							onClick={() => deleteURL(incomingAddress)}
 							key={incomingAddress}
 						>
 							{incomingAddress}

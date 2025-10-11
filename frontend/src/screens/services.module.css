@@ -161,3 +161,8 @@
 	transition-duration: 0.5s;
 	margin-right: 3pt;
 }
+
+.url-token:hover {
+	background: #f77;
+	color: black;
+}
