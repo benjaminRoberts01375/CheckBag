@@ -227,6 +227,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 			</div>
 			<div className={ServicesStyles["url-container"]}>
 				<h3>To:</h3>
+				<p>http://</p> {/* TODO: Remove hardcoded protocol */}
 				{/* <select
 					value={outgoingProtocol}
 					onChange={e => setOutgoingProtocol(e.target.value as CommunicationProtocol)}

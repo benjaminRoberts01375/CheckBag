@@ -141,6 +141,11 @@
 	margin-right: 10pt;
 }
 
+.url-container > p {
+	margin: 0pt 3pt;
+	font-size: 15pt;
+}
+
 .incoming-addresses {
 	margin: 10pt 0pt;
 }
