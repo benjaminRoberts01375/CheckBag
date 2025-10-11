@@ -74,7 +74,7 @@ const Navbar = ({ isMobileView, isMobileMenuOpen, setIsMobileMenuOpen }: NavbarP
 					<h1 id={NavbarStyles["title"]} className="primary">
 						CheckBag
 					</h1>
-					<div>
+					<div id={NavbarStyles["version"]}>
 						{__CHECKBAG_VERSION__ == "dev" ? (
 							<p>Development Build</p>
 						) : (
