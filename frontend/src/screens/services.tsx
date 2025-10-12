@@ -5,7 +5,7 @@ import { useList } from "../context-hook";
 import { useState, useEffect, useRef } from "react";
 import Service from "../types/service.tsx";
 import { CgMoreVerticalAlt } from "react-icons/cg";
-import { CommunicationProtocols, CommunicationProtocol } from "../types/strings";
+// import { CommunicationProtocols, CommunicationProtocol } from "../types/strings";
 import ServiceURL from "../types/service-url.tsx";
 
 const ServicesScreen = () => {
@@ -115,9 +115,9 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 	const [incomingAddresses, setIncomingAddress] = useState(service?.incoming_addresses ?? []);
 	const [workingIncomingAddresses, setWorkingIncomingAddresses] = useState<string>("");
 
-	const [outgoingProtocol, setOutgoingProtocol] = useState<CommunicationProtocol>(
-		service?.outgoing_address?.protocol ?? "http",
-	);
+	// const [outgoingProtocol, setOutgoingProtocol] = useState<CommunicationProtocol>(
+	// 	service?.outgoing_address?.protocol ?? "http",
+	// );
 	const [outgoingDomain, setOutgoingDomain] = useState<string>(
 		service?.outgoing_address.domain ?? "",
 	);
@@ -158,13 +158,14 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 	function createURL(): ServiceURL {
 		var fixedOutgoingPort = outgoingPort;
 		if (fixedOutgoingPort == "") {
-			if (outgoingProtocol == "http") {
-				fixedOutgoingPort = "80";
-			} else {
-				fixedOutgoingPort = "443";
-			}
+			// if (outgoingProtocol == "http") {
+			// 	fixedOutgoingPort = "80";
+			// } else {
+			// 	fixedOutgoingPort = "443";
+			// }
 		}
-		return new ServiceURL(outgoingProtocol, outgoingDomain, Number(fixedOutgoingPort));
+		// return new ServiceURL(outgoingProtocol, outgoingDomain, Number(fixedOutgoingPort));
+		return new ServiceURL("http", outgoingDomain, Number(fixedOutgoingPort));
 	}
 
 	function addURL() {
