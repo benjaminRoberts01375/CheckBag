@@ -251,7 +251,7 @@ const EditService = ({ service, finish }: EditServiceProps) => {
 				</select>
 				<p>://</p> */}
 				<input
-					type="url"
+					type="text"
 					autoComplete="off"
 					placeholder="Forward Domain"
 					value={outgoingDomain}
