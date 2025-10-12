@@ -6,6 +6,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
@@ -29,11 +30,11 @@ func requestForwarding(w http.ResponseWriter, r *http.Request) {
 
 	// Check for WebSocket upgrade
 	if websocket.IsWebSocketUpgrade(r) {
-		websocketProxy(w, r, outgoingAddress)
+		websocketProxy(w, r, requestedService.OutgoingAddress, path)
 	} else if isSSERequest(r) {
-		sseProxy(w, r, outgoingAddress)
+		sseProxy(w, r, requestedService.OutgoingAddress, path)
 	} else {
-		restForwarding(w, r, outgoingAddress)
+		restForwarding(w, r, requestedService.OutgoingAddress, path)
 	}
 }
 
@@ -44,9 +45,8 @@ func isSSERequest(r *http.Request) bool {
 }
 
 // sseProxy handles Server-Sent Events proxying
-func sseProxy(w http.ResponseWriter, r *http.Request, outgoingAddress string) {
-	outgoingAddress = "http://" + outgoingAddress
-
+func sseProxy(w http.ResponseWriter, r *http.Request, serviceAddress ServiceAddress, path string) {
+	outgoingAddress := serviceAddress.String() + path
 	// Preserve query parameters
 	if r.URL.RawQuery != "" {
 		outgoingAddress += "?" + r.URL.RawQuery
@@ -156,9 +156,8 @@ func sseProxy(w http.ResponseWriter, r *http.Request, outgoingAddress string) {
 }
 
 // Handles typical HTTP requests like GET, POST, etc.
-func restForwarding(w http.ResponseWriter, r *http.Request, outgoingAddress string) {
-	outgoingAddress = "http://" + outgoingAddress
-
+func restForwarding(w http.ResponseWriter, r *http.Request, serviceAddress ServiceAddress, path string) {
+	outgoingAddress := serviceAddress.String() + path
 	// Preserve query parameters for HTTP requests
 	if r.URL.RawQuery != "" {
 		outgoingAddress += "?" + r.URL.RawQuery
@@ -232,9 +231,13 @@ func restForwarding(w http.ResponseWriter, r *http.Request, outgoingAddress stri
 // websocketProxy handles the WebSocket connection upgrade and message forwarding.
 // w and r are the original HTTP request and response writers
 // baseOutgoingURL is the URL of the service to forward the request to. Ex. `192.168.0.50:8154/my/stuff`. Note that the path is preserved, and the protocol is assumed to be HTTP.
-func websocketProxy(w http.ResponseWriter, r *http.Request, baseOutgoingURL string) {
+func websocketProxy(w http.ResponseWriter, r *http.Request, serviceAddress ServiceAddress, path string) {
 	// Convert HTTP URL to WebSocket URL and preserve query parameters
-	wsURL := "ws://" + baseOutgoingURL
+	protocol := "ws"
+	if serviceAddress.Protocol == "https" {
+		protocol = "wss"
+	}
+	wsURL := protocol + "://" + serviceAddress.Domain + ":" + strconv.Itoa(serviceAddress.Port) + path
 	if r.URL.RawQuery != "" {
 		wsURL += "?" + r.URL.RawQuery
 	}
