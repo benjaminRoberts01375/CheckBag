@@ -69,7 +69,7 @@ func (fs *FileSystem) SetServices(services ServiceLinks) error {
 	return fs.Write(filepath.Join(fs.BasePath, fs.Services), string(data))
 }
 
-func (fs *FileSystem) GetServices() (ServiceLinks, error) {
+func (fs *FileSystem) GetServices(cache CacheClient[*CacheLayer]) (ServiceLinks, error) {
 	// Read data - Check if the file exists
 	data, err := os.ReadFile(filepath.Join(fs.BasePath, fs.Services))
 	if err != nil {
@@ -95,7 +95,7 @@ func (fs *FileSystem) GetServices() (ServiceLinks, error) {
 		if err != nil {
 			return ServiceLinks{}, errors.New("Could not unmarshal v0 services: " + err.Error())
 		}
-		migratedServices := services.Migrate()
+		migratedServices := services.Migrate(cache)
 		fs.SetServices(migratedServices) // Overwrite old services with new version
 		return migratedServices, nil
 	case 1:

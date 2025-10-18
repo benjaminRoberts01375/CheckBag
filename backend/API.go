@@ -13,10 +13,10 @@ type APIKeyInfo struct {
 	ID   string `json:"id"`
 }
 
-func APISet() http.HandlerFunc {
+func APISet(cache CacheClient[*CacheLayer]) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Ensure user is logged in
-		_, newKeys, err := checkUserRequest[[]APIKeyInfo](r)
+		_, newKeys, err := checkUserRequest[[]APIKeyInfo](r, cache)
 		if err != nil {
 			Printing.PrintErrStr("Could not create API: " + err.Error())
 			requestRespondCode(w, http.StatusForbidden)
@@ -66,9 +66,9 @@ func APISet() http.HandlerFunc {
 	}
 }
 
-func APIGet() http.HandlerFunc {
+func APIGet(cache CacheClient[*CacheLayer]) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, _, err := checkUserRequest[any](r)
+		_, _, err := checkUserRequest[any](r, cache)
 		if err != nil {
 			Printing.PrintErrStr("Could not get API: " + err.Error())
 			requestRespondCode(w, http.StatusForbidden)

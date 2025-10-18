@@ -43,13 +43,13 @@ func (serviceLink ServiceLinkV1) Migrate() ServiceLink {
 	}
 }
 
-// Merge all v2 service links
+// Merge all v1 service links
 //
-// mergeAllServiceLinks merges all v2 service links that have the same exact
+// mergeAllServiceLinks merges all v1 service links that have the same exact
 // outgoing address (protocol, domain, and port). It also merges the analytics
 // stored in Valkey. This is useful for cleaning up duplicate services that may
 // have been created in older versions of CheckBag.
-func (serviceLinks *ServiceLinks) mergeAllServiceLinks() error {
+func (serviceLinks *ServiceLinks) mergeAllServiceLinks(cache CacheClient[*CacheLayer]) error {
 	// Group services by outgoing address
 	serviceGroups := make(map[string][]int) // map[outgoingAddress][]serviceIndex
 
@@ -88,7 +88,7 @@ func (serviceLinks *ServiceLinks) mergeAllServiceLinks() error {
 
 			// Merge analytics in Valkey
 			Printing.Printf("Merging analytics from service %s(%s) to %s(%s)", removeService.Title, removeService.ID, keepService.Title, keepService.ID)
-			if err := mergeServiceAnalytics(keepService.ID, removeService.ID); err != nil {
+			if err := mergeServiceAnalytics(keepService.ID, removeService.ID, cache); err != nil {
 				Printing.PrintErrStr("Failed to merge analytics:", err.Error())
 				return fmt.Errorf("failed to merge analytics from %s to %s: %w",
 					removeService.ID, keepService.ID, err)
@@ -121,7 +121,7 @@ func (serviceLinks *ServiceLinks) mergeAllServiceLinks() error {
 }
 
 // mergeServiceAnalytics merges all analytics data from removeServiceID into keepServiceID
-func mergeServiceAnalytics(keepServiceID, removeServiceID string) error {
+func mergeServiceAnalytics(keepServiceID, removeServiceID string, cache CacheClient[*CacheLayer]) error {
 	if keepServiceID == removeServiceID {
 		return nil // Nothing to merge
 	}
@@ -191,12 +191,12 @@ func mergeServiceAnalytics(keepServiceID, removeServiceID string) error {
 // Service Links
 type ServiceLinksV1 []ServiceLinkV1
 
-func (serviceLinks ServiceLinksV1) Migrate() ServiceLinks {
+func (serviceLinks ServiceLinksV1) Migrate(cache CacheClient[*CacheLayer]) ServiceLinks {
 	var migratedServiceLinks ServiceLinks
 	for _, serviceLink := range serviceLinks {
 		migratedServiceLinks = append(migratedServiceLinks, serviceLink.Migrate())
 	}
-	err := migratedServiceLinks.mergeAllServiceLinks()
+	err := migratedServiceLinks.mergeAllServiceLinks(cache)
 	if err != nil {
 		Printing.PrintErrStr("Failed to merge service links:", err.Error())
 	}
