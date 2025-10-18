@@ -24,68 +24,70 @@ type Analytic struct {
 	ResponseCode map[int]int    `json:"response_code"`
 }
 
-func getServiceData(w http.ResponseWriter, r *http.Request) {
-	queryParams := r.URL.Query()
-	_, _, err := checkUserRequest[any](r)
-	if err != nil {
-		if !(len(queryParams["api-key"]) > 0 && cache.apiKeyExists(queryParams["api-key"][0])) { // Check if API key is invalid
-			Printing.PrintErrStr("Could not verify user or API key for analytic data: " + err.Error())
-			requestRespondCode(w, http.StatusForbidden)
-			return
-		}
-	}
-
-	serviceData := make([]ServiceData, len(serviceLinks))
-
-	// Create a list of all services
-	for i, service := range serviceLinks {
-		serviceData[i] = ServiceData{ServiceLink: service, Hour: map[time.Time]Analytic{}, Day: map[time.Time]Analytic{}, Month: map[time.Time]Analytic{}, Year: map[time.Time]Analytic{}}
-	}
-
-	// Handle time step requests
-	for _, timeScaleQuery := range queryParams["time-step"] {
-		timeScaleQuery = strings.ToLower(timeScaleQuery)
-		switch timeScaleQuery {
-		case "hour":
-			for i, service := range serviceData {
-				serviceData[i].Hour = cache.getAnalyticsService(service, cacheAnalyticsMinute)
-			}
-		case "day":
-			for i, service := range serviceData {
-				serviceData[i].Day = cache.getAnalyticsService(service, cacheAnalyticsHour)
-			}
-		case "month":
-			for i, service := range serviceData {
-				serviceData[i].Month = cache.getAnalyticsService(service, cacheAnalyticsDay)
-			}
-		case "year":
-			for i, service := range serviceData {
-				serviceData[i].Year = cache.getAnalyticsService(service, cacheAnalyticsMonth)
+func getServiceData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		queryParams := r.URL.Query()
+		_, _, err := checkUserRequest[any](r)
+		if err != nil {
+			if !(len(queryParams["api-key"]) > 0 && cache.apiKeyExists(queryParams["api-key"][0])) { // Check if API key is invalid
+				Printing.PrintErrStr("Could not verify user or API key for analytic data: " + err.Error())
+				requestRespondCode(w, http.StatusForbidden)
+				return
 			}
 		}
-	}
 
-	// Handle service requests
-	for _, requestedServiceString := range queryParams["service"] {
-		// Find the service index of the requested service from the list of all service data
-		requestedServiceLink, _ := serviceLinks.GetServiceFromIncomingURL(requestedServiceString)
-		var requestedServiceIndex int = -1
-		for i, service := range serviceData {
-			if service.ServiceLink.ID == requestedServiceLink.ID {
-				requestedServiceIndex = i
-				break
+		serviceData := make([]ServiceData, len(serviceLinks))
+
+		// Create a list of all services
+		for i, service := range serviceLinks {
+			serviceData[i] = ServiceData{ServiceLink: service, Hour: map[time.Time]Analytic{}, Day: map[time.Time]Analytic{}, Month: map[time.Time]Analytic{}, Year: map[time.Time]Analytic{}}
+		}
+
+		// Handle time step requests
+		for _, timeScaleQuery := range queryParams["time-step"] {
+			timeScaleQuery = strings.ToLower(timeScaleQuery)
+			switch timeScaleQuery {
+			case "hour":
+				for i, service := range serviceData {
+					serviceData[i].Hour = cache.getAnalyticsService(service, cacheAnalyticsMinute)
+				}
+			case "day":
+				for i, service := range serviceData {
+					serviceData[i].Day = cache.getAnalyticsService(service, cacheAnalyticsHour)
+				}
+			case "month":
+				for i, service := range serviceData {
+					serviceData[i].Month = cache.getAnalyticsService(service, cacheAnalyticsDay)
+				}
+			case "year":
+				for i, service := range serviceData {
+					serviceData[i].Year = cache.getAnalyticsService(service, cacheAnalyticsMonth)
+				}
 			}
 		}
-		// Check if the requested service was found
-		if requestedServiceIndex == -1 {
-			continue
-		}
-		// Get the requested service's analytics
-		serviceData[requestedServiceIndex].Day = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsHour)
-		serviceData[requestedServiceIndex].Month = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsDay)
-		serviceData[requestedServiceIndex].Year = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsMonth)
-		serviceData[requestedServiceIndex].Hour = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsMinute)
-	}
 
-	requestRespond(w, serviceData)
+		// Handle service requests
+		for _, requestedServiceString := range queryParams["service"] {
+			// Find the service index of the requested service from the list of all service data
+			requestedServiceLink, _ := serviceLinks.GetServiceFromIncomingURL(requestedServiceString)
+			var requestedServiceIndex int = -1
+			for i, service := range serviceData {
+				if service.ServiceLink.ID == requestedServiceLink.ID {
+					requestedServiceIndex = i
+					break
+				}
+			}
+			// Check if the requested service was found
+			if requestedServiceIndex == -1 {
+				continue
+			}
+			// Get the requested service's analytics
+			serviceData[requestedServiceIndex].Day = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsHour)
+			serviceData[requestedServiceIndex].Month = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsDay)
+			serviceData[requestedServiceIndex].Year = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsMonth)
+			serviceData[requestedServiceIndex].Hour = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsMinute)
+		}
+
+		requestRespond(w, serviceData)
+	}
 }

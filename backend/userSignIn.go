@@ -10,27 +10,29 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func userSignIn(w http.ResponseWriter, r *http.Request) {
-	rawPassword, err := requestReceived[string](r)
-	if err != nil {
-		Printing.PrintErrStr("Could not get password from request: ", err.Error())
-		requestRespondCode(w, http.StatusBadRequest)
-		return
+func userSignIn() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		rawPassword, err := requestReceived[string](r)
+		if err != nil {
+			Printing.PrintErrStr("Could not get password from request: ", err.Error())
+			requestRespondCode(w, http.StatusBadRequest)
+			return
+		}
+		passwordHash, err := fileSystem.GetUserData()
+		if err != nil {
+			Printing.PrintErrStr("Could not get user data from file system: ", err.Error())
+			requestRespondCode(w, http.StatusBadRequest)
+			return
+		}
+		// Compare the password with the hash
+		if err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(*rawPassword)); err != nil {
+			Printing.PrintErrStr("Passwords do not match: ", err.Error())
+			requestRespondCode(w, http.StatusBadRequest) // Intentionally obscure the error to prevent username guessing
+			return
+		}
+		setJWTCookie(w)
+		requestRespondCode(w, http.StatusOK)
 	}
-	passwordHash, err := fileSystem.GetUserData()
-	if err != nil {
-		Printing.PrintErrStr("Could not get user data from file system: ", err.Error())
-		requestRespondCode(w, http.StatusBadRequest)
-		return
-	}
-	// Compare the password with the hash
-	if err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(*rawPassword)); err != nil {
-		Printing.PrintErrStr("Passwords do not match: ", err.Error())
-		requestRespondCode(w, http.StatusBadRequest) // Intentionally obscure the error to prevent username guessing
-		return
-	}
-	setJWTCookie(w)
-	requestRespondCode(w, http.StatusOK)
 }
 
 func setJWTCookie(w http.ResponseWriter) {
