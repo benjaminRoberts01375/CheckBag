@@ -58,5 +58,5 @@ jobs:
         if: github.event_name == 'release'
         with:
           files: |
-            .github/workflows/example.env
-            .github/workflows/docker-compose.yml
+            .github/deployment/example.env
+            .github/deployment/docker-compose.yml
