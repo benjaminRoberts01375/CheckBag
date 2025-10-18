@@ -33,11 +33,13 @@
 		"Lpush",
 		"Lrem",
 		"Lrange",
+		"Incrby",
 		"vite",
 		"requirepass",
 		"homelab",
 		"buildx",
-		"benjaminroberts01375"
+		"benjaminroberts01375",
+		"softprops"
 	],
 	"flagWords": ["hte"]
 }
