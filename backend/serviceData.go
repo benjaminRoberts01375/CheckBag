@@ -24,7 +24,7 @@ type Analytic struct {
 	ResponseCode map[int]int    `json:"response_code"`
 }
 
-func getServiceData() http.HandlerFunc {
+func getServiceData(serviceLinks *ServiceLinks) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		queryParams := r.URL.Query()
 		_, _, err := checkUserRequest[any](r)
@@ -36,10 +36,10 @@ func getServiceData() http.HandlerFunc {
 			}
 		}
 
-		serviceData := make([]ServiceData, len(serviceLinks))
+		serviceData := make([]ServiceData, len(*serviceLinks))
 
 		// Create a list of all services
-		for i, service := range serviceLinks {
+		for i, service := range *serviceLinks {
 			serviceData[i] = ServiceData{ServiceLink: service, Hour: map[time.Time]Analytic{}, Day: map[time.Time]Analytic{}, Month: map[time.Time]Analytic{}, Year: map[time.Time]Analytic{}}
 		}
 

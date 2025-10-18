@@ -14,7 +14,7 @@ import (
 )
 
 // Attempts act as a proxy server for incoming requests to outgoing services
-func requestForwarding() http.HandlerFunc {
+func requestForwarding(serviceLinks *ServiceLinks) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		requestedService, err := serviceLinks.GetServiceFromIncomingURL(r.Host)
 		if err != nil {
@@ -33,9 +33,9 @@ func requestForwarding() http.HandlerFunc {
 		if websocket.IsWebSocketUpgrade(r) {
 			websocketProxy(w, r, requestedService.OutgoingAddress, path)
 		} else if isSSERequest(r) {
-			sseProxy(w, r, requestedService.OutgoingAddress, path)
+			sseProxy(w, r, requestedService.OutgoingAddress, path, *serviceLinks)
 		} else {
-			restForwarding(w, r, requestedService.OutgoingAddress, path)
+			restForwarding(w, r, requestedService.OutgoingAddress, path, *serviceLinks)
 		}
 	}
 }
@@ -47,7 +47,7 @@ func isSSERequest(r *http.Request) bool {
 }
 
 // sseProxy handles Server-Sent Events proxying
-func sseProxy(w http.ResponseWriter, r *http.Request, serviceAddress ServiceAddress, path string) {
+func sseProxy(w http.ResponseWriter, r *http.Request, serviceAddress ServiceAddress, path string, serviceLinks ServiceLinks) {
 	outgoingAddress := serviceAddress.String() + path
 	// Preserve query parameters
 	if r.URL.RawQuery != "" {
@@ -106,7 +106,7 @@ func sseProxy(w http.ResponseWriter, r *http.Request, serviceAddress ServiceAddr
 	defer proxyResponse.Body.Close()
 
 	// Record analytics
-	go analytics(r, proxyResponse.StatusCode)
+	go analytics(r, proxyResponse.StatusCode, serviceLinks)
 
 	// Copy all response headers from service
 	for name, values := range proxyResponse.Header {
@@ -158,7 +158,7 @@ func sseProxy(w http.ResponseWriter, r *http.Request, serviceAddress ServiceAddr
 }
 
 // Handles typical HTTP requests like GET, POST, etc.
-func restForwarding(w http.ResponseWriter, r *http.Request, serviceAddress ServiceAddress, path string) {
+func restForwarding(w http.ResponseWriter, r *http.Request, serviceAddress ServiceAddress, path string, serviceLinks ServiceLinks) {
 	outgoingAddress := serviceAddress.String() + path
 	// Preserve query parameters for HTTP requests
 	if r.URL.RawQuery != "" {
@@ -202,7 +202,7 @@ func restForwarding(w http.ResponseWriter, r *http.Request, serviceAddress Servi
 		requestRespondCode(w, http.StatusInternalServerError)
 		return
 	}
-	go analytics(r, proxyResponse.StatusCode)
+	go analytics(r, proxyResponse.StatusCode, serviceLinks)
 	// Read proxy response
 	defer proxyResponse.Body.Close()
 	responseBytes, err := io.ReadAll(proxyResponse.Body)

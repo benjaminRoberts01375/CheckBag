@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func analytics(r *http.Request, responseCode int) {
+func analytics(r *http.Request, responseCode int, serviceLinks ServiceLinks) {
 	service, err := serviceLinks.GetServiceFromIncomingURL(r.Host)
 	var serviceID string
 	if err != nil {
