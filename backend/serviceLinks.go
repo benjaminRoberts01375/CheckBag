@@ -49,9 +49,7 @@ func (serviceLinks *ServiceLinks) String() string {
 	return retVal
 }
 
-var serviceLinks = ServiceLinks{}
-
-func servicesSet(fileSystem FileSystem) http.HandlerFunc {
+func servicesSet(fileSystem FileSystem, serviceLinks *ServiceLinks) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Check JWT
 		_, newServiceLinks, err := checkUserRequest[ServiceLinks](r)
@@ -62,7 +60,7 @@ func servicesSet(fileSystem FileSystem) http.HandlerFunc {
 		}
 
 		// Delete service links that are not in new service links
-		serviceLinks = slices.DeleteFunc(serviceLinks, func(existingService ServiceLink) bool {
+		newLinks := slices.DeleteFunc(*serviceLinks, func(existingService ServiceLink) bool {
 			delVal := !slices.ContainsFunc(*newServiceLinks, func(newService ServiceLink) bool {
 				return existingService.ID == newService.ID
 			})
@@ -74,30 +72,32 @@ func servicesSet(fileSystem FileSystem) http.HandlerFunc {
 			}
 			return delVal
 		})
+		serviceLinks = &newLinks
 
 		// Update or add services to serviceLinks
 		for _, newService := range *newServiceLinks {
-			existingServiceI := slices.IndexFunc(serviceLinks, func(existingService ServiceLink) bool {
+			existingServiceI := slices.IndexFunc(*serviceLinks, func(existingService ServiceLink) bool {
 				return existingService.ID == newService.ID
 			})
 			if existingServiceI == -1 { // Add service
 				newService.ID = generateRandomString(models.ModelsConfig.ServiceIDLength)
-				serviceLinks = append(serviceLinks, newService)
+				newLinks := append(*serviceLinks, newService)
+				serviceLinks = &newLinks
 				continue
 			}
 			// Update service - Don't update ID
-			serviceLinks[existingServiceI].IncomingAddresses = newService.IncomingAddresses
-			serviceLinks[existingServiceI].Title = newService.Title
-			serviceLinks[existingServiceI].OutgoingAddress = newService.OutgoingAddress
+			(*serviceLinks)[existingServiceI].IncomingAddresses = newService.IncomingAddresses
+			(*serviceLinks)[existingServiceI].Title = newService.Title
+			(*serviceLinks)[existingServiceI].OutgoingAddress = newService.OutgoingAddress
 		}
 
-		err = fileSystem.SetServices(serviceLinks)
+		err = fileSystem.SetServices(*serviceLinks)
 		if err != nil {
 			Printing.PrintErrStr("Could not set services in file system: " + err.Error())
 			requestRespondCode(w, http.StatusInternalServerError)
 			return
 		}
-		Printing.Println("Updated service links")
+		Printing.Println("Updated service links: ", serviceLinks)
 		requestRespond(w, serviceLinks)
 	}
 }
