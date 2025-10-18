@@ -14,27 +14,29 @@ import (
 )
 
 // Attempts act as a proxy server for incoming requests to outgoing services
-func requestForwarding(w http.ResponseWriter, r *http.Request) {
-	requestedService, err := serviceLinks.GetServiceFromIncomingURL(r.Host)
-	if err != nil {
-		Printing.PrintErrStr("No service found for incoming URL \"" + r.Host + "\": " + err.Error())
-		requestRespondCode(w, http.StatusNotFound)
-		return
-	}
-	outgoingAddress := requestedService.OutgoingAddress.String()
-	path := r.PathValue("path")
-	if len(path) > 0 && path[0] != '/' { // Add leading slash
-		path = "/" + path
-	}
-	outgoingAddress += path
+func requestForwarding() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		requestedService, err := serviceLinks.GetServiceFromIncomingURL(r.Host)
+		if err != nil {
+			Printing.PrintErrStr("No service found for incoming URL \"" + r.Host + "\": " + err.Error())
+			requestRespondCode(w, http.StatusNotFound)
+			return
+		}
+		outgoingAddress := requestedService.OutgoingAddress.String()
+		path := r.PathValue("path")
+		if len(path) > 0 && path[0] != '/' { // Add leading slash
+			path = "/" + path
+		}
+		outgoingAddress += path
 
-	// Check for WebSocket upgrade
-	if websocket.IsWebSocketUpgrade(r) {
-		websocketProxy(w, r, requestedService.OutgoingAddress, path)
-	} else if isSSERequest(r) {
-		sseProxy(w, r, requestedService.OutgoingAddress, path)
-	} else {
-		restForwarding(w, r, requestedService.OutgoingAddress, path)
+		// Check for WebSocket upgrade
+		if websocket.IsWebSocketUpgrade(r) {
+			websocketProxy(w, r, requestedService.OutgoingAddress, path)
+		} else if isSSERequest(r) {
+			sseProxy(w, r, requestedService.OutgoingAddress, path)
+		} else {
+			restForwarding(w, r, requestedService.OutgoingAddress, path)
+		}
 	}
 }
 

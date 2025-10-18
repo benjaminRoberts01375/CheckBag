@@ -51,53 +51,55 @@ func (serviceLinks *ServiceLinks) String() string {
 
 var serviceLinks = ServiceLinks{}
 
-func servicesSet(w http.ResponseWriter, r *http.Request) {
-	// Check JWT
-	_, newServiceLinks, err := checkUserRequest[ServiceLinks](r)
-	if err != nil {
-		Printing.PrintErrStr("Could not add service: " + err.Error())
-		requestRespondCode(w, http.StatusForbidden)
-		return
-	}
+func servicesSet() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Check JWT
+		_, newServiceLinks, err := checkUserRequest[ServiceLinks](r)
+		if err != nil {
+			Printing.PrintErrStr("Could not add service: " + err.Error())
+			requestRespondCode(w, http.StatusForbidden)
+			return
+		}
 
-	// Delete service links that are not in new service links
-	serviceLinks = slices.DeleteFunc(serviceLinks, func(existingService ServiceLink) bool {
-		delVal := !slices.ContainsFunc(*newServiceLinks, func(newService ServiceLink) bool {
-			return existingService.ID == newService.ID
-		})
-		if delVal {
-			err := cache.deleteService(existingService)
-			if err != nil {
-				Printing.PrintErrStr("Could not delete service from cache: " + err.Error())
+		// Delete service links that are not in new service links
+		serviceLinks = slices.DeleteFunc(serviceLinks, func(existingService ServiceLink) bool {
+			delVal := !slices.ContainsFunc(*newServiceLinks, func(newService ServiceLink) bool {
+				return existingService.ID == newService.ID
+			})
+			if delVal {
+				err := cache.deleteService(existingService)
+				if err != nil {
+					Printing.PrintErrStr("Could not delete service from cache: " + err.Error())
+				}
 			}
-		}
-		return delVal
-	})
-
-	// Update or add services to serviceLinks
-	for _, newService := range *newServiceLinks {
-		existingServiceI := slices.IndexFunc(serviceLinks, func(existingService ServiceLink) bool {
-			return existingService.ID == newService.ID
+			return delVal
 		})
-		if existingServiceI == -1 { // Add service
-			newService.ID = generateRandomString(models.ModelsConfig.ServiceIDLength)
-			serviceLinks = append(serviceLinks, newService)
-			continue
-		}
-		// Update service - Don't update ID
-		serviceLinks[existingServiceI].IncomingAddresses = newService.IncomingAddresses
-		serviceLinks[existingServiceI].Title = newService.Title
-		serviceLinks[existingServiceI].OutgoingAddress = newService.OutgoingAddress
-	}
 
-	err = fileSystem.SetServices(serviceLinks)
-	if err != nil {
-		Printing.PrintErrStr("Could not set services in file system: " + err.Error())
-		requestRespondCode(w, http.StatusInternalServerError)
-		return
+		// Update or add services to serviceLinks
+		for _, newService := range *newServiceLinks {
+			existingServiceI := slices.IndexFunc(serviceLinks, func(existingService ServiceLink) bool {
+				return existingService.ID == newService.ID
+			})
+			if existingServiceI == -1 { // Add service
+				newService.ID = generateRandomString(models.ModelsConfig.ServiceIDLength)
+				serviceLinks = append(serviceLinks, newService)
+				continue
+			}
+			// Update service - Don't update ID
+			serviceLinks[existingServiceI].IncomingAddresses = newService.IncomingAddresses
+			serviceLinks[existingServiceI].Title = newService.Title
+			serviceLinks[existingServiceI].OutgoingAddress = newService.OutgoingAddress
+		}
+
+		err = fileSystem.SetServices(serviceLinks)
+		if err != nil {
+			Printing.PrintErrStr("Could not set services in file system: " + err.Error())
+			requestRespondCode(w, http.StatusInternalServerError)
+			return
+		}
+		Printing.Println("Updated service links")
+		requestRespond(w, serviceLinks)
 	}
-	Printing.Println("Updated service links")
-	requestRespond(w, serviceLinks)
 }
 
 // Search for a service by incoming URL
