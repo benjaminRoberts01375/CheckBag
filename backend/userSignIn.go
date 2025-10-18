@@ -10,7 +10,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func userSignIn() http.HandlerFunc {
+func userSignIn(fileSystem FileSystem) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		rawPassword, err := requestReceived[string](r)
 		if err != nil {

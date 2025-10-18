@@ -10,16 +10,6 @@ import (
 	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
 )
 
-func init() {
-	fileSystem.Setup()
-}
-
-var fileSystem = FileSystem{
-	BasePath: "/CheckBag",
-	UserData: "userdata.txt",
-	Services: "services.json",
-}
-
 type FileSystem struct {
 	BasePath string `json:"base_path"`
 	UserData string `json:"user_data"`
