@@ -7,7 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func newUser() http.HandlerFunc {
+func newUser(fileSystem FileSystem) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userData, _ := fileSystem.GetUserData()
 		if userData != "" {

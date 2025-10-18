@@ -16,6 +16,13 @@ import (
 var cache CacheClient[*CacheLayer]
 
 func main() {
+	var fileSystem = FileSystem{
+		BasePath: "/CheckBag",
+		UserData: "userdata.txt",
+		Services: "services.json",
+	}
+	fileSystem.Setup()
+
 	// Config setup
 	models.Setup()
 	// Coms setup
@@ -25,9 +32,9 @@ func main() {
 	cache.raw.Setup()
 	defer cache.raw.Close()
 	// Services setup
-	serviceLinks.Setup()
+	serviceLinks.Setup(fileSystem)
 	// Setup endpoints
-	setupEndpoints()
+	setupEndpoints(fileSystem)
 	if models.ModelsConfig.DevMode {
 		Printing.Println("Running in dev mode")
 	}
@@ -35,16 +42,16 @@ func main() {
 	http.ListenAndServe(models.ModelsConfig.FormatPort(), nil)
 }
 
-func setupEndpoints() {
-	http.HandleFunc("GET /api/user-exists", userExists())          // Check if the user already exists
-	http.HandleFunc("POST /api/user-sign-up", newUser())           // Sign up with username and password
-	http.HandleFunc("POST /api/user-sign-in", userSignIn())        // Sign in with username and password
-	http.HandleFunc("POST /api/user-sign-in-jwt", userJWTSignIn()) // Sign in with JWT
-	http.HandleFunc("POST /api/services-set", servicesSet())       // Setting/replacing all services
-	http.HandleFunc("GET /api/service-data", getServiceData())     // Getting analytics
-	http.HandleFunc("/api/service/{path...}", requestForwarding()) // Proxying requests
-	http.HandleFunc("GET /api/api-keys", APIGet())                 // Getting API keys
-	http.HandleFunc("POST /api/api-keys", APISet())                // Setting API keys
+func setupEndpoints(fileSystem FileSystem) {
+	http.HandleFunc("GET /api/user-exists", userExists(fileSystem))    // Check if the user already exists
+	http.HandleFunc("POST /api/user-sign-up", newUser(fileSystem))     // Sign up with username and password
+	http.HandleFunc("POST /api/user-sign-in", userSignIn(fileSystem))  // Sign in with username and password
+	http.HandleFunc("POST /api/user-sign-in-jwt", userJWTSignIn())     // Sign in with JWT
+	http.HandleFunc("POST /api/services-set", servicesSet(fileSystem)) // Setting/replacing all services
+	http.HandleFunc("GET /api/service-data", getServiceData())         // Getting analytics
+	http.HandleFunc("/api/service/{path...}", requestForwarding())     // Proxying requests
+	http.HandleFunc("GET /api/api-keys", APIGet())                     // Getting API keys
+	http.HandleFunc("POST /api/api-keys", APISet())                    // Setting API keys
 
 	http.HandleFunc("/", spaHandler) // Serve the frontend
 }

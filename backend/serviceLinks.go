@@ -29,7 +29,7 @@ func (address ServiceAddress) String() string {
 	return fmt.Sprintf("%s://%s:%d", address.Protocol, address.Domain, address.Port)
 }
 
-func (serviceLinks *ServiceLinks) Setup() {
+func (serviceLinks *ServiceLinks) Setup(fileSystem FileSystem) {
 	diskServices, err := fileSystem.GetServices()
 	if err != nil {
 		Printing.PrintErrStr("Could not get services: " + err.Error())
@@ -51,7 +51,7 @@ func (serviceLinks *ServiceLinks) String() string {
 
 var serviceLinks = ServiceLinks{}
 
-func servicesSet() http.HandlerFunc {
+func servicesSet(fileSystem FileSystem) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Check JWT
 		_, newServiceLinks, err := checkUserRequest[ServiceLinks](r)
