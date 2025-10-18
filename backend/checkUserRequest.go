@@ -8,7 +8,7 @@ import (
 	"github.com/benjaminRoberts01375/CheckBag/backend/jwt"
 )
 
-func checkUserRequest[ReturnType any](r *http.Request) (*jwt.Claims, *ReturnType, error) {
+func checkUserRequest[ReturnType any](r *http.Request, cache CacheClient[*CacheLayer]) (*jwt.Claims, *ReturnType, error) {
 	cookie, err := r.Cookie(jwt.CookieName)
 
 	if err != nil {

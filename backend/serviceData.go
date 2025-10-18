@@ -24,10 +24,10 @@ type Analytic struct {
 	ResponseCode map[int]int    `json:"response_code"`
 }
 
-func getServiceData(serviceLinks *ServiceLinks) http.HandlerFunc {
+func getServiceData(serviceLinks *ServiceLinks, cache CacheClient[*CacheLayer]) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		queryParams := r.URL.Query()
-		_, _, err := checkUserRequest[any](r)
+		_, _, err := checkUserRequest[any](r, cache)
 		if err != nil {
 			if !(len(queryParams["api-key"]) > 0 && cache.apiKeyExists(queryParams["api-key"][0])) { // Check if API key is invalid
 				Printing.PrintErrStr("Could not verify user or API key for analytic data: " + err.Error())

@@ -29,8 +29,8 @@ func (address ServiceAddress) String() string {
 	return fmt.Sprintf("%s://%s:%d", address.Protocol, address.Domain, address.Port)
 }
 
-func (serviceLinks *ServiceLinks) Setup(fileSystem FileSystem) {
-	diskServices, err := fileSystem.GetServices()
+func (serviceLinks *ServiceLinks) Setup(fileSystem FileSystem, cache CacheClient[*CacheLayer]) {
+	diskServices, err := fileSystem.GetServices(cache)
 	if err != nil {
 		Printing.PrintErrStr("Could not get services: " + err.Error())
 		return
@@ -49,10 +49,10 @@ func (serviceLinks *ServiceLinks) String() string {
 	return retVal
 }
 
-func servicesSet(fileSystem FileSystem, serviceLinks *ServiceLinks) http.HandlerFunc {
+func servicesSet(fileSystem FileSystem, serviceLinks *ServiceLinks, cache CacheClient[*CacheLayer]) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Check JWT
-		_, newServiceLinks, err := checkUserRequest[ServiceLinks](r)
+		_, newServiceLinks, err := checkUserRequest[ServiceLinks](r, cache)
 		if err != nil {
 			Printing.PrintErrStr("Could not add service: " + err.Error())
 			requestRespondCode(w, http.StatusForbidden)
