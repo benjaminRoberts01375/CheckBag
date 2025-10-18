@@ -243,10 +243,6 @@ func (cache *CacheClient[client]) getUserSignIn(JWT string) (string, error) {
 	return cache.raw.Get("JWT:" + JWT)
 }
 
-func (cache *CacheClient[client]) deleteUserSignIn(JWT string) error {
-	return cache.raw.Delete(JWT)
-}
-
 func (cache *CacheClient[client]) incrementAnalytics(serviceID string, resource string, country string, ip string, responseCode int) error {
 	for _, timeStep := range cacheAnalyticsTime {
 		recordTime := timeStep.timeStr(0)
