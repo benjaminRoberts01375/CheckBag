@@ -2,7 +2,7 @@ import React, { ReactNode, useState, useCallback, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { Context, ContextType, ProcessedChartData } from "./context-object";
 import Service from "./types/service.tsx";
-import { CookieKeys, Timescale } from "./types/strings";
+import { CookieKeys, Timescale, Timescales } from "./types/strings";
 import { useNavigate } from "react-router-dom";
 import ChartData from "./types/chart-data";
 import ResourceUsageData from "./types/resource-usage-data";
@@ -42,6 +42,31 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		}
 		return undefined;
 	}
+
+	useEffect(() => {
+		const worker = new Worker(new URL("./processRequestData.tsx", import.meta.url), {
+			type: "module",
+		});
+
+		const fetchAndProcess = () => {
+			const url = new URL("/api/service-data", window.location.origin);
+			Timescales.forEach(timescale => {
+				url.searchParams.set("time-step", timescale);
+			});
+
+			console.log("Fetching data for " + timescale);
+			worker.onmessage = e => console.log("Data received");
+			worker.postMessage({ url: new URL("/api/service-data", window.location.origin).toString() });
+		};
+
+		fetchAndProcess();
+		const interval = setInterval(fetchAndProcess, 10000);
+
+		return () => {
+			clearInterval(interval);
+			worker.terminate();
+		};
+	}, []);
 
 	// Combines pre-processed service data for a specific timescale
 	const combinePreProcessedData = useCallback(
