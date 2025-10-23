@@ -1,4 +1,4 @@
-import React, { ReactNode, useState, useCallback, useEffect } from "react";
+import React, { ReactNode, useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { Context, ContextType, ProcessedChartData } from "./context-object";
 import Service from "./types/service.tsx";
@@ -44,107 +44,104 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 	}
 
 	// Combines pre-processed service data for a specific timescale
-	const combinePreProcessedData = useCallback(
-		(targetTimescale: Timescale): ProcessedChartData => {
-			const enabledServices = services.filter(service => service.enabled);
-			if (enabledServices.length === 0) {
-				return emptyChartData;
-			}
+	function combinePreProcessedData(targetTimescale: Timescale): ProcessedChartData {
+		const enabledServices = services.filter(service => service.enabled);
+		if (enabledServices.length === 0) {
+			return emptyChartData;
+		}
 
-			const quantityData = enabledServices.map(
-				service => service.getProcessedData(targetTimescale).quantityData,
-			);
-			const responseCodesCounter = new Map<number, number>();
-			const countryCounter = new Map<string, number>();
-			const ipCounter = new Map<string, number>();
-			const resourceUsage = new Array<ResourceUsageData>();
+		const quantityData = enabledServices.map(
+			service => service.getProcessedData(targetTimescale).quantityData,
+		);
+		const responseCodesCounter = new Map<number, number>();
+		const countryCounter = new Map<string, number>();
+		const ipCounter = new Map<string, number>();
+		const resourceUsage = new Array<ResourceUsageData>();
 
-			// Combine data from all enabled services
-			enabledServices.forEach(service => {
-				const serviceData = service.getProcessedData(targetTimescale);
+		// Combine data from all enabled services
+		enabledServices.forEach(service => {
+			const serviceData = service.getProcessedData(targetTimescale);
 
-				// Combine response codes
-				serviceData.responseCodeData.forEach((value, key) => {
-					responseCodesCounter.set(key, (responseCodesCounter.get(key) ?? 0) + value);
-				});
-
-				// Combine countries
-				let regionNames = new Intl.DisplayNames(["en"], { type: "region" });
-				serviceData.countryCodeData.forEach((value, key) => {
-					try {
-						const regionName = regionNames.of(key);
-						countryCounter.set(
-							regionName ?? key,
-							(countryCounter.get(regionName ?? key) ?? 0) + value,
-						);
-					} catch (error) {
-						countryCounter.set("Unknown", (countryCounter.get("Unknown") ?? 0) + value);
-					}
-				});
-
-				// Combine IP addresses
-				serviceData.ipAddressData.forEach((value, key) => {
-					ipCounter.set(key, (ipCounter.get(key) ?? 0) + value);
-				});
-
-				// Add resource usage data
-				serviceData.resourceUsage.forEach((value, key) => {
-					resourceUsage.push(
-						new ResourceUsageData(service.title, service.outgoing_address.toString(), key, value),
-					);
-				});
+			// Combine response codes
+			serviceData.responseCodeData.forEach((value, key) => {
+				responseCodesCounter.set(key, (responseCodesCounter.get(key) ?? 0) + value);
 			});
 
-			// Create chart data for response codes
-			const responseCodes = Array.from(responseCodesCounter.entries())
-				.map(
-					([key, value]) =>
-						new ChartData(value, (statusCodeToString[key] ?? key) + " (" + value + ")"),
-				)
-				.sort((a, b) => (b.label < a.label ? 1 : -1));
-
-			// Create chart data for countries (top 10 + others)
-			const countries = Array.from(countryCounter.entries()).sort((a, b) => b[1] - a[1]);
-			const topCountries = countries.slice(0, 10);
-			const otherCountriesCount = countries.slice(10).reduce((sum, current) => sum + current[1], 0);
-			const countryData = topCountries.map(
-				([key, value]) => new ChartData(value, key + " (" + value + ")"),
-			);
-			if (otherCountriesCount > 0) {
-				const totalOtherCountries = countries.slice(10).length;
-				var label = "Others";
-				if (totalOtherCountries == 1) {
-					label = "Other";
+			// Combine countries
+			let regionNames = new Intl.DisplayNames(["en"], { type: "region" });
+			serviceData.countryCodeData.forEach((value, key) => {
+				try {
+					const regionName = regionNames.of(key);
+					countryCounter.set(
+						regionName ?? key,
+						(countryCounter.get(regionName ?? key) ?? 0) + value,
+					);
+				} catch (error) {
+					countryCounter.set("Unknown", (countryCounter.get("Unknown") ?? 0) + value);
 				}
-				label = "+" + totalOtherCountries + " " + label + " (" + otherCountriesCount + ")";
-				countryData.push(new ChartData(otherCountriesCount, label));
-			}
+			});
 
-			// Create chart data for IP addresses (top 10 + others)
-			const IPs = Array.from(ipCounter.entries()).sort((a, b) => b[1] - a[1]);
-			const topIPs = IPs.slice(0, 10);
-			const otherIPsCount = IPs.slice(10).reduce((sum, current) => sum + current[1], 0);
-			const ipData = topIPs.map(([key, value]) => new ChartData(value, key + " (" + value + ")"));
-			if (otherIPsCount > 0) {
-				const totalOtherIPs = IPs.slice(10).length;
-				var label = "Others";
-				if (totalOtherIPs == 1) {
-					label = "Other";
-				}
-				label = "+" + totalOtherIPs + " " + label + " (" + otherIPsCount + ")";
-				ipData.push(new ChartData(otherIPsCount, label));
-			}
+			// Combine IP addresses
+			serviceData.ipAddressData.forEach((value, key) => {
+				ipCounter.set(key, (ipCounter.get(key) ?? 0) + value);
+			});
 
-			return {
-				quantityData,
-				responseCodeData: responseCodes,
-				countryCodeData: countryData,
-				IPAddressData: ipData,
-				resourceUsage: resourceUsage.sort((a, b) => b.quantity - a.quantity),
-			};
-		},
-		[services],
-	);
+			// Add resource usage data
+			serviceData.resourceUsage.forEach((value, key) => {
+				resourceUsage.push(
+					new ResourceUsageData(service.title, service.outgoing_address.toString(), key, value),
+				);
+			});
+		});
+
+		// Create chart data for response codes
+		const responseCodes = Array.from(responseCodesCounter.entries())
+			.map(
+				([key, value]) =>
+					new ChartData(value, (statusCodeToString[key] ?? key) + " (" + value + ")"),
+			)
+			.sort((a, b) => (b.label < a.label ? 1 : -1));
+
+		// Create chart data for countries (top 10 + others)
+		const countries = Array.from(countryCounter.entries()).sort((a, b) => b[1] - a[1]);
+		const topCountries = countries.slice(0, 10);
+		const otherCountriesCount = countries.slice(10).reduce((sum, current) => sum + current[1], 0);
+		const countryData = topCountries.map(
+			([key, value]) => new ChartData(value, key + " (" + value + ")"),
+		);
+		if (otherCountriesCount > 0) {
+			const totalOtherCountries = countries.slice(10).length;
+			var label = "Others";
+			if (totalOtherCountries == 1) {
+				label = "Other";
+			}
+			label = "+" + totalOtherCountries + " " + label + " (" + otherCountriesCount + ")";
+			countryData.push(new ChartData(otherCountriesCount, label));
+		}
+
+		// Create chart data for IP addresses (top 10 + others)
+		const IPs = Array.from(ipCounter.entries()).sort((a, b) => b[1] - a[1]);
+		const topIPs = IPs.slice(0, 10);
+		const otherIPsCount = IPs.slice(10).reduce((sum, current) => sum + current[1], 0);
+		const ipData = topIPs.map(([key, value]) => new ChartData(value, key + " (" + value + ")"));
+		if (otherIPsCount > 0) {
+			const totalOtherIPs = IPs.slice(10).length;
+			var label = "Others";
+			if (totalOtherIPs == 1) {
+				label = "Other";
+			}
+			label = "+" + totalOtherIPs + " " + label + " (" + otherIPsCount + ")";
+			ipData.push(new ChartData(otherIPsCount, label));
+		}
+
+		return {
+			quantityData,
+			responseCodeData: responseCodes,
+			countryCodeData: countryData,
+			IPAddressData: ipData,
+			resourceUsage: resourceUsage.sort((a, b) => b.quantity - a.quantity),
+		};
+	}
 
 	// Update all time span data when services change
 	useEffect(() => {
@@ -152,10 +149,11 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		setDayData(combinePreProcessedData("day"));
 		setMonthData(combinePreProcessedData("month"));
 		setYearData(combinePreProcessedData("year"));
-	}, [combinePreProcessedData]);
+	}, [services]);
 
 	// Get data for current timescale
-	const getCurrentTimescaleData = useCallback((): ProcessedChartData => {
+	// React Compiler will automatically memoize this function
+	function getCurrentTimescaleData(): ProcessedChartData {
 		switch (timescale) {
 			case "hour":
 				return hourData;
@@ -168,7 +166,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 			default:
 				return emptyChartData;
 		}
-	}, [timescale, hourData, dayData, monthData, yearData]);
+	}
 
 	function requestAPIKeys(): void {
 		(async () => {
