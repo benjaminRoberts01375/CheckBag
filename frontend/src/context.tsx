@@ -2,7 +2,7 @@ import React, { ReactNode, useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { Context, ContextType, ProcessedChartData } from "./context-object";
 import Service from "./types/service.tsx";
-import { CookieKeys, Timescale } from "./types/strings";
+import { CookieKeys, Timescale, Timescales } from "./types/strings";
 import { useNavigate } from "react-router-dom";
 import ChartData from "./types/chart-data";
 import ResourceUsageData from "./types/resource-usage-data";
@@ -152,7 +152,6 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 	}, [services]);
 
 	// Get data for current timescale
-	// React Compiler will automatically memoize this function
 	function getCurrentTimescaleData(): ProcessedChartData {
 		switch (timescale) {
 			case "hour":
@@ -227,13 +226,13 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 	}
 
 	function requestServiceData(): void {
-		const time_steps: string[] = ["hour", "day", "month", "year"];
-
-		// Create all fetch promises
-		const fetchPromises = time_steps.map(async time_step => {
+		// Fetch all timescales in a single request
+		(async () => {
 			try {
 				const url = new URL("/api/service-data", window.location.origin);
-				url.searchParams.set("time-step", time_step);
+				// Request all time steps at once
+				Timescales.forEach(ts => url.searchParams.append("time-step", ts));
+
 				const response = await fetch(url.toString(), {
 					method: "GET",
 					headers: {
@@ -243,78 +242,56 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 				});
 
 				if (!response.ok) {
-					throw new Error("Failed to fetch initial data:" + response.status);
+					navigate("/signin");
+					throw new Error("Failed to fetch service data: " + response.status);
 				}
 
-				const newServices: Service[] = (await response.json()).map((serviceData: any) =>
-					Service.fromJSON(serviceData),
-				);
+				const rawData = await response.json();
 
-				return { time_step, services: newServices, success: true };
-			} catch (error) {
-				console.error(`Error fetching data for ${time_step}:`, error);
-				return { time_step, services: [], success: false };
-			}
-		});
+				// Process data asynchronously to avoid blocking UI
+				// Use requestIdleCallback for non-critical processing
+				const processData = () =>
+					new Promise<Service[]>(resolve => {
+						setTimeout(() => {
+							const services = rawData.map((serviceData: any) => Service.fromJSON(serviceData));
+							resolve(services);
+						}, 0);
+					});
 
-		// Wait for all requests to complete and process results
-		Promise.allSettled(fetchPromises).then(results => {
-			const successfulResults = results
-				.filter(result => result.status === "fulfilled")
-				.map(result => result.value);
+				const processedServices = await processData();
 
-			// Check if any requests succeeded
-			if (successfulResults.length === 0) {
-				console.error("All service data requests failed");
-				navigate("/signin");
-				return;
-			}
+				// Single state update with all processed data
+				setServices(existingServices => {
+					const serviceMap = new Map(existingServices.map(service => [service.id, service]));
 
-			// Update services state once with all the collected data
-			setServices(existingServices => {
-				var updatedServices = [...existingServices];
-
-				// Process each successful result
-				successfulResults.forEach(({ time_step, services: newServices }) => {
-					for (const newService of newServices) {
-						var existingServiceIndex = updatedServices.findIndex(
-							existingService => existingService.id === newService.id,
-						);
-
-						// If the service doesn't exist, add it
-						if (existingServiceIndex === -1) {
+					processedServices.forEach(newService => {
+						const existing = serviceMap.get(newService.id);
+						if (existing) {
+							// Preserve client state
+							newService.clientID = existing.clientID;
+							newService.enabled = existing.enabled;
+						} else {
+							// New service
 							newService.clientID = uuidv4();
 							newService.enabled = true;
-							updatedServices.push(newService);
-						} else {
-							// If the service exists, update its processed data
-							const existingService = updatedServices[existingServiceIndex];
-							switch (time_step) {
-								case "hour":
-									existingService.hourProcessed = newService.hourProcessed;
-									break;
-								case "day":
-									existingService.dayProcessed = newService.dayProcessed;
-									break;
-								case "month":
-									existingService.monthProcessed = newService.monthProcessed;
-									break;
-								case "year":
-									existingService.yearProcessed = newService.yearProcessed;
-									break;
-							}
-							updatedServices[existingServiceIndex] = existingService;
 						}
+						serviceMap.set(newService.id, newService);
+					});
+
+					const updatedServices = Array.from(serviceMap.values());
+
+					if (updatedServices.length === 0) {
+						navigate("/dashboard/services");
 					}
+
+					return updatedServices;
 				});
 
-				if (updatedServices.length === 0) {
-					navigate("/dashboard/services");
-				}
-				return updatedServices;
-			});
-			requestAPIKeys();
-		});
+				requestAPIKeys();
+			} catch (error) {
+				console.error("Error fetching service data:", error);
+			}
+		})();
 	}
 
 	function serviceAdd(service: Service): void {
