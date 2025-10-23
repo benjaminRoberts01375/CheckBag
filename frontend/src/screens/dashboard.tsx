@@ -8,20 +8,21 @@ import ResourceTable from "../components/resource-table";
 import { createTheme } from "@mui/material/styles";
 import { ThemeProvider } from "@mui/material/styles";
 
+// Create theme once outside component - it never changes
+const theme = createTheme({
+	palette: {
+		mode: "light",
+		text: {
+			primary: "#aaa",
+		},
+	},
+});
+
 const DashboardScreen = () => {
 	const { requestServiceData, getCurrentTimescaleData, services } = useList();
 
 	// Get the processed chart data for the current timescale
 	const chartData = getCurrentTimescaleData();
-
-	const theme = createTheme({
-		palette: {
-			mode: "light",
-			text: {
-				primary: "#aaa",
-			},
-		},
-	});
 
 	useEffect(() => {
 		// Initial request
