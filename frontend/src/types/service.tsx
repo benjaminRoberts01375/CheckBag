@@ -98,7 +98,7 @@ class Service {
 				break;
 			case "month":
 				rollback = (step: number): Date => {
-					var now = new Date();
+					const now = new Date();
 					now.setUTCHours(0, 0, 0, 0);
 					const currentUTCDay = now.getUTCDate();
 					now.setUTCDate(currentUTCDay + step);
@@ -134,12 +134,10 @@ class Service {
 						return date.toLocaleString("default", {
 							month: "short",
 							day: "numeric",
-							timeZone: "UTC",
 						});
 					case "year":
 						return date.toLocaleString("default", {
 							month: "short",
-							timeZone: "UTC",
 						});
 					default:
 						return date.toLocaleDateString();
