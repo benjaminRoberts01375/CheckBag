@@ -463,6 +463,16 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		setAPIKeys([]);
 		navigate("/signin");
 	}
+
+	useEffect(() => {
+		if (signedIn) {
+			requestServiceData();
+			// Update every 10 seconds after initial request
+			const interval = setInterval(requestServiceData, 10000);
+			return () => clearInterval(interval);
+		}
+	}, [signedIn]);
+
 	const statusCodeToString: Record<number, string> = {
 		// 1xx Informational
 		100: "100: Continue",
@@ -566,7 +576,6 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		serviceDelete,
 		serviceUpdate,
 		cookieGet,
-		requestServiceData,
 		passwordReset,
 		serviceToggle,
 		hourData,

@@ -4,14 +4,10 @@ import APIStyles from "./api.module.css";
 import ServicesStyles from "./services.module.css";
 import { useList } from "../context-hook";
 import APIKey from "../types/api-key.tsx";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const APIScreen = () => {
-	const { apiKeys, requestServiceData } = useList();
-
-	useEffect(() => {
-		requestServiceData();
-	}, []);
+	const { apiKeys } = useList();
 
 	return (
 		<div id={DashboardStyles["container"]}>

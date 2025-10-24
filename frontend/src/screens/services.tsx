@@ -2,17 +2,14 @@ import "../styles.css";
 import ServicesStyles from "./services.module.css";
 import DashboardStyles from "./dashboard.module.css";
 import { useList } from "../context-hook";
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import Service from "../types/service.tsx";
 import { CgMoreVerticalAlt } from "react-icons/cg";
 // import { CommunicationProtocols, CommunicationProtocol } from "../types/strings";
 import ServiceURL from "../types/service-url.tsx";
 
 const ServicesScreen = () => {
-	const { services, requestServiceData } = useList();
-	useEffect(() => {
-		requestServiceData();
-	}, []);
+	const { services } = useList();
 	const dialogRef = useRef<HTMLDialogElement | null>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 

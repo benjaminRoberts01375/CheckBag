@@ -25,7 +25,6 @@ export interface ContextType {
 	serviceDelete: (serviceID: string) => void;
 	serviceUpdate: (service: Service) => void;
 	cookieGet: (key: CookieKeys) => string | undefined;
-	requestServiceData: () => void;
 	passwordReset: (newPassword: string) => void;
 	serviceToggle: (serviceID: string) => void;
 

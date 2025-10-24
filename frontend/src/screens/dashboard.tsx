@@ -1,7 +1,6 @@
 import "../styles.css";
 import DashboardStyles from "./dashboard.module.css";
 import { useList } from "../context-hook";
-import { useEffect } from "react";
 import StackedBarChart from "../components/stacked-bar-chart";
 import PieChartComponent from "../components/pie-chart";
 import ResourceTable from "../components/resource-table";
@@ -19,20 +18,10 @@ const theme = createTheme({
 });
 
 const DashboardScreen = () => {
-	const { requestServiceData, getCurrentTimescaleData, services } = useList();
+	const { getCurrentTimescaleData } = useList();
 
 	// Get the processed chart data for the current timescale
 	const chartData = getCurrentTimescaleData();
-
-	useEffect(() => {
-		// Initial request
-		if (services.length === 0) {
-			requestServiceData();
-		}
-		// Update every 10 seconds after initial request
-		const interval = setInterval(requestServiceData, 10000);
-		return () => clearInterval(interval);
-	}, []);
 
 	return (
 		<div id={DashboardStyles["container"]}>
