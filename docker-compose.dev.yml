@@ -19,7 +19,7 @@ services:
       - NODE_ENV=development
 
   valkey:
-    image: valkey/valkey:8.1.2-alpine
+    image: valkey/valkey:9.0-alpine
     container_name: valkey
     restart: unless-stopped
     networks:
