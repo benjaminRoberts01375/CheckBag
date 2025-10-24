@@ -1,6 +1,6 @@
 # <img src="https://github.com/user-attachments/assets/c915c0fd-37a0-489f-a122-3f158348ef59" alt="CheckBag Logo" style="width: 49%;">
 
-![CheckBag Demo](https://github.com/user-attachments/assets/d92c5049-40ef-474f-ae05-7f73a6c6ef6a)
+![CheckBag Demo](https://github.com/user-attachments/assets/74f02bba-1fe1-45d9-a63c-a482cc3a1e6a)
 
 ## What is CheckBag?
 
