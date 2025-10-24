@@ -80,13 +80,16 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 						(countryCounter.get(regionName ?? key) ?? 0) + value,
 					);
 				} catch (error) {
-					countryCounter.set("Unknown", (countryCounter.get("Unknown") ?? 0) + value);
+					countryCounter.set(
+						"Unknown Country",
+						(countryCounter.get("Unknown Country") ?? 0) + value,
+					);
 				}
 			});
 
 			// Combine IP addresses
 			serviceData.ipAddressData.forEach((value, key) => {
-				ipCounter.set(key, (ipCounter.get(key) ?? 0) + value);
+				ipCounter.set(key ?? "Unknown IP", (ipCounter.get(key ?? "Unknown IP") ?? 0) + value);
 			});
 
 			// Add resource usage data
