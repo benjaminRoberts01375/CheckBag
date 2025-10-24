@@ -37,6 +37,9 @@ export interface ContextType {
 
 	// Function to get data for current timescale
 	getCurrentTimescaleData: () => ProcessedChartData;
+
+	// Sign in/out
+	signIn: () => void;
 }
 
 export const Context = React.createContext<ContextType | undefined>(undefined);
