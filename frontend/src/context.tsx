@@ -245,7 +245,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 				});
 
 				if (!response.ok) {
-					navigate("/signin");
+					signOut();
 					throw new Error("Failed to fetch service data: " + response.status);
 				}
 
@@ -452,6 +452,17 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		setSignedIn(true);
 	}
 
+	function signOut() {
+		setSignedIn(false);
+		setServices(new Array<Service>());
+		setTimescale("hour");
+		setHourData(emptyChartData);
+		setDayData(emptyChartData);
+		setMonthData(emptyChartData);
+		setYearData(emptyChartData);
+		setAPIKeys([]);
+		navigate("/signin");
+	}
 	const statusCodeToString: Record<number, string> = {
 		// 1xx Informational
 		100: "100: Continue",
