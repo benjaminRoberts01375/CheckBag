@@ -6,7 +6,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-const CookieName = "session-token"
+const CookieName = "checkbag-session-token"
 const LoginDuration = time.Hour*24*6 + time.Hour*12 // 6 + 0.5 days
 
 func GenerateJWT(duration time.Duration) (string, error) {

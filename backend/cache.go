@@ -61,6 +61,7 @@ func (analytics AnalyticsTimeStep) timeStr(step int) string {
 
 const (
 	cacheUserSignIn = JWT.LoginDuration
+	cacheKeyPrefix  = "CheckBag:"
 )
 
 var (
@@ -88,7 +89,7 @@ const cacheDataValid = "valid"
 // Basic cache functions
 
 func (cache *CacheLayer) Setup() {
-	cacheEnvironmentVersion := "1"
+	cacheEnvironmentVersion := "2"
 
 	cachePort, err := strconv.Atoi(os.Getenv("CACHE_PORT"))
 	if err != nil || cachePort <= 0 {
@@ -122,17 +123,28 @@ func (cache *CacheLayer) Setup() {
 	}
 	cache.DB = client
 
-	cacheVersion, err := cache.Get("version")
+	cacheVersion, err := cache.Get(cacheKeyPrefix + "version")
 	if err != nil {
-		Printing.PrintErrStr("Could not get version from cache, setting it to v", cacheEnvironmentVersion)
-		err = cache.Set("version", cacheEnvironmentVersion, 0)
+		Printing.PrintErrStr("Could not get version from cache, checking legacy version key")
+		cacheVersion, err = cache.Get("version")
 		if err != nil {
-			panic("Could not set version in cache during setup: " + err.Error())
+			Printing.PrintErrStr("Could not get version from cache, setting it to v", cacheEnvironmentVersion)
+			err = cache.Set(cacheKeyPrefix+"version", cacheEnvironmentVersion, 0)
+			if err != nil {
+				panic("Could not set version in cache during setup: " + err.Error())
+			}
 		}
-	} else if cacheVersion != cacheEnvironmentVersion {
-		panic("Cache version mismatch, expected v" + cacheEnvironmentVersion + " but got v" + cacheVersion + " from cache")
-	} else {
-		Printing.Println("Cache version is v" + cacheVersion)
+	}
+	if cacheVersion != cacheEnvironmentVersion {
+		switch cacheVersion {
+		case "1":
+			Printing.Println("Detected v1 cache, migrating to v2 with CheckBag: prefix")
+			cache.v1ToV2()
+		case "2":
+			Printing.Println("Cache version is v" + cacheVersion)
+		default:
+			panic("Cache version mismatch, expected v" + cacheEnvironmentVersion + " but got v" + cacheVersion + " from cache")
+		}
 	}
 
 	Printing.Println("Connected to Valkey")
@@ -231,7 +243,7 @@ func (cache CacheLayer) GetList(key string) ([]string, error) {
 // Higher-level cache functions
 
 func (cache *CacheClient[client]) setUserSignIn(JWT string) error {
-	err := cache.raw.Set("JWT:"+JWT, "valid", cacheUserSignIn)
+	err := cache.raw.Set(cacheKeyPrefix+"JWT:"+JWT, "valid", cacheUserSignIn)
 	if err != nil {
 		Printing.PrintErrStr("Valkey Set Error: " + err.Error())
 		return err
@@ -240,7 +252,7 @@ func (cache *CacheClient[client]) setUserSignIn(JWT string) error {
 }
 
 func (cache *CacheClient[client]) getUserSignIn(JWT string) (string, error) {
-	return cache.raw.Get("JWT:" + JWT)
+	return cache.raw.Get(cacheKeyPrefix + "JWT:" + JWT)
 }
 
 func (cache *CacheClient[client]) incrementAnalytics(serviceID string, resource string, country string, ip string, responseCode int) error {
@@ -248,27 +260,27 @@ func (cache *CacheClient[client]) incrementAnalytics(serviceID string, resource 
 		recordTime := timeStep.timeStr(0)
 		expiration := timeStep.time(timeStep.maximumUnits)
 		quantity := strconv.Itoa(timeStep.maximumUnits)
-		err := cache.raw.IncrementKey("Analytics:"+serviceID+":"+quantity+":"+recordTime+":quantity", expiration)
+		err := cache.raw.IncrementKey(cacheKeyPrefix+"Analytics:"+serviceID+":"+quantity+":"+recordTime+":quantity", expiration)
 		if err != nil {
 			Printing.PrintErrStr("Could not increment minute analytics key: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+quantity+":"+recordTime+":country", country, 1, expiration)
+		err = cache.raw.IncrementHashField(cacheKeyPrefix+"Analytics:"+serviceID+":"+quantity+":"+recordTime+":country", country, 1, expiration)
 		if err != nil {
 			Printing.PrintErrStr("Could not increment minute analytics country: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+quantity+":"+recordTime+":ip", ip, 1, expiration)
+		err = cache.raw.IncrementHashField(cacheKeyPrefix+"Analytics:"+serviceID+":"+quantity+":"+recordTime+":ip", ip, 1, expiration)
 		if err != nil {
 			Printing.PrintErrStr("Could not increment minute analytics ip: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+quantity+":"+recordTime+":resource", resource, 1, expiration)
+		err = cache.raw.IncrementHashField(cacheKeyPrefix+"Analytics:"+serviceID+":"+quantity+":"+recordTime+":resource", resource, 1, expiration)
 		if err != nil {
 			Printing.PrintErrStr("Could not increment minute analytics resource: " + err.Error())
 			return err
 		}
-		err = cache.raw.IncrementHashField("Analytics:"+serviceID+":"+quantity+":"+recordTime+":response_code", strconv.Itoa(responseCode), 1, expiration)
+		err = cache.raw.IncrementHashField(cacheKeyPrefix+"Analytics:"+serviceID+":"+quantity+":"+recordTime+":response_code", strconv.Itoa(responseCode), 1, expiration)
 		if err != nil {
 			Printing.PrintErrStr("Could not increment minute analytics response code: " + err.Error())
 			return err
@@ -281,23 +293,23 @@ func (cache *CacheClient[client]) getAnalyticsService(service ServiceData, timeS
 	analytics := map[time.Time]Analytic{}
 	quantity := strconv.Itoa(timeStep.maximumUnits)
 	for timePeriod := range timeStep.maximumUnits {
-		quantityRaw, err := cache.raw.Get("Analytics:" + service.ID + ":" + quantity + ":" + timeStep.timeStr(-timePeriod) + ":quantity")
+		quantityRaw, err := cache.raw.Get(cacheKeyPrefix + "Analytics:" + service.ID + ":" + quantity + ":" + timeStep.timeStr(-timePeriod) + ":quantity")
 		if err != nil {
 			continue
 		}
-		countryRaw, err := cache.raw.GetHash("Analytics:" + service.ID + ":" + quantity + ":" + timeStep.timeStr(-timePeriod) + ":country")
+		countryRaw, err := cache.raw.GetHash(cacheKeyPrefix + "Analytics:" + service.ID + ":" + quantity + ":" + timeStep.timeStr(-timePeriod) + ":country")
 		if err != nil {
 			continue
 		}
-		ipRaw, err := cache.raw.GetHash("Analytics:" + service.ID + ":" + quantity + ":" + timeStep.timeStr(-timePeriod) + ":ip")
+		ipRaw, err := cache.raw.GetHash(cacheKeyPrefix + "Analytics:" + service.ID + ":" + quantity + ":" + timeStep.timeStr(-timePeriod) + ":ip")
 		if err != nil {
 			continue
 		}
-		resourceRaw, err := cache.raw.GetHash("Analytics:" + service.ID + ":" + quantity + ":" + timeStep.timeStr(-timePeriod) + ":resource")
+		resourceRaw, err := cache.raw.GetHash(cacheKeyPrefix + "Analytics:" + service.ID + ":" + quantity + ":" + timeStep.timeStr(-timePeriod) + ":resource")
 		if err != nil {
 			continue
 		}
-		responseCodesRaw, err := cache.raw.GetHash("Analytics:" + service.ID + ":" + quantity + ":" + timeStep.timeStr(-timePeriod) + ":response_code")
+		responseCodesRaw, err := cache.raw.GetHash(cacheKeyPrefix + "Analytics:" + service.ID + ":" + quantity + ":" + timeStep.timeStr(-timePeriod) + ":response_code")
 		if err != nil {
 			continue
 		}
@@ -355,27 +367,27 @@ func (cache *CacheClient[client]) deleteService(service ServiceLink) error {
 	for _, timeStep := range cacheAnalyticsTime {
 		recordTime := timeStep.timeStr(0)
 		quantity := strconv.Itoa(timeStep.maximumUnits)
-		err := cache.raw.Delete("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":quantity")
+		err := cache.raw.Delete(cacheKeyPrefix + "Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":quantity")
 		if err != nil {
 			Printing.PrintErrStr("Could not delete minute analytics key: " + err.Error())
 			return err
 		}
-		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":country")
+		err = cache.raw.DeleteHash(cacheKeyPrefix + "Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":country")
 		if err != nil {
 			Printing.PrintErrStr("Could not delete minute analytics country: " + err.Error())
 			return err
 		}
-		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":ip")
+		err = cache.raw.DeleteHash(cacheKeyPrefix + "Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":ip")
 		if err != nil {
 			Printing.PrintErrStr("Could not delete minute analytics ip: " + err.Error())
 			return err
 		}
-		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":resource")
+		err = cache.raw.DeleteHash(cacheKeyPrefix + "Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":resource")
 		if err != nil {
 			Printing.PrintErrStr("Could not delete minute analytics resource: " + err.Error())
 			return err
 		}
-		err = cache.raw.DeleteHash("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":response_code")
+		err = cache.raw.DeleteHash(cacheKeyPrefix + "Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":response_code")
 		if err != nil {
 			Printing.PrintErrStr("Could not delete minute analytics response code: " + err.Error())
 			return err
@@ -393,11 +405,11 @@ func (cache *CacheClient[client]) addAPIKey(APIKey string, keyID string, name st
 		"id":   keyID,
 	}
 
-	err := cache.raw.SetHash("APIKey:"+APIKey, hash)
+	err := cache.raw.SetHash(cacheKeyPrefix+"APIKey:"+APIKey, hash)
 	if err != nil {
 		return err
 	}
-	err = cache.raw.AddToList("APIKeys", APIKey)
+	err = cache.raw.AddToList(cacheKeyPrefix+"APIKeys", APIKey)
 	if err != nil {
 		return err
 	}
@@ -406,12 +418,12 @@ func (cache *CacheClient[client]) addAPIKey(APIKey string, keyID string, name st
 }
 
 func (cache *CacheClient[client]) removeAPIKey(APIKeyID string) error {
-	keys, err := cache.raw.GetList("APIKeys")
+	keys, err := cache.raw.GetList(cacheKeyPrefix + "APIKeys")
 	if err != nil {
 		return err
 	}
 	for _, key := range keys {
-		keyInfo, err := cache.raw.GetHash("APIKey:" + key)
+		keyInfo, err := cache.raw.GetHash(cacheKeyPrefix + "APIKey:" + key)
 		if err != nil {
 			return err
 		}
@@ -419,11 +431,11 @@ func (cache *CacheClient[client]) removeAPIKey(APIKeyID string) error {
 		Printing.Println("Key info: " + string(data))
 
 		if keyInfo["id"] == APIKeyID {
-			err := cache.raw.DeleteHash("APIKey:" + key)
+			err := cache.raw.DeleteHash(cacheKeyPrefix + "APIKey:" + key)
 			if err != nil {
 				return err
 			}
-			err = cache.raw.RemoveFromList("APIKeys", key)
+			err = cache.raw.RemoveFromList(cacheKeyPrefix+"APIKeys", key)
 			if err != nil {
 				return err
 			}
@@ -435,13 +447,13 @@ func (cache *CacheClient[client]) removeAPIKey(APIKeyID string) error {
 }
 
 func (cache *CacheClient[client]) getAPIKeyInfo() ([]APIKeyInfo, error) {
-	keys, err := cache.raw.GetList("APIKeys")
+	keys, err := cache.raw.GetList(cacheKeyPrefix + "APIKeys")
 	if err != nil {
 		return nil, err
 	}
 	keysInfo := make([]APIKeyInfo, len(keys))
 	for i, key := range keys {
-		keyInfo, err := cache.raw.GetHash("APIKey:" + key)
+		keyInfo, err := cache.raw.GetHash(cacheKeyPrefix + "APIKey:" + key)
 		if err != nil {
 			return nil, err
 		}
@@ -453,7 +465,7 @@ func (cache *CacheClient[client]) getAPIKeyInfo() ([]APIKeyInfo, error) {
 }
 
 func (cache *CacheClient[client]) apiKeyExists(APIKey string) bool {
-	keys, err := cache.raw.GetList("APIKeys")
+	keys, err := cache.raw.GetList(cacheKeyPrefix + "APIKeys")
 	if err != nil {
 		return false
 	}
