@@ -220,4 +220,9 @@ func (cache *CacheLayer) v1ToV2() {
 			return
 		}
 	}
+	err = cache.DB.Do(ctx, cache.DB.B().Set().Key(cacheKeyPrefix+"version").Value("2").Build()).Error()
+	if err != nil {
+		Printing.PrintErrStr("Could not set the cache version:", err.Error())
+		return
+	}
 }
