@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"os"
@@ -110,22 +109,4 @@ func (fs *FileSystem) GetServices(cache CacheClient[*CacheLayer]) (ServiceLinks,
 	}
 
 	return ServiceLinks{}, errors.New("Unknown services version: " + strconv.Itoa(version.Version))
-}
-
-func (cache *CacheLayer) v1ToV2() {
-	ctx := context.Background()
-	keys, err := cache.DB.Do(ctx, cache.DB.B().Keys().Pattern("*").Build()).AsStrSlice()
-	if err != nil {
-		Printing.PrintErrStr("Could not get keys:", err.Error())
-		return
-	}
-	for _, key := range keys {
-		Printing.Printf("Migrating key: \"%s\" -> \"%s\"", key, cacheKeyPrefix+key)
-		newKey := cacheKeyPrefix + key
-		err := cache.DB.Do(ctx, cache.DB.B().Rename().Key(key).Newkey(newKey).Build()).Error()
-		if err != nil {
-			Printing.PrintErrStr("Could not rename key:", err.Error())
-			return
-		}
-	}
 }
