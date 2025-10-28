@@ -445,7 +445,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 
 	useEffect(() => {
 		console.log("CheckBag Version:", __CHECKBAG_VERSION__);
-		if (cookieGet("session-token")) {
+		if (cookieGet("checkbag-session-token")) {
 			jwtSignIn();
 		}
 		userExists();
