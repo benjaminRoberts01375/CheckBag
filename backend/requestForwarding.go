@@ -219,12 +219,18 @@ func restForwarding(w http.ResponseWriter, r *http.Request, serviceAddress Servi
 	}
 	// Handle redirects for client response
 	if proxyResponse.StatusCode >= 300 && proxyResponse.StatusCode < 400 {
-		newPath := proxyResponse.Header.Get("Location")
-		// Add leading and trailing slashes
-		if len(newPath) > 0 && newPath[0] != '/' {
-			newPath = "/" + newPath
+		location := proxyResponse.Header.Get("Location")
+
+		// Check if it's already an absolute URL
+		if strings.HasPrefix(location, "http://") || strings.HasPrefix(location, "https://") {
+			w.Header().Set("Location", location)
+		} else {
+			// It's a relative path, construct full URL
+			if len(location) > 0 && location[0] != '/' {
+				location = "/" + location
+			}
+			w.Header().Set("Location", "https://"+r.Host+location)
 		}
-		w.Header().Set("Location", "https://"+r.Host+newPath)
 	}
 	w.WriteHeader(proxyResponse.StatusCode)
 	w.Write(responseBytes)
