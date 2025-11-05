@@ -5,19 +5,38 @@
 	margin: 0pt auto;
 }
 
+#summary-group,
+.graph-group {
+	margin-bottom: 20pt;
+}
+
+#summary-group {
+	width: 100%;
+	display: flex;
+	gap: 10pt;
+}
+
+.summary-card,
 .graph-group {
 	background: #333333f8;
-	padding: 0pt 20pt 20pt 20pt;
-	border-radius: 10pt;
-
 	box-shadow: 0pt 0pt 10pt #0000;
-	margin-bottom: 20pt;
+	border-radius: 10pt;
 	transition-duration: 0.5s;
 }
 
-.graph-group:hover {
+.graph-group:hover,
+.summary-card:hover {
 	box-shadow: 0pt 0pt 10pt #000a;
-	transition-duration: 0.5s;
+}
+
+.summary-card {
+	display: flex;
+	width: 25%;
+	padding: 10pt;
+}
+
+.graph-group {
+	padding: 0pt 20pt 20pt 20pt;
 }
 
 #pie-charts {

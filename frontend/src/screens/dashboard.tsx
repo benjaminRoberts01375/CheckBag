@@ -27,6 +27,20 @@ const DashboardScreen = () => {
 		<div id={DashboardStyles["container"]}>
 			<title>CheckBag - Dashboard</title>
 			<ThemeProvider theme={theme}>
+				<div id={DashboardStyles["summary-group"]}>
+					<div className={DashboardStyles["summary-card"]}>
+						<h2>Temp</h2>
+					</div>
+					<div className={DashboardStyles["summary-card"]}>
+						<h2>Temp</h2>
+					</div>
+					<div className={DashboardStyles["summary-card"]}>
+						<h2>Temp</h2>
+					</div>
+					<div className={DashboardStyles["summary-card"]}>
+						<h2>Temp</h2>
+					</div>
+				</div>
 				<div className={DashboardStyles["graph-group"]}>
 					<StackedBarChart
 						graphData={chartData.quantityData}
