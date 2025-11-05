@@ -16,7 +16,7 @@ type APIKeyInfo struct {
 func APISet(db AdvancedDB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Ensure user is logged in
-		_, newKeys, err := checkUserRequest[[]APIKeyInfo](r, db)
+		_, newKeys, err := checkUserRequest[[]APIKeyInfo](r)
 		if err != nil {
 			Printing.PrintErrStr("Could not create API: " + err.Error())
 			requestRespondCode(w, http.StatusForbidden)
@@ -24,7 +24,7 @@ func APISet(db AdvancedDB) http.HandlerFunc {
 		}
 
 		// Get all existing keys and their data
-		existingKeys, err := db.getAPIKeyInfo()
+		existingKeys, err := db.getAPIKeyInfo(r.Context())
 		if err != nil {
 			Printing.PrintErrStr("Could not get API keys: " + err.Error())
 			requestRespondCode(w, http.StatusInternalServerError)
@@ -36,7 +36,7 @@ func APISet(db AdvancedDB) http.HandlerFunc {
 			if !slices.ContainsFunc(*newKeys, func(newKey APIKeyInfo) bool {
 				return existingKey.ID == newKey.ID // Check if the key already exists in newKeys
 			}) {
-				err := db.removeAPIKey(existingKey.ID)
+				err := db.removeAPIKey(r.Context(), existingKey.ID)
 				if err != nil {
 					Printing.PrintErrStr("Could not remove API key: " + err.Error())
 					requestRespondCode(w, http.StatusInternalServerError)
@@ -54,7 +54,7 @@ func APISet(db AdvancedDB) http.HandlerFunc {
 				keyID := generateRandomString(32)
 				(*newKeys)[i].Key = APIKey
 				(*newKeys)[i].ID = keyID
-				err = db.addAPIKey(APIKey, keyID, newKey.Name)
+				err = db.addAPIKey(r.Context(), APIKey, keyID, newKey.Name)
 				if err != nil {
 					Printing.PrintErrStr("Could not add API key to cache: " + err.Error())
 					requestRespondCode(w, http.StatusInternalServerError)
@@ -68,13 +68,13 @@ func APISet(db AdvancedDB) http.HandlerFunc {
 
 func APIGet(db AdvancedDB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, _, err := checkUserRequest[any](r, db)
+		_, _, err := checkUserRequest[any](r)
 		if err != nil {
 			Printing.PrintErrStr("Could not get API: " + err.Error())
 			requestRespondCode(w, http.StatusForbidden)
 			return
 		}
-		keysInfo, err := db.getAPIKeyInfo()
+		keysInfo, err := db.getAPIKeyInfo(r.Context())
 		if err != nil {
 			Printing.PrintErrStr("Could not get API keys: " + err.Error())
 			requestRespondCode(w, http.StatusInternalServerError)

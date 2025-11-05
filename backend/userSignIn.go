@@ -10,7 +10,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func userSignIn(fileSystem FileSystem, db AdvancedDB) http.HandlerFunc {
+func userSignIn(fileSystem FileSystem) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		rawPassword, err := requestReceived[string](r)
 		if err != nil {
@@ -30,12 +30,12 @@ func userSignIn(fileSystem FileSystem, db AdvancedDB) http.HandlerFunc {
 			requestRespondCode(w, http.StatusBadRequest) // Intentionally obscure the error to prevent username guessing
 			return
 		}
-		setJWTCookie(w, db)
+		setJWTCookie(w)
 		requestRespondCode(w, http.StatusOK)
 	}
 }
 
-func setJWTCookie(w http.ResponseWriter, db AdvancedDB) {
+func setJWTCookie(w http.ResponseWriter) {
 	// If the password is correct, generate a JWT
 	token, err := jwt.GenerateJWT(jwt.LoginDuration)
 	if err != nil {
@@ -43,7 +43,6 @@ func setJWTCookie(w http.ResponseWriter, db AdvancedDB) {
 		requestRespondCode(w, http.StatusInternalServerError)
 		return
 	}
-	go db.setUserSignIn(token)
 
 	if models.ModelsConfig.DevMode {
 		http.SetCookie(w, &http.Cookie{

@@ -52,7 +52,7 @@ func (serviceLinks *ServiceLinks) String() string {
 func servicesSet(fileSystem FileSystem, serviceLinks *ServiceLinks, db AdvancedDB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Check JWT
-		_, newServiceLinks, err := checkUserRequest[ServiceLinks](r, db)
+		_, newServiceLinks, err := checkUserRequest[ServiceLinks](r)
 		if err != nil {
 			Printing.PrintErrStr("Could not add service: " + err.Error())
 			requestRespondCode(w, http.StatusForbidden)
@@ -65,7 +65,7 @@ func servicesSet(fileSystem FileSystem, serviceLinks *ServiceLinks, db AdvancedD
 				return existingService.ID == newService.ID
 			})
 			if delVal {
-				err := db.deleteService(existingService)
+				err := db.deleteService(r.Context(), existingService)
 				if err != nil {
 					Printing.PrintErrStr("Could not delete service from cache: " + err.Error())
 				}

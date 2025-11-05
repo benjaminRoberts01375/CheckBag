@@ -29,5 +29,5 @@ func analytics(r *http.Request, responseCode int, serviceLinks ServiceLinks, db 
 			ip = values[0]
 		}
 	}
-	db.incrementAnalytics(serviceID, resource, country, ip, responseCode)
+	db.incrementAnalytics(r.Context(), serviceID, resource, country, ip, responseCode)
 }

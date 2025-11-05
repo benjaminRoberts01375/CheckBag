@@ -42,9 +42,9 @@ func main() {
 
 func setupEndpoints(fileSystem FileSystem, serviceLinks *ServiceLinks, db AdvancedDB) {
 	http.HandleFunc("GET /api/user-exists", userExists(fileSystem))                      // Check if the user already exists
-	http.HandleFunc("POST /api/user-sign-up", newUser(fileSystem, db))                   // Sign up with username and password
-	http.HandleFunc("POST /api/user-sign-in", userSignIn(fileSystem, db))                // Sign in with username and password
-	http.HandleFunc("POST /api/user-sign-in-jwt", userJWTSignIn(db))                     // Sign in with JWT
+	http.HandleFunc("POST /api/user-sign-up", newUser(fileSystem))                       // Sign up with username and password
+	http.HandleFunc("POST /api/user-sign-in", userSignIn(fileSystem))                    // Sign in with username and password
+	http.HandleFunc("POST /api/user-sign-in-jwt", userJWTSignIn())                       // Sign in with JWT
 	http.HandleFunc("POST /api/services-set", servicesSet(fileSystem, serviceLinks, db)) // Setting/replacing all services
 	http.HandleFunc("GET /api/service-data", getServiceData(serviceLinks, db))           // Getting analytics
 	http.HandleFunc("/api/service/{path...}", requestForwarding(serviceLinks, db))       // Proxying requests

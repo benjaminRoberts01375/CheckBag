@@ -10,44 +10,41 @@ import (
 	"strconv"
 	"time"
 
-	JWT "github.com/benjaminRoberts01375/CheckBag/backend/jwt"
 	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
 	"github.com/valkey-io/valkey-go"
 )
 
 type BasicDB interface {
 	// Basic cache functions
-	Set(key string, value string, duration time.Duration) error
-	Get(key string) (string, error)
-	Delete(key string) error
+	Set(ctx context.Context, key string, value string, duration time.Duration) error
+	Get(ctx context.Context, key string) (string, error)
+	Delete(ctx context.Context, key string) error
 
-	SetHash(key string, values map[string]string) error
-	GetHash(key string) (map[string]string, error)
-	DeleteHash(key string) error
+	SetHash(ctx context.Context, key string, values map[string]string) error
+	GetHash(ctx context.Context, key string) (map[string]string, error)
+	DeleteHash(ctx context.Context, key string) error
 
-	RenameKey(oldKey string, newKey string) error
+	RenameKey(ctx context.Context, oldKey string, newKey string) error
 
-	IncrementHashField(key string, field string, amount int, expiration time.Time) error
-	IncrementKey(key string, expiration time.Time) error
-	IncrementKeyBy(key string, amount int, expiration time.Time) error
+	IncrementHashField(ctx context.Context, key string, field string, amount int, expiration time.Time) error
+	IncrementKey(ctx context.Context, key string, expiration time.Time) error
+	IncrementKeyBy(ctx context.Context, key string, amount int, expiration time.Time) error
 
-	AddToList(key string, value string) error
-	RemoveFromList(key string, value string) error
-	GetList(key string) ([]string, error)
+	AddToList(ctx context.Context, key string, value string) error
+	RemoveFromList(ctx context.Context, key string, value string) error
+	GetList(ctx context.Context, key string) ([]string, error)
 }
 
 type AdvancedDB interface {
-	setUserSignIn(JWT string) error
-	getUserSignIn(JWT string) (string, error)
-	incrementAnalytics(serviceID string, resource string, country string, ip string, responseCode int) error
-	getAnalyticsService(service ServiceData, timeStep AnalyticsTimeStep) map[time.Time]Analytic
-	deleteService(service ServiceLink) error
-	addAPIKey(APIKey string, keyID string, name string) error
-	removeAPIKey(APIKeyID string) error
-	getAPIKeyInfo() ([]APIKeyInfo, error)
-	apiKeyExists(APIKey string) bool
-	getVersion() (string, error)
-	setVersion(version string) error
+	incrementAnalytics(ctx context.Context, serviceID string, resource string, country string, ip string, responseCode int) error
+	getAnalyticsService(ctx context.Context, service ServiceData, timeStep AnalyticsTimeStep) map[time.Time]Analytic
+	deleteService(ctx context.Context, service ServiceLink) error
+	addAPIKey(ctx context.Context, APIKey string, keyID string, name string) error
+	removeAPIKey(ctx context.Context, APIKeyID string) error
+	getAPIKeyInfo(ctx context.Context) ([]APIKeyInfo, error)
+	apiKeyExists(ctx context.Context, APIKey string) bool
+	getVersion(ctx context.Context) (string, error)
+	setVersion(ctx context.Context, version string) error
 }
 
 type ValkeyDB struct {
@@ -67,10 +64,6 @@ type AnalyticsTimeStep struct {
 func (analytics AnalyticsTimeStep) timeStr(step int) string {
 	return analytics.time(step).Format(time.RFC3339)
 }
-
-const (
-	cacheUserSignIn = JWT.LoginDuration
-)
 
 var (
 	cacheAnalyticsMinute = AnalyticsTimeStep{maximumUnits: 60, time: func(step int) time.Time {
@@ -136,44 +129,41 @@ func SetupDB() AdvancedDB {
 
 func (db DB) versioning() {
 	expectedDBVersion := "2"
-	actualDBVersion, err := db.basicDB.Get("version")
+	ctx := context.Background()
+	actualDBVersion, err := db.basicDB.Get(ctx, "version")
 	if err != nil {
 		Printing.PrintErrStr("Could not get version from DB, setting to " + expectedDBVersion)
-		db.setVersion(expectedDBVersion)
+		db.setVersion(ctx, expectedDBVersion)
 	} else if actualDBVersion != "2" {
 		panic("Expected database version " + expectedDBVersion + " but got " + actualDBVersion)
 	}
 }
 
-func (db *ValkeyDB) Get(key string) (string, error) {
-	ctx := context.Background()
+func (db *ValkeyDB) Get(ctx context.Context, key string) (string, error) {
 	return db.db.Do(ctx, db.db.B().Get().Key(db.prefix+key).Build()).ToString()
 }
 
-func (db *ValkeyDB) GetHash(key string) (map[string]string, error) {
-	ctx := context.Background()
+func (db *ValkeyDB) GetHash(ctx context.Context, key string) (map[string]string, error) {
 	return db.db.Do(ctx, db.db.B().Hgetall().Key(db.prefix+key).Build()).AsStrMap()
 }
 
-func (db *ValkeyDB) Delete(key string) error {
-	return db.db.Do(context.Background(), db.db.B().Del().Key(db.prefix+key).Build()).Error()
+func (db *ValkeyDB) Delete(ctx context.Context, key string) error {
+	return db.db.Do(ctx, db.db.B().Del().Key(db.prefix+key).Build()).Error()
 }
 
-func (db *ValkeyDB) DeleteHash(key string) error {
-	return db.db.Do(context.Background(), db.db.B().Hdel().Key(db.prefix+key).Field("purpose").Build()).Error()
+func (db *ValkeyDB) DeleteHash(ctx context.Context, key string) error {
+	return db.db.Do(ctx, db.db.B().Hdel().Key(db.prefix+key).Field("purpose").Build()).Error()
 }
 
 // If duration is 0, the value is set without an expiration time
-func (db *ValkeyDB) Set(key string, value string, duration time.Duration) error {
-	ctx := context.Background()
+func (db *ValkeyDB) Set(ctx context.Context, key string, value string, duration time.Duration) error {
 	if duration == 0 {
 		return db.db.Do(ctx, db.db.B().Set().Key(db.prefix+key).Value(value).Build()).Error()
 	}
 	return db.db.Do(ctx, db.db.B().Set().Key(db.prefix+key).Value(value).Ex(duration).Build()).Error()
 }
 
-func (db *ValkeyDB) SetHash(key string, values map[string]string) error {
-	ctx := context.Background()
+func (db *ValkeyDB) SetHash(ctx context.Context, key string, values map[string]string) error {
 	hash := db.db.B().Hset().Key(db.prefix + key).FieldValue()
 	for field, value := range values {
 		hash = hash.FieldValue(field, value)
@@ -181,13 +171,11 @@ func (db *ValkeyDB) SetHash(key string, values map[string]string) error {
 	return db.db.Do(ctx, hash.Build()).Error()
 }
 
-func (db *ValkeyDB) RenameKey(oldKey string, newKey string) error {
-	ctx := context.Background()
+func (db *ValkeyDB) RenameKey(ctx context.Context, oldKey string, newKey string) error {
 	return db.db.Do(ctx, db.db.B().Rename().Key(db.prefix+oldKey).Newkey(db.prefix+newKey).Build()).Error()
 }
 
-func (db *ValkeyDB) IncrementHashField(key string, field string, amount int, expiration time.Time) error {
-	ctx := context.Background()
+func (db *ValkeyDB) IncrementHashField(ctx context.Context, key string, field string, amount int, expiration time.Time) error {
 	err := db.db.Do(ctx, db.db.B().Hincrby().Key(db.prefix+key).Field(field).Increment(int64(amount)).Build()).Error()
 	if err != nil {
 		return err
@@ -196,8 +184,7 @@ func (db *ValkeyDB) IncrementHashField(key string, field string, amount int, exp
 	return db.db.Do(ctx, db.db.B().Expire().Key(db.prefix+key).Seconds(int64(remainingTime.Seconds())).Build()).Error()
 }
 
-func (db *ValkeyDB) IncrementKey(key string, expiration time.Time) error {
-	ctx := context.Background()
+func (db *ValkeyDB) IncrementKey(ctx context.Context, key string, expiration time.Time) error {
 	err := db.db.Do(ctx, db.db.B().Incr().Key(db.prefix+key).Build()).Error()
 	if err != nil {
 		return err
@@ -206,8 +193,7 @@ func (db *ValkeyDB) IncrementKey(key string, expiration time.Time) error {
 	return db.db.Do(ctx, db.db.B().Expire().Key(db.prefix+key).Seconds(int64(remainingTime.Seconds())).Build()).Error()
 }
 
-func (db *ValkeyDB) IncrementKeyBy(key string, amount int, expiration time.Time) error {
-	ctx := context.Background()
+func (db *ValkeyDB) IncrementKeyBy(ctx context.Context, key string, amount int, expiration time.Time) error {
 	err := db.db.Do(ctx, db.db.B().Incrby().Key(db.prefix+key).Increment(int64(amount)).Build()).Error()
 	if err != nil {
 		return err
@@ -216,62 +202,46 @@ func (db *ValkeyDB) IncrementKeyBy(key string, amount int, expiration time.Time)
 	return db.db.Do(ctx, db.db.B().Expire().Key(db.prefix+key).Seconds(int64(remainingTime.Seconds())).Build()).Error()
 }
 
-func (db *ValkeyDB) AddToList(key string, value string) error {
-	ctx := context.Background()
+func (db *ValkeyDB) AddToList(ctx context.Context, key string, value string) error {
 	return db.db.Do(ctx, db.db.B().Lpush().Key(db.prefix+key).Element(value).Build()).Error()
 }
 
-func (db *ValkeyDB) RemoveFromList(key string, value string) error {
-	ctx := context.Background()
+func (db *ValkeyDB) RemoveFromList(ctx context.Context, key string, value string) error {
 	return db.db.Do(ctx, db.db.B().Lrem().Key(db.prefix+key).Count(1).Element(value).Build()).Error()
 }
 
-func (db *ValkeyDB) GetList(key string) ([]string, error) {
-	ctx := context.Background()
+func (db *ValkeyDB) GetList(ctx context.Context, key string) ([]string, error) {
 	return db.db.Do(ctx, db.db.B().Lrange().Key(db.prefix+key).Start(0).Stop(-1).Build()).AsStrSlice()
 }
 
 // Higher-level DB functions
 
-func (db DB) setUserSignIn(JWT string) error {
-	err := db.basicDB.Set("JWT:"+JWT, "valid", cacheUserSignIn)
-	if err != nil {
-		Printing.PrintErrStr("Valkey Set Error: " + err.Error())
-		return err
-	}
-	return nil
-}
-
-func (db DB) getUserSignIn(JWT string) (string, error) {
-	return db.basicDB.Get("JWT:" + JWT)
-}
-
-func (db DB) incrementAnalytics(serviceID string, resource string, country string, ip string, responseCode int) error {
+func (db DB) incrementAnalytics(ctx context.Context, serviceID string, resource string, country string, ip string, responseCode int) error {
 	for _, timeStep := range cacheAnalyticsTime {
 		recordTime := timeStep.timeStr(0)
 		expiration := timeStep.time(timeStep.maximumUnits)
 		quantity := strconv.Itoa(timeStep.maximumUnits)
-		err := db.basicDB.IncrementKey("Analytics:"+serviceID+":"+quantity+":"+recordTime+":quantity", expiration)
+		err := db.basicDB.IncrementKey(ctx, "Analytics:"+serviceID+":"+quantity+":"+recordTime+":quantity", expiration)
 		if err != nil {
 			Printing.PrintErrStr("Could not increment minute analytics key: " + err.Error())
 			return err
 		}
-		err = db.basicDB.IncrementHashField("Analytics:"+serviceID+":"+quantity+":"+recordTime+":country", country, 1, expiration)
+		err = db.basicDB.IncrementHashField(ctx, "Analytics:"+serviceID+":"+quantity+":"+recordTime+":country", country, 1, expiration)
 		if err != nil {
 			Printing.PrintErrStr("Could not increment minute analytics country: " + err.Error())
 			return err
 		}
-		err = db.basicDB.IncrementHashField("Analytics:"+serviceID+":"+quantity+":"+recordTime+":ip", ip, 1, expiration)
+		err = db.basicDB.IncrementHashField(ctx, "Analytics:"+serviceID+":"+quantity+":"+recordTime+":ip", ip, 1, expiration)
 		if err != nil {
 			Printing.PrintErrStr("Could not increment minute analytics ip: " + err.Error())
 			return err
 		}
-		err = db.basicDB.IncrementHashField("Analytics:"+serviceID+":"+quantity+":"+recordTime+":resource", resource, 1, expiration)
+		err = db.basicDB.IncrementHashField(ctx, "Analytics:"+serviceID+":"+quantity+":"+recordTime+":resource", resource, 1, expiration)
 		if err != nil {
 			Printing.PrintErrStr("Could not increment minute analytics resource: " + err.Error())
 			return err
 		}
-		err = db.basicDB.IncrementHashField("Analytics:"+serviceID+":"+quantity+":"+recordTime+":response_code", strconv.Itoa(responseCode), 1, expiration)
+		err = db.basicDB.IncrementHashField(ctx, "Analytics:"+serviceID+":"+quantity+":"+recordTime+":response_code", strconv.Itoa(responseCode), 1, expiration)
 		if err != nil {
 			Printing.PrintErrStr("Could not increment minute analytics response code: " + err.Error())
 			return err
@@ -280,27 +250,27 @@ func (db DB) incrementAnalytics(serviceID string, resource string, country strin
 	return nil
 }
 
-func (db DB) getAnalyticsService(service ServiceData, timeStep AnalyticsTimeStep) map[time.Time]Analytic {
+func (db DB) getAnalyticsService(ctx context.Context, service ServiceData, timeStep AnalyticsTimeStep) map[time.Time]Analytic {
 	analytics := map[time.Time]Analytic{}
 	quantity := strconv.Itoa(timeStep.maximumUnits)
 	for timePeriod := range timeStep.maximumUnits {
-		quantityRaw, err := db.basicDB.Get("Analytics:" + service.ID + ":" + quantity + ":" + timeStep.timeStr(-timePeriod) + ":quantity")
+		quantityRaw, err := db.basicDB.Get(ctx, "Analytics:"+service.ID+":"+quantity+":"+timeStep.timeStr(-timePeriod)+":quantity")
 		if err != nil {
 			continue
 		}
-		countryRaw, err := db.basicDB.GetHash("Analytics:" + service.ID + ":" + quantity + ":" + timeStep.timeStr(-timePeriod) + ":country")
+		countryRaw, err := db.basicDB.GetHash(ctx, "Analytics:"+service.ID+":"+quantity+":"+timeStep.timeStr(-timePeriod)+":country")
 		if err != nil {
 			continue
 		}
-		ipRaw, err := db.basicDB.GetHash("Analytics:" + service.ID + ":" + quantity + ":" + timeStep.timeStr(-timePeriod) + ":ip")
+		ipRaw, err := db.basicDB.GetHash(ctx, "Analytics:"+service.ID+":"+quantity+":"+timeStep.timeStr(-timePeriod)+":ip")
 		if err != nil {
 			continue
 		}
-		resourceRaw, err := db.basicDB.GetHash("Analytics:" + service.ID + ":" + quantity + ":" + timeStep.timeStr(-timePeriod) + ":resource")
+		resourceRaw, err := db.basicDB.GetHash(ctx, "Analytics:"+service.ID+":"+quantity+":"+timeStep.timeStr(-timePeriod)+":resource")
 		if err != nil {
 			continue
 		}
-		responseCodesRaw, err := db.basicDB.GetHash("Analytics:" + service.ID + ":" + quantity + ":" + timeStep.timeStr(-timePeriod) + ":response_code")
+		responseCodesRaw, err := db.basicDB.GetHash(ctx, "Analytics:"+service.ID+":"+quantity+":"+timeStep.timeStr(-timePeriod)+":response_code")
 		if err != nil {
 			continue
 		}
@@ -354,47 +324,47 @@ func (db DB) getAnalyticsService(service ServiceData, timeStep AnalyticsTimeStep
 	return analytics
 }
 
-func (db DB) getVersion() (string, error) {
-	version, err := db.basicDB.Get("version")
+func (db DB) getVersion(ctx context.Context) (string, error) {
+	version, err := db.basicDB.Get(ctx, "version")
 	if err != nil {
 		return "", errors.New("Failed to get version: " + err.Error())
 	}
 	return version, nil
 }
 
-func (db DB) setVersion(version string) error {
-	err := db.basicDB.Set("version", version, 0)
+func (db DB) setVersion(ctx context.Context, version string) error {
+	err := db.basicDB.Set(ctx, "version", version, 0)
 	if err != nil {
 		return errors.New("Failed to set version: " + err.Error())
 	}
 	return nil
 }
 
-func (db DB) deleteService(service ServiceLink) error {
+func (db DB) deleteService(ctx context.Context, service ServiceLink) error {
 	for _, timeStep := range cacheAnalyticsTime {
 		recordTime := timeStep.timeStr(0)
 		quantity := strconv.Itoa(timeStep.maximumUnits)
-		err := db.basicDB.Delete("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":quantity")
+		err := db.basicDB.Delete(ctx, "Analytics:"+service.ID+":"+quantity+":"+recordTime+":quantity")
 		if err != nil {
 			Printing.PrintErrStr("Could not delete minute analytics key: " + err.Error())
 			return err
 		}
-		err = db.basicDB.DeleteHash("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":country")
+		err = db.basicDB.DeleteHash(ctx, "Analytics:"+service.ID+":"+quantity+":"+recordTime+":country")
 		if err != nil {
 			Printing.PrintErrStr("Could not delete minute analytics country: " + err.Error())
 			return err
 		}
-		err = db.basicDB.DeleteHash("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":ip")
+		err = db.basicDB.DeleteHash(ctx, "Analytics:"+service.ID+":"+quantity+":"+recordTime+":ip")
 		if err != nil {
 			Printing.PrintErrStr("Could not delete minute analytics ip: " + err.Error())
 			return err
 		}
-		err = db.basicDB.DeleteHash("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":resource")
+		err = db.basicDB.DeleteHash(ctx, "Analytics:"+service.ID+":"+quantity+":"+recordTime+":resource")
 		if err != nil {
 			Printing.PrintErrStr("Could not delete minute analytics resource: " + err.Error())
 			return err
 		}
-		err = db.basicDB.DeleteHash("Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":response_code")
+		err = db.basicDB.DeleteHash(ctx, "Analytics:"+service.ID+":"+quantity+":"+recordTime+":response_code")
 		if err != nil {
 			Printing.PrintErrStr("Could not delete minute analytics response code: " + err.Error())
 			return err
@@ -403,7 +373,7 @@ func (db DB) deleteService(service ServiceLink) error {
 	return nil
 }
 
-func (db DB) addAPIKey(APIKey string, keyID string, name string) error {
+func (db DB) addAPIKey(ctx context.Context, APIKey string, keyID string, name string) error {
 	if name == "" {
 		name = "Unnamed API"
 	}
@@ -412,11 +382,11 @@ func (db DB) addAPIKey(APIKey string, keyID string, name string) error {
 		"id":   keyID,
 	}
 
-	err := db.basicDB.SetHash("APIKey:"+APIKey, hash)
+	err := db.basicDB.SetHash(ctx, "APIKey:"+APIKey, hash)
 	if err != nil {
 		return err
 	}
-	err = db.basicDB.AddToList("APIKeys", APIKey)
+	err = db.basicDB.AddToList(ctx, "APIKeys", APIKey)
 	if err != nil {
 		return err
 	}
@@ -424,13 +394,13 @@ func (db DB) addAPIKey(APIKey string, keyID string, name string) error {
 	return nil
 }
 
-func (db DB) removeAPIKey(APIKeyID string) error {
-	keys, err := db.basicDB.GetList("APIKeys")
+func (db DB) removeAPIKey(ctx context.Context, APIKeyID string) error {
+	keys, err := db.basicDB.GetList(ctx, "APIKeys")
 	if err != nil {
 		return err
 	}
 	for _, key := range keys {
-		keyInfo, err := db.basicDB.GetHash("APIKey:" + key)
+		keyInfo, err := db.basicDB.GetHash(ctx, "APIKey:"+key)
 		if err != nil {
 			return err
 		}
@@ -438,11 +408,11 @@ func (db DB) removeAPIKey(APIKeyID string) error {
 		Printing.Println("Key info: " + string(data))
 
 		if keyInfo["id"] == APIKeyID {
-			err := db.basicDB.DeleteHash("APIKey:" + key)
+			err := db.basicDB.DeleteHash(ctx, "APIKey:"+key)
 			if err != nil {
 				return err
 			}
-			err = db.basicDB.RemoveFromList("APIKeys", key)
+			err = db.basicDB.RemoveFromList(ctx, "APIKeys", key)
 			if err != nil {
 				return err
 			}
@@ -453,14 +423,14 @@ func (db DB) removeAPIKey(APIKeyID string) error {
 	return errors.New("API key not found")
 }
 
-func (db DB) getAPIKeyInfo() ([]APIKeyInfo, error) {
-	keys, err := db.basicDB.GetList("APIKeys")
+func (db DB) getAPIKeyInfo(ctx context.Context) ([]APIKeyInfo, error) {
+	keys, err := db.basicDB.GetList(ctx, "APIKeys")
 	if err != nil {
 		return nil, err
 	}
 	keysInfo := make([]APIKeyInfo, len(keys))
 	for i, key := range keys {
-		keyInfo, err := db.basicDB.GetHash("APIKey:" + key)
+		keyInfo, err := db.basicDB.GetHash(ctx, "APIKey:"+key)
 		if err != nil {
 			return nil, err
 		}
@@ -471,8 +441,8 @@ func (db DB) getAPIKeyInfo() ([]APIKeyInfo, error) {
 	return keysInfo, nil
 }
 
-func (db DB) apiKeyExists(APIKey string) bool {
-	keys, err := db.basicDB.GetList("APIKeys")
+func (db DB) apiKeyExists(ctx context.Context, APIKey string) bool {
+	keys, err := db.basicDB.GetList(ctx, "APIKeys")
 	if err != nil {
 		return false
 	}

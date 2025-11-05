@@ -7,7 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func newUser(fileSystem FileSystem, db AdvancedDB) http.HandlerFunc {
+func newUser(fileSystem FileSystem) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userData, _ := fileSystem.GetUserData()
 		if userData != "" {
@@ -31,7 +31,7 @@ func newUser(fileSystem FileSystem, db AdvancedDB) http.HandlerFunc {
 			requestRespondCode(w, http.StatusInternalServerError)
 			return
 		}
-		setJWTCookie(w, db)
+		setJWTCookie(w)
 		requestRespondCode(w, http.StatusOK)
 	}
 }
