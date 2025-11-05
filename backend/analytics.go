@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func analytics(r *http.Request, responseCode int, serviceLinks ServiceLinks, cache CacheClient[*CacheLayer]) {
+func analytics(r *http.Request, responseCode int, serviceLinks ServiceLinks, db AdvancedDB) {
 	service, err := serviceLinks.GetServiceFromIncomingURL(r.Host)
 	var serviceID string
 	if err != nil {
@@ -29,5 +29,5 @@ func analytics(r *http.Request, responseCode int, serviceLinks ServiceLinks, cac
 			ip = values[0]
 		}
 	}
-	cache.incrementAnalytics(serviceID, resource, country, ip, responseCode)
+	db.incrementAnalytics(serviceID, resource, country, ip, responseCode)
 }

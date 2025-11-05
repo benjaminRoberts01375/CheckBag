@@ -5,7 +5,6 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
 )
@@ -69,7 +68,7 @@ func (fs *FileSystem) SetServices(services ServiceLinks) error {
 	return fs.Write(filepath.Join(fs.BasePath, fs.Services), string(data))
 }
 
-func (fs *FileSystem) GetServices(cache CacheClient[*CacheLayer]) (ServiceLinks, error) {
+func (fs *FileSystem) GetServices(db AdvancedDB) (ServiceLinks, error) {
 	// Read data - Check if the file exists
 	data, err := os.ReadFile(filepath.Join(fs.BasePath, fs.Services))
 	if err != nil {
@@ -86,27 +85,11 @@ func (fs *FileSystem) GetServices(cache CacheClient[*CacheLayer]) (ServiceLinks,
 		version = ServiceVersion{0}
 	}
 
-	// Handle version differences
-	switch version.Version {
-	case 0:
-		Printing.Println("v0 services detected, migrating")
-		var services ServiceLinksV1
-		err = json.Unmarshal(data, &services)
-		if err != nil {
-			return ServiceLinks{}, errors.New("Could not unmarshal v0 services: " + err.Error())
-		}
-		migratedServices := services.Migrate(cache)
-		fs.SetServices(migratedServices) // Overwrite old services with new version
-		return migratedServices, nil
-	case 1:
-		Printing.Println("Services are up-to-date (v1)")
-		var services FileServiceLinks
-		err = json.Unmarshal(data, &services)
-		if err != nil {
-			return ServiceLinks{}, errors.New("Could not unmarshal v1 services: " + err.Error())
-		}
-		return services.ServiceLinks, nil
+	Printing.Println("Services are up-to-date (v1)")
+	var services FileServiceLinks
+	err = json.Unmarshal(data, &services)
+	if err != nil {
+		return ServiceLinks{}, errors.New("Could not unmarshal v1 services: " + err.Error())
 	}
-
-	return ServiceLinks{}, errors.New("Unknown services version: " + strconv.Itoa(version.Version))
+	return services.ServiceLinks, nil
 }

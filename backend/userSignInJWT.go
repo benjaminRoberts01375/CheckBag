@@ -4,9 +4,9 @@ import (
 	"net/http"
 )
 
-func userJWTSignIn(cache CacheClient[*CacheLayer]) http.HandlerFunc {
+func userJWTSignIn(db AdvancedDB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, _, err := checkUserRequest[any](r, cache)
+		_, _, err := checkUserRequest[any](r, db)
 		if err != nil {
 			requestRespondCode(w, http.StatusBadRequest)
 			return

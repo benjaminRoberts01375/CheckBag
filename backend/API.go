@@ -13,10 +13,10 @@ type APIKeyInfo struct {
 	ID   string `json:"id"`
 }
 
-func APISet(cache CacheClient[*CacheLayer]) http.HandlerFunc {
+func APISet(db AdvancedDB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Ensure user is logged in
-		_, newKeys, err := checkUserRequest[[]APIKeyInfo](r, cache)
+		_, newKeys, err := checkUserRequest[[]APIKeyInfo](r, db)
 		if err != nil {
 			Printing.PrintErrStr("Could not create API: " + err.Error())
 			requestRespondCode(w, http.StatusForbidden)
@@ -24,7 +24,7 @@ func APISet(cache CacheClient[*CacheLayer]) http.HandlerFunc {
 		}
 
 		// Get all existing keys and their data
-		existingKeys, err := cache.getAPIKeyInfo()
+		existingKeys, err := db.getAPIKeyInfo()
 		if err != nil {
 			Printing.PrintErrStr("Could not get API keys: " + err.Error())
 			requestRespondCode(w, http.StatusInternalServerError)
@@ -36,7 +36,7 @@ func APISet(cache CacheClient[*CacheLayer]) http.HandlerFunc {
 			if !slices.ContainsFunc(*newKeys, func(newKey APIKeyInfo) bool {
 				return existingKey.ID == newKey.ID // Check if the key already exists in newKeys
 			}) {
-				err := cache.removeAPIKey(existingKey.ID)
+				err := db.removeAPIKey(existingKey.ID)
 				if err != nil {
 					Printing.PrintErrStr("Could not remove API key: " + err.Error())
 					requestRespondCode(w, http.StatusInternalServerError)
@@ -54,7 +54,7 @@ func APISet(cache CacheClient[*CacheLayer]) http.HandlerFunc {
 				keyID := generateRandomString(32)
 				(*newKeys)[i].Key = APIKey
 				(*newKeys)[i].ID = keyID
-				err = cache.addAPIKey(APIKey, keyID, newKey.Name)
+				err = db.addAPIKey(APIKey, keyID, newKey.Name)
 				if err != nil {
 					Printing.PrintErrStr("Could not add API key to cache: " + err.Error())
 					requestRespondCode(w, http.StatusInternalServerError)
@@ -66,15 +66,15 @@ func APISet(cache CacheClient[*CacheLayer]) http.HandlerFunc {
 	}
 }
 
-func APIGet(cache CacheClient[*CacheLayer]) http.HandlerFunc {
+func APIGet(db AdvancedDB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, _, err := checkUserRequest[any](r, cache)
+		_, _, err := checkUserRequest[any](r, db)
 		if err != nil {
 			Printing.PrintErrStr("Could not get API: " + err.Error())
 			requestRespondCode(w, http.StatusForbidden)
 			return
 		}
-		keysInfo, err := cache.getAPIKeyInfo()
+		keysInfo, err := db.getAPIKeyInfo()
 		if err != nil {
 			Printing.PrintErrStr("Could not get API keys: " + err.Error())
 			requestRespondCode(w, http.StatusInternalServerError)

@@ -23,20 +23,16 @@ func main() {
 
 	var serviceLinks = ServiceLinks{}
 
-	var cache CacheClient[*CacheLayer]
-
 	// Config setup
 	models.Setup()
 	// Coms setup
 	Printing.ReadConfig()
 	// Cache setup
-	cache.raw = &CacheLayer{}
-	cache.raw.Setup()
-	defer cache.raw.Close()
+	db := SetupDB()
 	// Services setup
-	serviceLinks.Setup(fileSystem, cache)
+	serviceLinks.Setup(fileSystem, db)
 	// Setup endpoints
-	setupEndpoints(fileSystem, &serviceLinks, cache)
+	setupEndpoints(fileSystem, &serviceLinks, db)
 	if models.ModelsConfig.DevMode {
 		Printing.Println("Running in dev mode")
 	}
@@ -44,16 +40,16 @@ func main() {
 	http.ListenAndServe(models.ModelsConfig.FormatPort(), nil)
 }
 
-func setupEndpoints(fileSystem FileSystem, serviceLinks *ServiceLinks, cache CacheClient[*CacheLayer]) {
-	http.HandleFunc("GET /api/user-exists", userExists(fileSystem))                         // Check if the user already exists
-	http.HandleFunc("POST /api/user-sign-up", newUser(fileSystem, cache))                   // Sign up with username and password
-	http.HandleFunc("POST /api/user-sign-in", userSignIn(fileSystem, cache))                // Sign in with username and password
-	http.HandleFunc("POST /api/user-sign-in-jwt", userJWTSignIn(cache))                     // Sign in with JWT
-	http.HandleFunc("POST /api/services-set", servicesSet(fileSystem, serviceLinks, cache)) // Setting/replacing all services
-	http.HandleFunc("GET /api/service-data", getServiceData(serviceLinks, cache))           // Getting analytics
-	http.HandleFunc("/api/service/{path...}", requestForwarding(serviceLinks, cache))       // Proxying requests
-	http.HandleFunc("GET /api/api-keys", APIGet(cache))                                     // Getting API keys
-	http.HandleFunc("POST /api/api-keys", APISet(cache))                                    // Setting API keys
+func setupEndpoints(fileSystem FileSystem, serviceLinks *ServiceLinks, db AdvancedDB) {
+	http.HandleFunc("GET /api/user-exists", userExists(fileSystem))                      // Check if the user already exists
+	http.HandleFunc("POST /api/user-sign-up", newUser(fileSystem, db))                   // Sign up with username and password
+	http.HandleFunc("POST /api/user-sign-in", userSignIn(fileSystem, db))                // Sign in with username and password
+	http.HandleFunc("POST /api/user-sign-in-jwt", userJWTSignIn(db))                     // Sign in with JWT
+	http.HandleFunc("POST /api/services-set", servicesSet(fileSystem, serviceLinks, db)) // Setting/replacing all services
+	http.HandleFunc("GET /api/service-data", getServiceData(serviceLinks, db))           // Getting analytics
+	http.HandleFunc("/api/service/{path...}", requestForwarding(serviceLinks, db))       // Proxying requests
+	http.HandleFunc("GET /api/api-keys", APIGet(db))                                     // Getting API keys
+	http.HandleFunc("POST /api/api-keys", APISet(db))                                    // Setting API keys
 
 	http.HandleFunc("/", spaHandler) // Serve the frontend
 }

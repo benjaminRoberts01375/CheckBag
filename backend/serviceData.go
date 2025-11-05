@@ -24,12 +24,12 @@ type Analytic struct {
 	ResponseCode map[int]int    `json:"response_code"`
 }
 
-func getServiceData(serviceLinks *ServiceLinks, cache CacheClient[*CacheLayer]) http.HandlerFunc {
+func getServiceData(serviceLinks *ServiceLinks, db AdvancedDB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		queryParams := r.URL.Query()
-		_, _, err := checkUserRequest[any](r, cache)
+		_, _, err := checkUserRequest[any](r, db)
 		if err != nil {
-			if !(len(queryParams["api-key"]) > 0 && cache.apiKeyExists(queryParams["api-key"][0])) { // Check if API key is invalid
+			if !(len(queryParams["api-key"]) > 0 && db.apiKeyExists(queryParams["api-key"][0])) { // Check if API key is invalid
 				Printing.PrintErrStr("Could not verify user or API key for analytic data: " + err.Error())
 				requestRespondCode(w, http.StatusForbidden)
 				return
@@ -49,19 +49,19 @@ func getServiceData(serviceLinks *ServiceLinks, cache CacheClient[*CacheLayer]) 
 			switch timeScaleQuery {
 			case "hour":
 				for i, service := range serviceData {
-					serviceData[i].Hour = cache.getAnalyticsService(service, cacheAnalyticsMinute)
+					serviceData[i].Hour = db.getAnalyticsService(service, cacheAnalyticsMinute)
 				}
 			case "day":
 				for i, service := range serviceData {
-					serviceData[i].Day = cache.getAnalyticsService(service, cacheAnalyticsHour)
+					serviceData[i].Day = db.getAnalyticsService(service, cacheAnalyticsHour)
 				}
 			case "month":
 				for i, service := range serviceData {
-					serviceData[i].Month = cache.getAnalyticsService(service, cacheAnalyticsDay)
+					serviceData[i].Month = db.getAnalyticsService(service, cacheAnalyticsDay)
 				}
 			case "year":
 				for i, service := range serviceData {
-					serviceData[i].Year = cache.getAnalyticsService(service, cacheAnalyticsMonth)
+					serviceData[i].Year = db.getAnalyticsService(service, cacheAnalyticsMonth)
 				}
 			}
 		}
@@ -82,10 +82,10 @@ func getServiceData(serviceLinks *ServiceLinks, cache CacheClient[*CacheLayer]) 
 				continue
 			}
 			// Get the requested service's analytics
-			serviceData[requestedServiceIndex].Day = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsHour)
-			serviceData[requestedServiceIndex].Month = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsDay)
-			serviceData[requestedServiceIndex].Year = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsMonth)
-			serviceData[requestedServiceIndex].Hour = cache.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsMinute)
+			serviceData[requestedServiceIndex].Day = db.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsHour)
+			serviceData[requestedServiceIndex].Month = db.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsDay)
+			serviceData[requestedServiceIndex].Year = db.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsMonth)
+			serviceData[requestedServiceIndex].Hour = db.getAnalyticsService(serviceData[requestedServiceIndex], cacheAnalyticsMinute)
 		}
 
 		requestRespond(w, serviceData)

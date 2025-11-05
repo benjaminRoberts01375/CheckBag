@@ -8,7 +8,7 @@ import (
 	"github.com/benjaminRoberts01375/CheckBag/backend/jwt"
 )
 
-func checkUserRequest[ReturnType any](r *http.Request, cache CacheClient[*CacheLayer]) (*jwt.Claims, *ReturnType, error) {
+func checkUserRequest[ReturnType any](r *http.Request, db AdvancedDB) (*jwt.Claims, *ReturnType, error) {
 	cookie, err := r.Cookie(jwt.CookieName)
 
 	if err != nil {
@@ -19,11 +19,9 @@ func checkUserRequest[ReturnType any](r *http.Request, cache CacheClient[*CacheL
 		return nil, nil, errors.New("invalid JWT")
 	}
 
-	cacheData, err := cache.getUserSignIn(cookie.Value) // Pass JWT to cache to get user ID
+	_, err = db.getUserSignIn(cookie.Value) // Pass JWT to cache to get user ID
 	if err != nil {
 		return nil, nil, errors.New("failed to get user ID from JWT: " + err.Error())
-	} else if cacheData != cacheDataValid {
-		return nil, nil, errors.New("invalid JWT")
 	}
 
 	// Check if ReturnType is any/interface{}
