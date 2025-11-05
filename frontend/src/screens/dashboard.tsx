@@ -29,7 +29,7 @@ const DashboardScreen = () => {
 			<ThemeProvider theme={theme}>
 				<div id={DashboardStyles["summary-group"]}>
 					<div className={DashboardStyles["summary-card"]}>
-						<h2>Temp</h2>
+						<h2>{chartData.summaryQuantityData.toLocaleString("en")} Requests</h2>
 					</div>
 					<div className={DashboardStyles["summary-card"]}>
 						<h2>Temp</h2>

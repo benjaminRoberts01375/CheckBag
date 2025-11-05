@@ -12,6 +12,7 @@ export interface ProcessedChartData {
 	countryCodeData: ChartData[];
 	IPAddressData: ChartData[];
 	resourceUsage: ResourceUsageData[];
+	summaryQuantityData: number;
 }
 
 export interface ContextType {
