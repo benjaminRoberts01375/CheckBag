@@ -221,27 +221,28 @@ func (db DB) incrementAnalytics(ctx context.Context, serviceID string, resource 
 		recordTime := timeStep.timeStr(0)
 		expiration := timeStep.time(timeStep.maximumUnits)
 		quantity := strconv.Itoa(timeStep.maximumUnits)
-		err := db.basicDB.IncrementKey(ctx, "Analytics:"+serviceID+":"+quantity+":"+recordTime+":quantity", expiration)
+		baseKey := "Analytics:" + serviceID + ":" + quantity + ":" + recordTime + ":"
+		err := db.basicDB.IncrementKey(ctx, baseKey+"quantity", expiration)
 		if err != nil {
 			Printing.PrintErrStr("Could not increment minute analytics key: " + err.Error())
 			return err
 		}
-		err = db.basicDB.IncrementHashField(ctx, "Analytics:"+serviceID+":"+quantity+":"+recordTime+":country", country, 1, expiration)
+		err = db.basicDB.IncrementHashField(ctx, baseKey+"country", country, 1, expiration)
 		if err != nil {
 			Printing.PrintErrStr("Could not increment minute analytics country: " + err.Error())
 			return err
 		}
-		err = db.basicDB.IncrementHashField(ctx, "Analytics:"+serviceID+":"+quantity+":"+recordTime+":ip", ip, 1, expiration)
+		err = db.basicDB.IncrementHashField(ctx, baseKey+"ip", ip, 1, expiration)
 		if err != nil {
 			Printing.PrintErrStr("Could not increment minute analytics ip: " + err.Error())
 			return err
 		}
-		err = db.basicDB.IncrementHashField(ctx, "Analytics:"+serviceID+":"+quantity+":"+recordTime+":resource", resource, 1, expiration)
+		err = db.basicDB.IncrementHashField(ctx, baseKey+"resource", resource, 1, expiration)
 		if err != nil {
 			Printing.PrintErrStr("Could not increment minute analytics resource: " + err.Error())
 			return err
 		}
-		err = db.basicDB.IncrementHashField(ctx, "Analytics:"+serviceID+":"+quantity+":"+recordTime+":response_code", strconv.Itoa(responseCode), 1, expiration)
+		err = db.basicDB.IncrementHashField(ctx, baseKey+":response_code", strconv.Itoa(responseCode), 1, expiration)
 		if err != nil {
 			Printing.PrintErrStr("Could not increment minute analytics response code: " + err.Error())
 			return err
@@ -254,23 +255,24 @@ func (db DB) getAnalyticsService(ctx context.Context, service ServiceData, timeS
 	analytics := map[time.Time]Analytic{}
 	quantity := strconv.Itoa(timeStep.maximumUnits)
 	for timePeriod := range timeStep.maximumUnits {
-		quantityRaw, err := db.basicDB.Get(ctx, "Analytics:"+service.ID+":"+quantity+":"+timeStep.timeStr(-timePeriod)+":quantity")
+		baseKey := "Analytics:" + service.ID + ":" + quantity + ":" + timeStep.timeStr(-timePeriod) + ":"
+		quantityRaw, err := db.basicDB.Get(ctx, baseKey+"quantity")
 		if err != nil {
 			continue
 		}
-		countryRaw, err := db.basicDB.GetHash(ctx, "Analytics:"+service.ID+":"+quantity+":"+timeStep.timeStr(-timePeriod)+":country")
+		countryRaw, err := db.basicDB.GetHash(ctx, baseKey+"country")
 		if err != nil {
 			continue
 		}
-		ipRaw, err := db.basicDB.GetHash(ctx, "Analytics:"+service.ID+":"+quantity+":"+timeStep.timeStr(-timePeriod)+":ip")
+		ipRaw, err := db.basicDB.GetHash(ctx, baseKey+"ip")
 		if err != nil {
 			continue
 		}
-		resourceRaw, err := db.basicDB.GetHash(ctx, "Analytics:"+service.ID+":"+quantity+":"+timeStep.timeStr(-timePeriod)+":resource")
+		resourceRaw, err := db.basicDB.GetHash(ctx, baseKey+"resource")
 		if err != nil {
 			continue
 		}
-		responseCodesRaw, err := db.basicDB.GetHash(ctx, "Analytics:"+service.ID+":"+quantity+":"+timeStep.timeStr(-timePeriod)+":response_code")
+		responseCodesRaw, err := db.basicDB.GetHash(ctx, baseKey+"response_code")
 		if err != nil {
 			continue
 		}
@@ -344,27 +346,28 @@ func (db DB) deleteService(ctx context.Context, service ServiceLink) error {
 	for _, timeStep := range cacheAnalyticsTime {
 		recordTime := timeStep.timeStr(0)
 		quantity := strconv.Itoa(timeStep.maximumUnits)
-		err := db.basicDB.Delete(ctx, "Analytics:"+service.ID+":"+quantity+":"+recordTime+":quantity")
+		baseKey := "Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":"
+		err := db.basicDB.Delete(ctx, baseKey+"quantity")
 		if err != nil {
 			Printing.PrintErrStr("Could not delete minute analytics key: " + err.Error())
 			return err
 		}
-		err = db.basicDB.DeleteHash(ctx, "Analytics:"+service.ID+":"+quantity+":"+recordTime+":country")
+		err = db.basicDB.DeleteHash(ctx, baseKey+"country")
 		if err != nil {
 			Printing.PrintErrStr("Could not delete minute analytics country: " + err.Error())
 			return err
 		}
-		err = db.basicDB.DeleteHash(ctx, "Analytics:"+service.ID+":"+quantity+":"+recordTime+":ip")
+		err = db.basicDB.DeleteHash(ctx, baseKey+"ip")
 		if err != nil {
 			Printing.PrintErrStr("Could not delete minute analytics ip: " + err.Error())
 			return err
 		}
-		err = db.basicDB.DeleteHash(ctx, "Analytics:"+service.ID+":"+quantity+":"+recordTime+":resource")
+		err = db.basicDB.DeleteHash(ctx, baseKey+"resource")
 		if err != nil {
 			Printing.PrintErrStr("Could not delete minute analytics resource: " + err.Error())
 			return err
 		}
-		err = db.basicDB.DeleteHash(ctx, "Analytics:"+service.ID+":"+quantity+":"+recordTime+":response_code")
+		err = db.basicDB.DeleteHash(ctx, baseKey+"response_code")
 		if err != nil {
 			Printing.PrintErrStr("Could not delete minute analytics response code: " + err.Error())
 			return err
