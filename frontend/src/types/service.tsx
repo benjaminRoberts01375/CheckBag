@@ -11,6 +11,7 @@ export interface ServiceProcessedData {
 	countryCodeData: Map<string, number>;
 	ipAddressData: Map<string, number>;
 	resourceUsage: Map<string, number>;
+	totalRequests: number;
 }
 
 class Service {
@@ -120,7 +121,7 @@ class Service {
 		}
 
 		const quantityData = new GraphData(this.title, timescale);
-
+		var totalRequests = 0;
 		// Generate data points for the entire time range
 		for (let i = 0; i < timeStepQuantity; i++) {
 			const date = rollback(-i);
@@ -144,8 +145,9 @@ class Service {
 				}
 			};
 			quantityData.x_values[timeStepQuantity - i - 1] = dateString();
-			quantityData.data[timeStepQuantity - i - 1] =
-				analyticsMap.get(date.toISOString())?.quantity ?? 0;
+			let requestQuantity = analyticsMap.get(date.toISOString())?.quantity ?? 0;
+			quantityData.data[timeStepQuantity - i - 1] = requestQuantity;
+			totalRequests += requestQuantity;
 
 			const analytic = analyticsMap.get(date.toISOString());
 			if (analytic !== undefined) {
@@ -174,6 +176,7 @@ class Service {
 			countryCodeData: countryCounter,
 			ipAddressData: ipCounter,
 			resourceUsage: resourceCounter,
+			totalRequests: totalRequests,
 		};
 	}
 
