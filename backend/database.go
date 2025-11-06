@@ -214,7 +214,7 @@ func (db DB) incrementAnalytics(ctx context.Context, serviceID string, resource 
 		baseKey := "Analytics:" + serviceID + ":" + quantity + ":" + recordTime + ":"
 		err := db.basicDB.IncrementKey(ctx, baseKey+"quantity", 1, expiration)
 		if err != nil {
-			Printing.PrintErrStr("Could not increment analytics key: " + err.Error())
+			Printing.PrintErrStr("Could not increment quantity analytics key: " + err.Error())
 			return err
 		}
 		err = db.basicDB.IncrementKey(ctx, baseKey+"received_bytes", receivedBytes, expiration)
