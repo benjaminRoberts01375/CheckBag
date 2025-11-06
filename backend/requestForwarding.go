@@ -293,7 +293,13 @@ func websocketProxy(w http.ResponseWriter, r *http.Request, serviceAddress Servi
 
 	// Forward original headers to outgoing service
 	headers := http.Header{}
+	incomingHeaderBytes := 0
 	for name, values := range r.Header {
+		// Track all incoming header bytes for analytics
+		for _, value := range values {
+			incomingHeaderBytes += len(fmt.Sprintf("%s: %s\r\n", name, value))
+		}
+
 		// Skip connection-specific headers that shouldn't be forwarded
 		switch name {
 		case "Connection", "Upgrade", "Sec-Websocket-Key", "Sec-Websocket-Version", "Sec-Websocket-Extensions":
@@ -324,6 +330,16 @@ func websocketProxy(w http.ResponseWriter, r *http.Request, serviceAddress Servi
 	}
 	defer outgoingConn.Close()
 
+	// Track outgoing response headers
+	outgoingHeaderBytes := 0
+	if resp != nil {
+		for name, values := range resp.Header {
+			for _, value := range values {
+				outgoingHeaderBytes += len(fmt.Sprintf("%s: %s\r\n", name, value))
+			}
+		}
+	}
+
 	Printing.Println("WebSocket proxy established between client and " + wsURL)
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -338,8 +354,15 @@ func websocketProxy(w http.ResponseWriter, r *http.Request, serviceAddress Servi
 
 	<-ctx.Done()
 
-	// Record analytics with total bytes transferred
-	go analytics(r, http.StatusSwitchingProtocols, serviceLinks, db, clientToServiceBytes, serviceToClientBytes)
+	// Record analytics with total bytes transferred (including HTTP upgrade handshake)
+	go analytics(
+		r,
+		http.StatusSwitchingProtocols,
+		serviceLinks,
+		db,
+		clientToServiceBytes+incomingHeaderBytes+len(fmt.Sprintf("%s %s %s\r\n", r.Method, r.RequestURI, r.Proto))+2,
+		serviceToClientBytes+outgoingHeaderBytes+len(fmt.Sprintf("%s %d %s\r\n", r.Proto, http.StatusSwitchingProtocols, http.StatusText(http.StatusSwitchingProtocols)))+2,
+	)
 
 	Printing.Println("WebSocket proxy connection closed")
 }
