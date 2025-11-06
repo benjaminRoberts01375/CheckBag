@@ -1,8 +1,12 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"strings"
+	"time"
+
+	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
 )
 
 func analytics(r *http.Request, responseCode int, serviceLinks ServiceLinks, db AdvancedDB, receivedBytes int, responseBytes int) {
@@ -29,5 +33,9 @@ func analytics(r *http.Request, responseCode int, serviceLinks ServiceLinks, db 
 			ip = values[0]
 		}
 	}
-	db.incrementAnalytics(r.Context(), serviceID, resource, country, ip, responseCode, receivedBytes, responseBytes)
+	// Use background context with timeout to avoid cancellation when request completes
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	Printing.Println(receivedBytes, responseBytes)
+	db.incrementAnalytics(ctx, serviceID, resource, country, ip, responseCode, receivedBytes, responseBytes)
 }
