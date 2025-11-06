@@ -225,6 +225,7 @@ func (db DB) incrementAnalytics(ctx context.Context, serviceID string, resource 
 		err = db.basicDB.IncrementKey(ctx, baseKey+"sent_bytes", sentBytes, expiration)
 		if err != nil {
 			Printing.PrintErrStr("Could not increment sent bytes analytics")
+			return err
 		}
 		err = db.basicDB.IncrementHashField(ctx, baseKey+"country", country, 1, expiration)
 		if err != nil {
