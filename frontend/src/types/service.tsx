@@ -155,7 +155,7 @@ class Service {
 			totalRequests += requestQuantity;
 
 			totalIncomingBytes += analytic?.incomingBytes ?? 0;
-			totalOutgoingBytes += analytic?.incomingBytes ?? 0;
+			totalOutgoingBytes += analytic?.outgoingBytes ?? 0;
 
 			if (analytic !== undefined) {
 				// Aggregate response codes
