@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -186,12 +187,12 @@ func restForwarding(w http.ResponseWriter, r *http.Request, serviceAddress Servi
 		requestRespondCode(w, http.StatusInternalServerError)
 		return
 	}
-	headerBytes := 0
+	incomingHeaderBytes := 0
 	// Add headers to proxy request
 	for name, values := range r.Header {
 		for _, value := range values {
 			proxyRequest.Header.Add(name, value)
-			headerBytes += len([]byte(name + value))
+			incomingHeaderBytes += len(fmt.Sprintf("%s: %s\r\n", name, value))
 		}
 	}
 
@@ -215,9 +216,11 @@ func restForwarding(w http.ResponseWriter, r *http.Request, serviceAddress Servi
 		return
 	}
 	// Add proxy response headers to client response
+	outgoingHeaderBytes := 0
 	for name, values := range proxyResponse.Header {
 		for _, value := range values {
 			w.Header().Add(name, value)
+			outgoingHeaderBytes += len(fmt.Sprintf("%s: %s\r\n", name, value))
 		}
 	}
 	// Handle redirects for client response
@@ -238,7 +241,14 @@ func restForwarding(w http.ResponseWriter, r *http.Request, serviceAddress Servi
 	w.WriteHeader(proxyResponse.StatusCode)
 	w.Write(responseBytes)
 
-	go analytics(r, proxyResponse.StatusCode, serviceLinks, db, len(bodyBytes)+headerBytes+len(r.Method+r.RequestURI+r.Proto)+2, len(responseBytes))
+	go analytics(
+		r,
+		proxyResponse.StatusCode,
+		serviceLinks,
+		db,
+		len(bodyBytes)+incomingHeaderBytes+len(r.Method+r.RequestURI+r.Proto)+2,
+		len(responseBytes)+len(r.Proto+strconv.Itoa(proxyResponse.StatusCode)+http.StatusText(proxyResponse.StatusCode))+2,
+	)
 }
 
 // websocketProxy handles the WebSocket connection upgrade and message forwarding.
