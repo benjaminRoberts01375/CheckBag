@@ -15,6 +15,7 @@ export interface ProcessedChartData {
 	summaryQuantityData: number;
 	summaryIncomingBytes: number;
 	summaryOutgoingBytes: number;
+	summarySuccessfulRequests: number;
 }
 
 export interface ContextType {
