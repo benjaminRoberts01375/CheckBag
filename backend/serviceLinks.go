@@ -49,10 +49,10 @@ func (serviceLinks *ServiceLinks) String() string {
 	return retVal
 }
 
-func servicesSet(fileSystem FileSystem, serviceLinks *ServiceLinks, db AdvancedDB) http.HandlerFunc {
+func servicesSet(fileSystem FileSystem, serviceLinks *ServiceLinks, db AdvancedDB, jwt JWTService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Check JWT
-		_, newServiceLinks, err := checkUserRequest[ServiceLinks](r)
+		newServiceLinks, err := formatUserRequest[ServiceLinks](r, jwt)
 		if err != nil {
 			Printing.PrintErrStr("Could not add service: " + err.Error())
 			requestRespondCode(w, http.StatusForbidden)

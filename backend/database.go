@@ -44,6 +44,8 @@ type AdvancedDB interface {
 	apiKeyExists(ctx context.Context, APIKey string) bool
 	getVersion(ctx context.Context) (string, error)
 	setVersion(ctx context.Context, version string) error
+	GetJWTSecret(ctx context.Context) (string, error)
+	SetJWTSecret(ctx context.Context, jwtSecret string) error
 }
 
 type ValkeyDB struct {
@@ -462,4 +464,20 @@ func (db DB) apiKeyExists(ctx context.Context, APIKey string) bool {
 		return false
 	}
 	return slices.Contains(keys, APIKey)
+}
+
+func (db DB) SetJWTSecret(ctx context.Context, jwtSecret string) error {
+	err := db.basicDB.Set(ctx, "JWTSecret", jwtSecret, 0)
+	if err != nil {
+		return errors.New("Failed to set JWT Secret: " + err.Error())
+	}
+	return nil
+}
+
+func (db DB) GetJWTSecret(ctx context.Context) (string, error) {
+	secret, err := db.basicDB.Get(ctx, "JWTSecret")
+	if err != nil {
+		return "", errors.New("Failed to get JWT Secret: " + err.Error())
+	}
+	return secret, nil
 }

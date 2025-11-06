@@ -26,11 +26,11 @@ type Analytic struct {
 	ReceivedBytes int            `json:"received_bytes"`
 }
 
-func getServiceData(serviceLinks *ServiceLinks, db AdvancedDB) http.HandlerFunc {
+func getServiceData(serviceLinks *ServiceLinks, db AdvancedDB, jwt JWTService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		queryParams := r.URL.Query()
-		_, _, err := checkUserRequest[any](r)
+		err := jwt.ReadAndValidateJWT(r)
 		if err != nil {
 			if !(len(queryParams["api-key"]) > 0 && db.apiKeyExists(ctx, queryParams["api-key"][0])) { // Check if API key is invalid
 				Printing.PrintErrStr("Could not verify user or API key for analytic data: " + err.Error())

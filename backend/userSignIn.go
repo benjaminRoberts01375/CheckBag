@@ -2,15 +2,12 @@ package main
 
 import (
 	"net/http"
-	"time"
 
-	"github.com/benjaminRoberts01375/CheckBag/backend/jwt"
 	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
-	"github.com/benjaminRoberts01375/CheckBag/backend/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func userSignIn(fileSystem FileSystem) http.HandlerFunc {
+func userSignIn(fileSystem FileSystem, jwt JWTService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		rawPassword, err := requestReceived[string](r)
 		if err != nil {
@@ -30,39 +27,7 @@ func userSignIn(fileSystem FileSystem) http.HandlerFunc {
 			requestRespondCode(w, http.StatusBadRequest) // Intentionally obscure the error to prevent username guessing
 			return
 		}
-		setJWTCookie(w)
+		jwt.setJWT(w)
 		requestRespondCode(w, http.StatusOK)
-	}
-}
-
-func setJWTCookie(w http.ResponseWriter) {
-	// If the password is correct, generate a JWT
-	token, err := jwt.GenerateJWT(jwt.LoginDuration)
-	if err != nil {
-		Printing.PrintErrStr("Could not generate JWT: ", err.Error())
-		requestRespondCode(w, http.StatusInternalServerError)
-		return
-	}
-
-	if models.ModelsConfig.DevMode {
-		http.SetCookie(w, &http.Cookie{
-			Name:     jwt.CookieName,
-			Value:    token,
-			HttpOnly: false,
-			Secure:   false,
-			SameSite: http.SameSiteStrictMode,
-			Expires:  time.Now().Add(jwt.LoginDuration),
-			Path:     "/",
-		})
-	} else {
-		http.SetCookie(w, &http.Cookie{
-			Name:     jwt.CookieName,
-			Value:    token,
-			HttpOnly: false,
-			Secure:   false,
-			SameSite: http.SameSiteStrictMode,
-			Expires:  time.Now().Add(jwt.LoginDuration),
-			Path:     "/",
-		})
 	}
 }

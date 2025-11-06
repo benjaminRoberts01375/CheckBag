@@ -13,10 +13,10 @@ type APIKeyInfo struct {
 	ID   string `json:"id"`
 }
 
-func APISet(db AdvancedDB) http.HandlerFunc {
+func APISet(db AdvancedDB, jwt JWTService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Ensure user is logged in
-		_, newKeys, err := checkUserRequest[[]APIKeyInfo](r)
+		newKeys, err := formatUserRequest[[]APIKeyInfo](r, jwt)
 		if err != nil {
 			Printing.PrintErrStr("Could not create API: " + err.Error())
 			requestRespondCode(w, http.StatusForbidden)
@@ -66,9 +66,9 @@ func APISet(db AdvancedDB) http.HandlerFunc {
 	}
 }
 
-func APIGet(db AdvancedDB) http.HandlerFunc {
+func APIGet(db AdvancedDB, jwt JWTService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, _, err := checkUserRequest[any](r)
+		err := jwt.ReadAndValidateJWT(r)
 		if err != nil {
 			Printing.PrintErrStr("Could not get API: " + err.Error())
 			requestRespondCode(w, http.StatusForbidden)

@@ -31,8 +31,10 @@ func main() {
 	db := SetupDB()
 	// Services setup
 	serviceLinks.Setup(fileSystem, db)
+	// JWT Setup
+	jwt := loadJWTSecret(db)
 	// Setup endpoints
-	setupEndpoints(fileSystem, &serviceLinks, db)
+	setupEndpoints(fileSystem, &serviceLinks, db, jwt)
 	if models.ModelsConfig.DevMode {
 		Printing.Println("Running in dev mode")
 	}
@@ -40,16 +42,16 @@ func main() {
 	http.ListenAndServe(models.ModelsConfig.FormatPort(), nil)
 }
 
-func setupEndpoints(fileSystem FileSystem, serviceLinks *ServiceLinks, db AdvancedDB) {
-	http.HandleFunc("GET /api/user-exists", userExists(fileSystem))                      // Check if the user already exists
-	http.HandleFunc("POST /api/user-sign-up", newUser(fileSystem))                       // Sign up with username and password
-	http.HandleFunc("POST /api/user-sign-in", userSignIn(fileSystem))                    // Sign in with username and password
-	http.HandleFunc("POST /api/user-sign-in-jwt", userJWTSignIn())                       // Sign in with JWT
-	http.HandleFunc("POST /api/services-set", servicesSet(fileSystem, serviceLinks, db)) // Setting/replacing all services
-	http.HandleFunc("GET /api/service-data", getServiceData(serviceLinks, db))           // Getting analytics
-	http.HandleFunc("/api/service/{path...}", requestForwarding(serviceLinks, db))       // Proxying requests
-	http.HandleFunc("GET /api/api-keys", APIGet(db))                                     // Getting API keys
-	http.HandleFunc("POST /api/api-keys", APISet(db))                                    // Setting API keys
+func setupEndpoints(fileSystem FileSystem, serviceLinks *ServiceLinks, db AdvancedDB, jwt JWTService) {
+	http.HandleFunc("GET /api/user-exists", userExists(fileSystem))                           // Check if the user already exists
+	http.HandleFunc("POST /api/user-sign-up", newUser(fileSystem, jwt))                       // Sign up with username and password
+	http.HandleFunc("POST /api/user-sign-in", userSignIn(fileSystem, jwt))                    // Sign in with username and password
+	http.HandleFunc("POST /api/user-sign-in-jwt", userJWTSignIn(jwt))                         // Sign in with JWT
+	http.HandleFunc("POST /api/services-set", servicesSet(fileSystem, serviceLinks, db, jwt)) // Setting/replacing all services
+	http.HandleFunc("GET /api/service-data", getServiceData(serviceLinks, db, jwt))           // Getting analytics
+	http.HandleFunc("/api/service/{path...}", requestForwarding(serviceLinks, db))            // Proxying requests
+	http.HandleFunc("GET /api/api-keys", APIGet(db, jwt))                                     // Getting API keys
+	http.HandleFunc("POST /api/api-keys", APISet(db, jwt))                                    // Setting API keys
 
 	http.HandleFunc("/", spaHandler) // Serve the frontend
 }
