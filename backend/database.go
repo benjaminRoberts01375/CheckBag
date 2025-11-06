@@ -35,7 +35,7 @@ type BasicDB interface {
 }
 
 type AdvancedDB interface {
-	incrementAnalytics(ctx context.Context, serviceID string, resource string, country string, ip string, responseCode int) error
+	incrementAnalytics(ctx context.Context, serviceID string, resource string, country string, ip string, responseCode int, receivedBytes int, sentBytes int) error
 	getAnalyticsService(ctx context.Context, service ServiceData, timeStep AnalyticsTimeStep) map[time.Time]Analytic
 	deleteService(ctx context.Context, service ServiceLink) error
 	addAPIKey(ctx context.Context, APIKey string, keyID string, name string) error
@@ -206,7 +206,7 @@ func (db *ValkeyDB) GetList(ctx context.Context, key string) ([]string, error) {
 
 // Higher-level DB functions
 
-func (db DB) incrementAnalytics(ctx context.Context, serviceID string, resource string, country string, ip string, responseCode int) error {
+func (db DB) incrementAnalytics(ctx context.Context, serviceID string, resource string, country string, ip string, responseCode int, receivedBytes int, sentBytes int) error {
 	for _, timeStep := range cacheAnalyticsTime {
 		recordTime := timeStep.timeStr(0)
 		expiration := timeStep.time(timeStep.maximumUnits)
@@ -214,27 +214,36 @@ func (db DB) incrementAnalytics(ctx context.Context, serviceID string, resource 
 		baseKey := "Analytics:" + serviceID + ":" + quantity + ":" + recordTime + ":"
 		err := db.basicDB.IncrementKey(ctx, baseKey+"quantity", 1, expiration)
 		if err != nil {
-			Printing.PrintErrStr("Could not increment minute analytics key: " + err.Error())
+			Printing.PrintErrStr("Could not increment analytics key: " + err.Error())
 			return err
+		}
+		err = db.basicDB.IncrementKey(ctx, baseKey+"received_bytes", receivedBytes, expiration)
+		if err != nil {
+			Printing.PrintErrStr("Could not increment received bytes analytics:" + err.Error())
+			return err
+		}
+		err = db.basicDB.IncrementKey(ctx, baseKey+"sent_bytes", sentBytes, expiration)
+		if err != nil {
+			Printing.PrintErrStr("Could not increment sent bytes analytics")
 		}
 		err = db.basicDB.IncrementHashField(ctx, baseKey+"country", country, 1, expiration)
 		if err != nil {
-			Printing.PrintErrStr("Could not increment minute analytics country: " + err.Error())
+			Printing.PrintErrStr("Could not increment analytics country: " + err.Error())
 			return err
 		}
 		err = db.basicDB.IncrementHashField(ctx, baseKey+"ip", ip, 1, expiration)
 		if err != nil {
-			Printing.PrintErrStr("Could not increment minute analytics ip: " + err.Error())
+			Printing.PrintErrStr("Could not increment analytics ip: " + err.Error())
 			return err
 		}
 		err = db.basicDB.IncrementHashField(ctx, baseKey+"resource", resource, 1, expiration)
 		if err != nil {
-			Printing.PrintErrStr("Could not increment minute analytics resource: " + err.Error())
+			Printing.PrintErrStr("Could not increment analytics resource: " + err.Error())
 			return err
 		}
 		err = db.basicDB.IncrementHashField(ctx, baseKey+":response_code", strconv.Itoa(responseCode), 1, expiration)
 		if err != nil {
-			Printing.PrintErrStr("Could not increment minute analytics response code: " + err.Error())
+			Printing.PrintErrStr("Could not increment analytics response code: " + err.Error())
 			return err
 		}
 	}
@@ -250,6 +259,8 @@ func (db DB) getAnalyticsService(ctx context.Context, service ServiceData, timeS
 		if err != nil {
 			continue
 		}
+		sentBytesRaw, _ := db.basicDB.Get(ctx, baseKey+"sent_bytes")
+		receivedBytesRaw, _ := db.basicDB.Get(ctx, baseKey+"received_bytes")
 		countryRaw, err := db.basicDB.GetHash(ctx, baseKey+"country")
 		if err != nil {
 			continue
@@ -269,7 +280,15 @@ func (db DB) getAnalyticsService(ctx context.Context, service ServiceData, timeS
 
 		quantity, err := strconv.Atoi(quantityRaw)
 		if err != nil {
-			continue
+			quantity = 0
+		}
+		sentBytes, err := strconv.Atoi(sentBytesRaw)
+		if err != nil {
+			sentBytes = 0
+		}
+		receivedBytes, err := strconv.Atoi(receivedBytesRaw)
+		if err != nil {
+			receivedBytes = 0
 		}
 		country := make(map[string]int)
 		for countryName, countryCount := range countryRaw {
@@ -305,11 +324,13 @@ func (db DB) getAnalyticsService(ctx context.Context, service ServiceData, timeS
 		}
 
 		analytics[timeStep.time(-timePeriod)] = Analytic{
-			Quantity:     quantity,
-			Country:      country,
-			IP:           ip,
-			Resource:     resource,
-			ResponseCode: responseCodes,
+			Quantity:      quantity,
+			Country:       country,
+			IP:            ip,
+			Resource:      resource,
+			ResponseCode:  responseCodes,
+			SentBytes:     sentBytes,
+			ReceivedBytes: receivedBytes,
 		}
 	}
 
