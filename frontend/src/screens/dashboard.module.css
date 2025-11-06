@@ -33,6 +33,9 @@
 	display: flex;
 	width: 25%;
 	padding: 10pt;
+	text-align: center;
+	align-items: center;
+	justify-content: center;
 }
 
 .graph-group {
