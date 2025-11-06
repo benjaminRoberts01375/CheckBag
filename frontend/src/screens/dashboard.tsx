@@ -6,6 +6,7 @@ import PieChartComponent from "../components/pie-chart";
 import ResourceTable from "../components/resource-table";
 import { createTheme } from "@mui/material/styles";
 import { ThemeProvider } from "@mui/material/styles";
+import { formatBytes } from "../utils";
 
 // Create theme once outside component - it never changes
 const theme = createTheme({
@@ -32,10 +33,10 @@ const DashboardScreen = () => {
 						<h2>{chartData.summaryQuantityData.toLocaleString("en")} Requests</h2>
 					</div>
 					<div className={DashboardStyles["summary-card"]}>
-						<h2>{chartData.summaryIncomingBytes} Bytes Received</h2>
+						<h2>{formatBytes(chartData.summaryIncomingBytes)} Received</h2>
 					</div>
 					<div className={DashboardStyles["summary-card"]}>
-						<h2>{chartData.summaryOutgoingBytes} Bytes Sent</h2>
+						<h2>{formatBytes(chartData.summaryOutgoingBytes)} Sent</h2>
 					</div>
 					<div className={DashboardStyles["summary-card"]}>
 						<h2>Temp</h2>
