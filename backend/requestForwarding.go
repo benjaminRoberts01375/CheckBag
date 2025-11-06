@@ -83,9 +83,11 @@ func sseProxy(w http.ResponseWriter, r *http.Request, serviceAddress ServiceAddr
 	}
 
 	// Copy headers from original request
+	incomingHeaderBytes := 0
 	for name, values := range r.Header {
 		for _, value := range values {
 			proxyRequest.Header.Add(name, value)
+			incomingHeaderBytes += len(fmt.Sprintf("%s: %s\r\n", name, value))
 		}
 	}
 
@@ -107,9 +109,11 @@ func sseProxy(w http.ResponseWriter, r *http.Request, serviceAddress ServiceAddr
 	defer proxyResponse.Body.Close()
 
 	// Copy all response headers from service
+	outgoingHeaderBytes := 0
 	for name, values := range proxyResponse.Header {
 		for _, value := range values {
 			w.Header().Add(name, value)
+			outgoingHeaderBytes += len(fmt.Sprintf("%s: %s\r\n", name, value))
 		}
 	}
 
@@ -156,7 +160,14 @@ func sseProxy(w http.ResponseWriter, r *http.Request, serviceAddress ServiceAddr
 	}
 
 	// Record analytics
-	go analytics(r, proxyResponse.StatusCode, serviceLinks, db, len(bodyBytes), totalResponseBytes)
+	go analytics(
+		r,
+		proxyResponse.StatusCode,
+		serviceLinks,
+		db,
+		len(bodyBytes)+incomingHeaderBytes+len(fmt.Sprintf("%s %s %s\r\n", r.Method, r.RequestURI, r.Proto))+2,
+		totalResponseBytes+outgoingHeaderBytes+len(fmt.Sprintf("%s %d %s\r\n", r.Proto, proxyResponse.StatusCode, http.StatusText(proxyResponse.StatusCode)))+2,
+	)
 	Printing.Println("SSE proxy connection closed")
 }
 
