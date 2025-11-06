@@ -60,7 +60,7 @@ func servicesSet(fileSystem FileSystem, serviceLinks *ServiceLinks, db AdvancedD
 		}
 
 		// Delete service links that are not in new service links
-		newLinks := slices.DeleteFunc(*serviceLinks, func(existingService ServiceLink) bool {
+		*serviceLinks = slices.DeleteFunc(*serviceLinks, func(existingService ServiceLink) bool {
 			delVal := !slices.ContainsFunc(*newServiceLinks, func(newService ServiceLink) bool {
 				return existingService.ID == newService.ID
 			})
@@ -72,7 +72,6 @@ func servicesSet(fileSystem FileSystem, serviceLinks *ServiceLinks, db AdvancedD
 			}
 			return delVal
 		})
-		serviceLinks = &newLinks
 
 		// Update or add services to serviceLinks
 		for _, newService := range *newServiceLinks {
@@ -81,8 +80,7 @@ func servicesSet(fileSystem FileSystem, serviceLinks *ServiceLinks, db AdvancedD
 			})
 			if existingServiceI == -1 { // Add service
 				newService.ID = generateRandomString(models.ModelsConfig.ServiceIDLength)
-				newLinks := append(*serviceLinks, newService)
-				serviceLinks = &newLinks
+				*serviceLinks = append(*serviceLinks, newService)
 				continue
 			}
 			// Update service - Don't update ID
