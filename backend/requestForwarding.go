@@ -246,8 +246,8 @@ func restForwarding(w http.ResponseWriter, r *http.Request, serviceAddress Servi
 		proxyResponse.StatusCode,
 		serviceLinks,
 		db,
-		len(bodyBytes)+incomingHeaderBytes+len(r.Method+r.RequestURI+r.Proto)+2,
-		len(responseBytes)+len(r.Proto+strconv.Itoa(proxyResponse.StatusCode)+http.StatusText(proxyResponse.StatusCode))+2,
+		len(bodyBytes)+incomingHeaderBytes+len(fmt.Sprintf("%s %s %s\r\n", r.Method, r.RequestURI, r.Proto))+2,
+		len(responseBytes)+outgoingHeaderBytes+len(fmt.Sprintf("%s %d %s\r\n", r.Proto, proxyResponse.StatusCode, http.StatusText(proxyResponse.StatusCode)))+2,
 	)
 }
 
