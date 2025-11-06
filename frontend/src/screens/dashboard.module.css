@@ -38,6 +38,11 @@
 	justify-content: center;
 }
 
+.summary-card h2 {
+	user-select: text;
+	-webkit-user-select: text;
+}
+
 .graph-group {
 	padding: 0pt 20pt 20pt 20pt;
 }
