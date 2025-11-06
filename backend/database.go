@@ -27,8 +27,7 @@ type BasicDB interface {
 	RenameKey(ctx context.Context, oldKey string, newKey string) error
 
 	IncrementHashField(ctx context.Context, key string, field string, amount int, expiration time.Time) error
-	IncrementKey(ctx context.Context, key string, expiration time.Time) error
-	IncrementKeyBy(ctx context.Context, key string, amount int, expiration time.Time) error
+	IncrementKey(ctx context.Context, key string, amount int, expiration time.Time) error
 
 	AddToList(ctx context.Context, key string, value string) error
 	RemoveFromList(ctx context.Context, key string, value string) error
@@ -184,16 +183,7 @@ func (db *ValkeyDB) IncrementHashField(ctx context.Context, key string, field st
 	return db.db.Do(ctx, db.db.B().Expire().Key(db.prefix+key).Seconds(int64(remainingTime.Seconds())).Build()).Error()
 }
 
-func (db *ValkeyDB) IncrementKey(ctx context.Context, key string, expiration time.Time) error {
-	err := db.db.Do(ctx, db.db.B().Incr().Key(db.prefix+key).Build()).Error()
-	if err != nil {
-		return err
-	}
-	remainingTime := time.Until(expiration)
-	return db.db.Do(ctx, db.db.B().Expire().Key(db.prefix+key).Seconds(int64(remainingTime.Seconds())).Build()).Error()
-}
-
-func (db *ValkeyDB) IncrementKeyBy(ctx context.Context, key string, amount int, expiration time.Time) error {
+func (db *ValkeyDB) IncrementKey(ctx context.Context, key string, amount int, expiration time.Time) error {
 	err := db.db.Do(ctx, db.db.B().Incrby().Key(db.prefix+key).Increment(int64(amount)).Build()).Error()
 	if err != nil {
 		return err
@@ -222,7 +212,7 @@ func (db DB) incrementAnalytics(ctx context.Context, serviceID string, resource 
 		expiration := timeStep.time(timeStep.maximumUnits)
 		quantity := strconv.Itoa(timeStep.maximumUnits)
 		baseKey := "Analytics:" + serviceID + ":" + quantity + ":" + recordTime + ":"
-		err := db.basicDB.IncrementKey(ctx, baseKey+"quantity", expiration)
+		err := db.basicDB.IncrementKey(ctx, baseKey+"quantity", 1, expiration)
 		if err != nil {
 			Printing.PrintErrStr("Could not increment minute analytics key: " + err.Error())
 			return err
