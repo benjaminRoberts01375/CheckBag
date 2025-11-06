@@ -103,10 +103,8 @@ func servicesSet(fileSystem FileSystem, serviceLinks *ServiceLinks, db AdvancedD
 // Search for a service by incoming URL
 func (services *ServiceLinks) GetServiceFromIncomingURL(service string) (*ServiceLink, error) {
 	for _, serviceLink := range *services { // Check all services
-		for _, incomingAddress := range serviceLink.IncomingAddresses { // Check all incoming URLs
-			if incomingAddress == service {
-				return &serviceLink, nil
-			}
+		if slices.Contains(serviceLink.IncomingAddresses, service) {
+			return &serviceLink, nil
 		}
 	}
 	return nil, errors.New("no service found")
