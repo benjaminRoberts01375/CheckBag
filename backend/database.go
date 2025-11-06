@@ -242,7 +242,7 @@ func (db DB) incrementAnalytics(ctx context.Context, serviceID string, resource 
 			Printing.PrintErrStr("Could not increment analytics resource: " + err.Error())
 			return err
 		}
-		err = db.basicDB.IncrementHashField(ctx, baseKey+":response_code", strconv.Itoa(responseCode), 1, expiration)
+		err = db.basicDB.IncrementHashField(ctx, baseKey+"response_code", strconv.Itoa(responseCode), 1, expiration)
 		if err != nil {
 			Printing.PrintErrStr("Could not increment analytics response code: " + err.Error())
 			return err
