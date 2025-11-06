@@ -31,7 +31,7 @@ func requestForwarding(serviceLinks *ServiceLinks, db AdvancedDB) http.HandlerFu
 
 		// Check for WebSocket upgrade
 		if websocket.IsWebSocketUpgrade(r) {
-			websocketProxy(w, r, requestedService.OutgoingAddress, path)
+			websocketProxy(w, r, requestedService.OutgoingAddress, path, *serviceLinks, db)
 		} else if isSSERequest(r) {
 			sseProxy(w, r, requestedService.OutgoingAddress, path, *serviceLinks, db)
 		} else {
@@ -105,9 +105,6 @@ func sseProxy(w http.ResponseWriter, r *http.Request, serviceAddress ServiceAddr
 	}
 	defer proxyResponse.Body.Close()
 
-	// Record analytics
-	go analytics(r, proxyResponse.StatusCode, serviceLinks, db)
-
 	// Copy all response headers from service
 	for name, values := range proxyResponse.Header {
 		for _, value := range values {
@@ -125,6 +122,7 @@ func sseProxy(w http.ResponseWriter, r *http.Request, serviceAddress ServiceAddr
 
 	// Stream the SSE data
 	scanner := bufio.NewScanner(proxyResponse.Body)
+	totalResponseBytes := 0
 	for scanner.Scan() {
 		select {
 		case <-ctx.Done():
@@ -136,7 +134,9 @@ func sseProxy(w http.ResponseWriter, r *http.Request, serviceAddress ServiceAddr
 		line := scanner.Text()
 
 		// Write the line to client
-		_, err := w.Write([]byte(line + "\n"))
+		responseBytes := []byte(line + "\n")
+		_, err := w.Write(responseBytes)
+		totalResponseBytes += len(responseBytes)
 		if err != nil {
 			Printing.PrintErrStr("Error writing SSE data to client: " + err.Error())
 			cancel() // Cancel the context to stop the request
@@ -154,6 +154,8 @@ func sseProxy(w http.ResponseWriter, r *http.Request, serviceAddress ServiceAddr
 		return
 	}
 
+	// Record analytics
+	go analytics(r, proxyResponse.StatusCode, serviceLinks, db, len(bodyBytes), totalResponseBytes)
 	Printing.Println("SSE proxy connection closed")
 }
 
@@ -202,7 +204,6 @@ func restForwarding(w http.ResponseWriter, r *http.Request, serviceAddress Servi
 		requestRespondCode(w, http.StatusInternalServerError)
 		return
 	}
-	go analytics(r, proxyResponse.StatusCode, serviceLinks, db)
 	// Read proxy response
 	defer proxyResponse.Body.Close()
 	responseBytes, err := io.ReadAll(proxyResponse.Body)
@@ -234,12 +235,14 @@ func restForwarding(w http.ResponseWriter, r *http.Request, serviceAddress Servi
 	}
 	w.WriteHeader(proxyResponse.StatusCode)
 	w.Write(responseBytes)
+
+	go analytics(r, proxyResponse.StatusCode, serviceLinks, db, len(bodyBytes), len(responseBytes))
 }
 
 // websocketProxy handles the WebSocket connection upgrade and message forwarding.
 // w and r are the original HTTP request and response writers
 // baseOutgoingURL is the URL of the service to forward the request to. Ex. `192.168.0.50:8154/my/stuff`. Note that the path is preserved, and the protocol is assumed to be HTTP.
-func websocketProxy(w http.ResponseWriter, r *http.Request, serviceAddress ServiceAddress, path string) {
+func websocketProxy(w http.ResponseWriter, r *http.Request, serviceAddress ServiceAddress, path string, serviceLinks ServiceLinks, db AdvancedDB) {
 	// Convert HTTP URL to WebSocket URL and preserve query parameters
 	protocol := "ws"
 	if serviceAddress.Protocol == "https" {
@@ -303,14 +306,22 @@ func websocketProxy(w http.ResponseWriter, r *http.Request, serviceAddress Servi
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	go forwardSocketMessage(ctx, outgoingConn, clientConn, cancel)
-	go forwardSocketMessage(ctx, clientConn, outgoingConn, cancel)
+	// Track bytes transferred in both directions
+	var clientToServiceBytes int
+	var serviceToClientBytes int
+
+	go forwardSocketMessage(ctx, outgoingConn, clientConn, cancel, &serviceToClientBytes)
+	go forwardSocketMessage(ctx, clientConn, outgoingConn, cancel, &clientToServiceBytes)
 
 	<-ctx.Done()
+
+	// Record analytics with total bytes transferred
+	go analytics(r, http.StatusSwitchingProtocols, serviceLinks, db, clientToServiceBytes, serviceToClientBytes)
+
 	Printing.Println("WebSocket proxy connection closed")
 }
 
-func forwardSocketMessage(ctx context.Context, incoming *websocket.Conn, outgoing *websocket.Conn, cancel context.CancelFunc) {
+func forwardSocketMessage(ctx context.Context, incoming *websocket.Conn, outgoing *websocket.Conn, cancel context.CancelFunc, bytesTransferred *int) {
 	defer cancel()
 	for {
 		select {
@@ -332,5 +343,8 @@ func forwardSocketMessage(ctx context.Context, incoming *websocket.Conn, outgoin
 			Printing.PrintErrStr("Error writing to outgoing WebSocket: " + err.Error())
 			return
 		}
+
+		// Track bytes transferred
+		*bytesTransferred += len(message)
 	}
 }

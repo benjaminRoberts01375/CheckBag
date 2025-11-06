@@ -17,11 +17,13 @@ type ServiceData struct {
 }
 
 type Analytic struct {
-	Quantity     int            `json:"quantity"`
-	Country      map[string]int `json:"country"`
-	IP           map[string]int `json:"ip"`
-	Resource     map[string]int `json:"resource"`
-	ResponseCode map[int]int    `json:"response_code"`
+	Quantity      int            `json:"quantity"`
+	Country       map[string]int `json:"country"`
+	IP            map[string]int `json:"ip"`
+	Resource      map[string]int `json:"resource"`
+	ResponseCode  map[int]int    `json:"response_code"`
+	SentBytes     int            `json:"sent_bytes"`
+	ReceivedBytes int            `json:"received_bytes"`
 }
 
 func getServiceData(serviceLinks *ServiceLinks, db AdvancedDB) http.HandlerFunc {

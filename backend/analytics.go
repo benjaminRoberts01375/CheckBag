@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func analytics(r *http.Request, responseCode int, serviceLinks ServiceLinks, db AdvancedDB) {
+func analytics(r *http.Request, responseCode int, serviceLinks ServiceLinks, db AdvancedDB, receivedBytes int, responseBytes int) {
 	service, err := serviceLinks.GetServiceFromIncomingURL(r.Host)
 	var serviceID string
 	if err != nil {
@@ -29,5 +29,5 @@ func analytics(r *http.Request, responseCode int, serviceLinks ServiceLinks, db 
 			ip = values[0]
 		}
 	}
-	db.incrementAnalytics(r.Context(), serviceID, resource, country, ip, responseCode)
+	db.incrementAnalytics(r.Context(), serviceID, resource, country, ip, responseCode, receivedBytes, responseBytes)
 }
