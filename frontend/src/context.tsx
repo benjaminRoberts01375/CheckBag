@@ -21,6 +21,7 @@ const emptyChartData: ProcessedChartData = {
 	summaryQuantityData: 0,
 	summaryIncomingBytes: 0,
 	summaryOutgoingBytes: 0,
+	summarySuccessfulRequests: 0,
 };
 
 export const ContextProvider: React.FC<Props> = ({ children }) => {
@@ -158,6 +159,7 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 			summaryQuantityData: summaryTotalRequests,
 			summaryIncomingBytes: summaryTotalIncomingBytes,
 			summaryOutgoingBytes: summaryTotalOutgoingBytes,
+			summarySuccessfulRequests: Number((Array.from(responseCodesCounter.entries()).filter(([code]) => code < 400 || code >= 600).reduce((sum, [_, count]) => sum + count, 0) / summaryTotalRequests * 100).toFixed(2)),
 		};
 	}
 
