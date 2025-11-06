@@ -19,6 +19,8 @@ const emptyChartData: ProcessedChartData = {
 	IPAddressData: [],
 	resourceUsage: [],
 	summaryQuantityData: 0,
+	summaryIncomingBytes: 0,
+	summaryOutgoingBytes: 0,
 };
 
 export const ContextProvider: React.FC<Props> = ({ children }) => {
@@ -62,11 +64,15 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 		const ipCounter = new Map<string, number>();
 		const resourceUsage = new Array<ResourceUsageData>();
 		var summaryTotalRequests = 0;
+		var summaryTotalIncomingBytes = 0;
+		var summaryTotalOutgoingBytes = 0;
 
 		// Combine data from all enabled services
 		enabledServices.forEach(service => {
 			const serviceData = service.getProcessedData(targetTimescale);
 			summaryTotalRequests += serviceData.totalRequests;
+			summaryTotalIncomingBytes += serviceData.totalIncomingBytes;
+			summaryTotalOutgoingBytes += serviceData.totalOutgoingBytes;
 
 			// Combine response codes
 			serviceData.responseCodeData.forEach((value, key) => {
@@ -150,6 +156,8 @@ export const ContextProvider: React.FC<Props> = ({ children }) => {
 			IPAddressData: ipData,
 			resourceUsage: resourceUsage.sort((a, b) => b.quantity - a.quantity),
 			summaryQuantityData: summaryTotalRequests,
+			summaryIncomingBytes: summaryTotalIncomingBytes,
+			summaryOutgoingBytes: summaryTotalOutgoingBytes,
 		};
 	}
 
