@@ -6,11 +6,9 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
-	"github.com/benjaminRoberts01375/CheckBag/backend/models"
 )
 
 func main() {
@@ -23,8 +21,6 @@ func main() {
 
 	var serviceLinks = ServiceLinks{}
 
-	// Config setup
-	models.Setup()
 	// Coms setup
 	Printing.ReadConfig()
 	// Cache setup
@@ -34,15 +30,12 @@ func main() {
 	// JWT Setup
 	jwt := loadJWTSecret(db)
 	// Setup endpoints
-	setupEndpoints(fileSystem, &serviceLinks, db, jwt)
-	if models.ModelsConfig.DevMode {
-		Printing.Println("Running in dev mode")
-	}
-	Printing.Println("Listening on port " + strconv.Itoa(models.ModelsConfig.LaunchPort))
-	http.ListenAndServe(models.ModelsConfig.FormatPort(), nil)
+	setupEndpoints(fileSystem, &serviceLinks, db, jwt, strings.ToLower(os.Getenv("DEV_MODE")) == "true")
+	Printing.Println("Listening on port 8080")
+	http.ListenAndServe(":8080", nil)
 }
 
-func setupEndpoints(fileSystem FileSystem, serviceLinks *ServiceLinks, db AdvancedDB, jwt JWTService) {
+func setupEndpoints(fileSystem FileSystem, serviceLinks *ServiceLinks, db AdvancedDB, jwt JWTService, devMode bool) {
 	http.HandleFunc("GET /api/user-exists", userExists(fileSystem))                           // Check if the user already exists
 	http.HandleFunc("POST /api/user-sign-up", newUser(fileSystem, jwt))                       // Sign up with username and password
 	http.HandleFunc("POST /api/user-sign-in", userSignIn(fileSystem, jwt))                    // Sign in with username and password
@@ -53,36 +46,38 @@ func setupEndpoints(fileSystem FileSystem, serviceLinks *ServiceLinks, db Advanc
 	http.HandleFunc("GET /api/api-keys", APIGet(db, jwt))                                     // Getting API keys
 	http.HandleFunc("POST /api/api-keys", APISet(db, jwt))                                    // Setting API keys
 
-	http.HandleFunc("/", spaHandler) // Serve the frontend
+	http.HandleFunc("/", spaHandler(devMode)) // Serve the frontend
 }
 
 // spaHandler serves the React SPA and handles client-side routing
-func spaHandler(w http.ResponseWriter, r *http.Request) {
-	// Skip API routes - something's wrong :(
-	if strings.HasPrefix(r.URL.Path, "/api/") {
-		http.NotFound(w, r)
-		return
+func spaHandler(devMode bool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Skip API routes - something's wrong :(
+		if strings.HasPrefix(r.URL.Path, "/api/") {
+			http.NotFound(w, r)
+			return
+		}
+
+		// Production mode: serve static files
+		// Development mode: proxy to Vite dev server
+		if devMode {
+			proxyToVite(w, r)
+			return
+		}
+
+		// Construct the path to the requested file
+		path := filepath.Join("./static", r.URL.Path)
+
+		// Check if the file exists
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			// File doesn't exist, serve index.html for React routing
+			http.ServeFile(w, r, "./static/index.html")
+			return
+		}
+
+		// File exists, serve it normally
+		http.FileServer(http.Dir("./static")).ServeHTTP(w, r)
 	}
-
-	// Production mode: serve static files
-	// Development mode: proxy to Vite dev server
-	if models.ModelsConfig.DevMode {
-		proxyToVite(w, r)
-		return
-	}
-
-	// Construct the path to the requested file
-	path := filepath.Join("./static", r.URL.Path)
-
-	// Check if the file exists
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		// File doesn't exist, serve index.html for React routing
-		http.ServeFile(w, r, "./static/index.html")
-		return
-	}
-
-	// File exists, serve it normally
-	http.FileServer(http.Dir("./static")).ServeHTTP(w, r)
 }
 
 // A quick and dirty proxy for the Vite dev server

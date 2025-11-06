@@ -7,7 +7,6 @@ import (
 	"slices"
 
 	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
-	"github.com/benjaminRoberts01375/CheckBag/backend/models"
 )
 
 type ServiceLinks []ServiceLink
@@ -79,7 +78,7 @@ func servicesSet(fileSystem FileSystem, serviceLinks *ServiceLinks, db AdvancedD
 				return existingService.ID == newService.ID
 			})
 			if existingServiceI == -1 { // Add service
-				newService.ID = generateRandomString(models.ModelsConfig.ServiceIDLength)
+				newService.ID = generateRandomString(15)
 				*serviceLinks = append(*serviceLinks, newService)
 				continue
 			}
