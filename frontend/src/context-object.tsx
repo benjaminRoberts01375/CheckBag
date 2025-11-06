@@ -13,6 +13,8 @@ export interface ProcessedChartData {
 	IPAddressData: ChartData[];
 	resourceUsage: ResourceUsageData[];
 	summaryQuantityData: number;
+	summaryIncomingBytes: number;
+	summaryOutgoingBytes: number;
 }
 
 export interface ContextType {

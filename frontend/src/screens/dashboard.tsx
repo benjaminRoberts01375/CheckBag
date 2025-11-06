@@ -32,10 +32,10 @@ const DashboardScreen = () => {
 						<h2>{chartData.summaryQuantityData.toLocaleString("en")} Requests</h2>
 					</div>
 					<div className={DashboardStyles["summary-card"]}>
-						<h2>Temp</h2>
+						<h2>{chartData.summaryIncomingBytes} Bytes Received</h2>
 					</div>
 					<div className={DashboardStyles["summary-card"]}>
-						<h2>Temp</h2>
+						<h2>{chartData.summaryOutgoingBytes} Bytes Sent</h2>
 					</div>
 					<div className={DashboardStyles["summary-card"]}>
 						<h2>Temp</h2>

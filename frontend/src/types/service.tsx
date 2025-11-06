@@ -12,6 +12,8 @@ export interface ServiceProcessedData {
 	ipAddressData: Map<string, number>;
 	resourceUsage: Map<string, number>;
 	totalRequests: number;
+	totalIncomingBytes: number;
+	totalOutgoingBytes: number;
 }
 
 class Service {
@@ -122,6 +124,8 @@ class Service {
 
 		const quantityData = new GraphData(this.title, timescale);
 		var totalRequests = 0;
+		var totalIncomingBytes = 0;
+		var totalOutgoingBytes = 0;
 		// Generate data points for the entire time range
 		for (let i = 0; i < timeStepQuantity; i++) {
 			const date = rollback(-i);
@@ -145,11 +149,14 @@ class Service {
 				}
 			};
 			quantityData.x_values[timeStepQuantity - i - 1] = dateString();
-			let requestQuantity = analyticsMap.get(date.toISOString())?.quantity ?? 0;
+			const analytic = analyticsMap.get(date.toISOString());
+			let requestQuantity = analytic?.quantity ?? 0;
 			quantityData.data[timeStepQuantity - i - 1] = requestQuantity;
 			totalRequests += requestQuantity;
 
-			const analytic = analyticsMap.get(date.toISOString());
+			totalIncomingBytes += analytic?.incomingBytes ?? 0;
+			totalOutgoingBytes += analytic?.incomingBytes ?? 0;
+
 			if (analytic !== undefined) {
 				// Aggregate response codes
 				analytic.responseCode.forEach((value, key) => {
@@ -172,6 +179,8 @@ class Service {
 
 		return {
 			quantityData,
+			totalIncomingBytes: totalIncomingBytes,
+			totalOutgoingBytes: totalOutgoingBytes,
 			responseCodeData: responseCodesCounter,
 			countryCodeData: countryCounter,
 			ipAddressData: ipCounter,
