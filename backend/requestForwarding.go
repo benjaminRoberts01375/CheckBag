@@ -186,10 +186,12 @@ func restForwarding(w http.ResponseWriter, r *http.Request, serviceAddress Servi
 		requestRespondCode(w, http.StatusInternalServerError)
 		return
 	}
+	headerBytes := 0
 	// Add headers to proxy request
 	for name, values := range r.Header {
 		for _, value := range values {
 			proxyRequest.Header.Add(name, value)
+			headerBytes += len([]byte(name + value))
 		}
 	}
 
@@ -236,7 +238,7 @@ func restForwarding(w http.ResponseWriter, r *http.Request, serviceAddress Servi
 	w.WriteHeader(proxyResponse.StatusCode)
 	w.Write(responseBytes)
 
-	go analytics(r, proxyResponse.StatusCode, serviceLinks, db, len(bodyBytes), len(responseBytes))
+	go analytics(r, proxyResponse.StatusCode, serviceLinks, db, len(bodyBytes)+headerBytes+len(r.Method+r.RequestURI+r.Proto)+2, len(responseBytes))
 }
 
 // websocketProxy handles the WebSocket connection upgrade and message forwarding.
