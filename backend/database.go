@@ -210,6 +210,12 @@ func (db *ValkeyDB) SetList(ctx context.Context, key string, values []string) er
 	if err != nil {
 		return errors.New("Unable to reset list \"" + key + "\": " + err.Error())
 	}
+
+	// If the list is empty, just delete the key and return (no need to create an empty list)
+	if len(values) == 0 {
+		return nil
+	}
+
 	builder := db.db.B().Lpush().Key(db.prefix + key).Element()
 	for _, value := range values {
 		builder = builder.Element(value)
