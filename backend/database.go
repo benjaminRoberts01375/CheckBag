@@ -617,7 +617,7 @@ func (db DB) setServiceLinks(ctx context.Context, serviceLinks ServiceLinks) err
 	// Delete ServiceLinks that are no longer in the list
 	for _, existingID := range existingIDs {
 		if !slices.Contains(newIDs, existingID) {
-			err := db.basicDB.DeleteHash(ctx, "ServiceLink:"+existingID)
+			err := db.basicDB.Delete(ctx, "ServiceLink:"+existingID)
 			if err != nil { // Don't return, we should clean up as best we can
 				Printing.PrintErrStr("Could not delete hash \"ServiceLink:" + existingID + "\": " + err.Error())
 			}
