@@ -39,7 +39,12 @@ const DashboardScreen = () => {
 						<h2>{formatBytes(chartData.summaryOutgoingBytes)} Sent</h2>
 					</div>
 					<div className={DashboardStyles["summary-card"]}>
-						<h2>{chartData.summarySuccessfulRequests}% Success</h2>
+						<h2>
+							{isNaN(chartData.summarySuccessfulRequests)
+								? 100
+								: chartData.summarySuccessfulRequests}
+							% Success
+						</h2>
 					</div>
 				</div>
 				<div className={DashboardStyles["graph-group"]}>
