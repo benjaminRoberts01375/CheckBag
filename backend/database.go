@@ -543,7 +543,7 @@ func (db DB) getServiceLinks(ctx context.Context) (ServiceLinks, error) {
 		}
 
 		// Get incoming addresses list
-		incomingAddresses, err := db.basicDB.GetList(ctx, "ServiceLink:"+id+":incoming")
+		incomingAddresses, err := db.basicDB.GetList(ctx, "ServiceLink:"+id+":incoming_addresses")
 		if err != nil {
 			Printing.PrintErrStr("Could not get incoming addresses for service " + id + ": " + err.Error())
 			incomingAddresses = []string{}
@@ -599,7 +599,7 @@ func (db DB) setServiceLinks(ctx context.Context, serviceLinks ServiceLinks) err
 		}
 
 		// Store the incoming addresses list
-		err = db.basicDB.SetList(ctx, "ServiceLink:"+serviceLink.ID+":incoming", serviceLink.IncomingAddresses)
+		err = db.basicDB.SetList(ctx, "ServiceLink:"+serviceLink.ID+":incoming_addresses", serviceLink.IncomingAddresses)
 		if err != nil {
 			return errors.New("Unable to set incoming addresses for " + serviceLink.ID + ": " + err.Error())
 		}
@@ -609,7 +609,7 @@ func (db DB) setServiceLinks(ctx context.Context, serviceLinks ServiceLinks) err
 	for _, existingID := range existingIDs {
 		if !slices.Contains(newIDs, existingID) {
 			db.basicDB.DeleteHash(ctx, "ServiceLink:"+existingID)
-			db.basicDB.Delete(ctx, "ServiceLink:"+existingID+":incoming")
+			db.basicDB.Delete(ctx, "ServiceLink:"+existingID+":incoming_addresses")
 		}
 	}
 
