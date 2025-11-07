@@ -3,13 +3,12 @@ package main
 import (
 	"net/http"
 
-	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func newUser(fileSystem FileSystem, jwt JWTService) http.HandlerFunc {
+func newUser(db AdvancedDB, jwt JWTService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userData, _ := fileSystem.GetUserData()
+		userData, _ := db.GetUserPasswordHash(r.Context())
 		if userData != "" {
 			requestRespondCode(w, http.StatusForbidden)
 			return
@@ -25,12 +24,7 @@ func newUser(fileSystem FileSystem, jwt JWTService) http.HandlerFunc {
 			requestRespondCode(w, http.StatusBadRequest)
 			return
 		}
-		err = fileSystem.SetUserData(string(userPasswordHash))
-		if err != nil {
-			Printing.PrintErrStr("Could not set user data in file system: ", err.Error())
-			requestRespondCode(w, http.StatusInternalServerError)
-			return
-		}
+		db.SetUserPasswordHash(r.Context(), string(userPasswordHash))
 		jwt.setJWT(w)
 		requestRespondCode(w, http.StatusOK)
 	}

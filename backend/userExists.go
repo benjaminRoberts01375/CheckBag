@@ -6,9 +6,9 @@ import (
 	Printing "github.com/benjaminRoberts01375/CheckBag/backend/logging"
 )
 
-func userExists(fileSystem FileSystem) http.HandlerFunc {
+func userExists(db AdvancedDB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		data, err := fileSystem.GetUserData()
+		data, err := db.GetUserPasswordHash(r.Context())
 		if err != nil || data == "" {
 			Printing.Println("User does not exist")
 			requestRespondCode(w, http.StatusGone)
