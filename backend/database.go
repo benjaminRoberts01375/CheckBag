@@ -582,7 +582,10 @@ func (db DB) getServiceLinks(ctx context.Context) (ServiceLinks, error) {
 
 func (db DB) setServiceLinks(ctx context.Context, serviceLinks ServiceLinks) error {
 	// Get existing service IDs to track what needs to be deleted
-	existingIDs, _ := db.basicDB.GetList(ctx, "ServiceLinks")
+	existingIDs, err := db.basicDB.GetList(ctx, "ServiceLinks")
+	if err != nil {
+		Printing.PrintErrStr("Unable to get list of ServiceLinks. First time running?")
+	}
 
 	// Build list of new IDs
 	newIDs := make([]string, 0, len(serviceLinks))
@@ -614,13 +617,19 @@ func (db DB) setServiceLinks(ctx context.Context, serviceLinks ServiceLinks) err
 	// Delete ServiceLinks that are no longer in the list
 	for _, existingID := range existingIDs {
 		if !slices.Contains(newIDs, existingID) {
-			db.basicDB.DeleteHash(ctx, "ServiceLink:"+existingID)
-			db.basicDB.Delete(ctx, "ServiceLink:"+existingID+":incoming_addresses")
+			err := db.basicDB.DeleteHash(ctx, "ServiceLink:"+existingID)
+			if err != nil { // Don't return, we should clean up as best we can
+				Printing.PrintErrStr("Could not delete hash \"ServiceLink:" + existingID + "\": " + err.Error())
+			}
+			err = db.basicDB.Delete(ctx, "ServiceLink:"+existingID+":incoming_addresses")
+			if err != nil { // Don't return, we should clean up as best we can
+				Printing.PrintErrStr("Could not delete list \"ServiceLink:" + existingID + "\": " + err.Error())
+			}
 		}
 	}
 
 	// Update the list of ServiceLink IDs
-	err := db.basicDB.SetList(ctx, "ServiceLinks", newIDs)
+	err = db.basicDB.SetList(ctx, "ServiceLinks", newIDs)
 	if err != nil {
 		return errors.New("Unable to set service links list: " + err.Error())
 	}
