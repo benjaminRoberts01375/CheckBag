@@ -389,37 +389,33 @@ func (db DB) setVersion(ctx context.Context, version string) error {
 	return nil
 }
 
+// deleteServiceAnalytics deletes all analytics data for a given service across all time periods
 func (db DB) deleteService(ctx context.Context, service ServiceLink) error {
+	deletedCount := 0
+
+	// Loop through each time step (minute, hour, day, month)
 	for _, timeStep := range cacheAnalyticsTime {
-		recordTime := timeStep.timeStr(0)
 		quantity := strconv.Itoa(timeStep.maximumUnits)
-		baseKey := "Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":"
-		err := db.basicDB.Delete(ctx, baseKey+"quantity")
-		if err != nil {
-			Printing.PrintErrStr("Could not delete minute analytics key: " + err.Error())
-			return err
-		}
-		err = db.basicDB.DeleteHash(ctx, baseKey+"country")
-		if err != nil {
-			Printing.PrintErrStr("Could not delete minute analytics country: " + err.Error())
-			return err
-		}
-		err = db.basicDB.DeleteHash(ctx, baseKey+"ip")
-		if err != nil {
-			Printing.PrintErrStr("Could not delete minute analytics ip: " + err.Error())
-			return err
-		}
-		err = db.basicDB.DeleteHash(ctx, baseKey+"resource")
-		if err != nil {
-			Printing.PrintErrStr("Could not delete minute analytics resource: " + err.Error())
-			return err
-		}
-		err = db.basicDB.DeleteHash(ctx, baseKey+"response_code")
-		if err != nil {
-			Printing.PrintErrStr("Could not delete minute analytics response code: " + err.Error())
-			return err
+
+		// Loop through all time periods for this time step
+		for timePeriod := range timeStep.maximumUnits {
+			recordTime := timeStep.timeStr(-timePeriod)
+			baseKey := "Analytics:" + service.ID + ":" + quantity + ":" + recordTime + ":"
+
+			// Delete all analytics keys (both regular and hash keys)
+			allFields := []string{"quantity", "sent_bytes", "received_bytes", "country", "ip", "resource", "response_code"}
+			for _, field := range allFields {
+				if err := db.basicDB.Delete(ctx, baseKey+field); err == nil {
+					deletedCount++
+				}
+			}
 		}
 	}
+
+	if deletedCount > 0 {
+		Printing.Println("Deleted " + strconv.Itoa(deletedCount) + " analytics keys for service " + service.ID)
+	}
+
 	return nil
 }
 
