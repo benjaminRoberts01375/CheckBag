@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-// To be removed in CheckBag v5
+// TODO To be removed in CheckBag v5
 func migrateFSToDB(db AdvancedDB) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
