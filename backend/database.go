@@ -32,6 +32,7 @@ type BasicDB interface {
 	AddToList(ctx context.Context, key string, value string) error
 	RemoveFromList(ctx context.Context, key string, value string) error
 	GetList(ctx context.Context, key string) ([]string, error)
+	SetList(ctx context.Context, key string, values []string) error
 }
 
 type AdvancedDB interface {
@@ -194,6 +195,22 @@ func (db *ValkeyDB) IncrementKey(ctx context.Context, key string, amount int, ex
 	}
 	remainingTime := time.Until(expiration)
 	return db.db.Do(ctx, db.db.B().Expire().Key(db.prefix+key).Seconds(int64(remainingTime.Seconds())).Build()).Error()
+}
+
+func (db *ValkeyDB) SetList(ctx context.Context, key string, values []string) error {
+	err := db.Delete(ctx, key)
+	if err != nil {
+		return errors.New("Unable to reset list \"" + key + "\": " + err.Error())
+	}
+	builder := db.db.B().Lpush().Key(db.prefix + key).Element()
+	for _, value := range values {
+		builder = builder.Element(value)
+	}
+	err = db.db.Do(ctx, builder.Build()).Error()
+	if err != nil {
+		return errors.New("Unable to set list \"" + key + "\": " + err.Error())
+	}
+	return nil
 }
 
 func (db *ValkeyDB) AddToList(ctx context.Context, key string, value string) error {
