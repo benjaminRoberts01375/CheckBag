@@ -102,10 +102,6 @@ func SetupDB() AdvancedDB {
 	if dbAddress == "" {
 		panic("No cache container name specified")
 	}
-	cacheIDLength, err := strconv.Atoi(os.Getenv("CACHE_ID_LENGTH"))
-	if err != nil || cacheIDLength <= 0 {
-		panic("Failed to parse CACHE_ID_LENGTH: " + err.Error())
-	}
 	dbPassword := os.Getenv("CACHE_PASSWORD")
 	if dbPassword == "" {
 		Printing.Println("No cache password specified")
