@@ -34,11 +34,7 @@ services:
       - .env
     ports:
       - "${WEB_UI_PORT}:8080"
-    volumes:
-      - backend-data:/home/appuser/CheckBag
 
 volumes:
   valkey_data:
     name: valkey-data
-  backend-data:
-    name: backend-data

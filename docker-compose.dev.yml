@@ -52,13 +52,7 @@ services:
       - "${WEB_UI_PORT}:8080"
     depends_on:
       - frontend
-    volumes:
-      - ./backend:/app
-      - backend-data:/home/appuser/CheckBag
-      - backend-data:/root/CheckBag
 
 volumes:
   valkey_data:
     name: valkey-data
-  backend-data:
-    name: backend-data
