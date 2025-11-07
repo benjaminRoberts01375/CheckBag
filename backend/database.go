@@ -46,6 +46,8 @@ type AdvancedDB interface {
 	setVersion(ctx context.Context, version string) error
 	GetJWTSecret(ctx context.Context) (string, error)
 	SetJWTSecret(ctx context.Context, jwtSecret string) error
+	GetUserPasswordHash(ctx context.Context) (string, error)
+	SetUserPasswordHash(ctx context.Context, hash string) // Panics
 }
 
 type ValkeyDB struct {
@@ -480,4 +482,19 @@ func (db DB) GetJWTSecret(ctx context.Context) (string, error) {
 		return "", errors.New("Failed to get JWT Secret: " + err.Error())
 	}
 	return secret, nil
+}
+
+func (db DB) GetUserPasswordHash(ctx context.Context) (string, error) {
+	passwordHash, err := db.basicDB.Get(ctx, "Password_Hash")
+	if err != nil {
+		return "", errors.New("Unable to get the password hash" + err.Error())
+	}
+	return passwordHash, nil
+}
+
+func (db DB) SetUserPasswordHash(ctx context.Context, hash string) {
+	err := db.basicDB.Set(ctx, "Password_Hash", hash, 0)
+	if err != nil {
+		panic("Unable to set the user's password hash: " + err.Error())
+	}
 }
