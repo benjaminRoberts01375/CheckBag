@@ -138,12 +138,11 @@ func (db DB) versioning() {
 	ctx := context.Background()
 	actualDBVersion, err := db.basicDB.Get(ctx, "version")
 	if err != nil {
-		Printing.PrintErrStr("Could not get version from DB, setting to " + expectedDBVersion)
+		Printing.PrintErrStr("Could not get version from DB, setting to "+expectedDBVersion+". Error: ", err.Error())
 		db.setVersion(ctx, expectedDBVersion)
 	} else if actualDBVersion == "2" {
 		Printing.Println("Migrating database from version 2 to 3...")
-		// Version 3 adds ServiceLinks storage to database
-		// Migration happens automatically in serviceLinks.Setup()
+		migrateFSToDB(db)
 		db.setVersion(ctx, expectedDBVersion)
 		Printing.Println("Database migrated to version 3")
 	} else if actualDBVersion != expectedDBVersion {
