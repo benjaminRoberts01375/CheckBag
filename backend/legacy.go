@@ -39,7 +39,7 @@ func migrateFSToDB(db AdvancedDB) {
 		if err != nil {
 			panic("Unable to add service links to DB during migration: " + err.Error())
 		}
-		os.Remove(userHashFile)
+		os.Remove(serviceDataFile)
 	}
 	os.RemoveAll(CheckBagPath) // You'll be missed :')
 }
