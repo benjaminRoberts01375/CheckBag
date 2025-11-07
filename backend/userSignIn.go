@@ -7,7 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func userSignIn(fileSystem FileSystem, jwt JWTService) http.HandlerFunc {
+func userSignIn(db AdvancedDB, jwt JWTService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		rawPassword, err := requestReceived[string](r)
 		if err != nil {
@@ -15,7 +15,7 @@ func userSignIn(fileSystem FileSystem, jwt JWTService) http.HandlerFunc {
 			requestRespondCode(w, http.StatusBadRequest)
 			return
 		}
-		passwordHash, err := fileSystem.GetUserData()
+		passwordHash, err := db.GetUserPasswordHash(r.Context())
 		if err != nil {
 			Printing.PrintErrStr("Could not get user data from file system: ", err.Error())
 			requestRespondCode(w, http.StatusBadRequest)

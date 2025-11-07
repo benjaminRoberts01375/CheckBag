@@ -49,6 +49,8 @@ type AdvancedDB interface {
 	SetJWTSecret(ctx context.Context, jwtSecret string) error
 	GetUserPasswordHash(ctx context.Context) (string, error)
 	SetUserPasswordHash(ctx context.Context, hash string) // Panics
+	getServiceLinks(ctx context.Context) (ServiceLinks, error)
+	setServiceLinks(ctx context.Context, serviceLinks ServiceLinks) error
 }
 
 type ValkeyDB struct {
@@ -132,13 +134,19 @@ func SetupDB() AdvancedDB {
 }
 
 func (db DB) versioning() {
-	expectedDBVersion := "2"
+	expectedDBVersion := "3"
 	ctx := context.Background()
 	actualDBVersion, err := db.basicDB.Get(ctx, "version")
 	if err != nil {
 		Printing.PrintErrStr("Could not get version from DB, setting to " + expectedDBVersion)
 		db.setVersion(ctx, expectedDBVersion)
-	} else if actualDBVersion != "2" {
+	} else if actualDBVersion == "2" {
+		Printing.Println("Migrating database from version 2 to 3...")
+		// Version 3 adds ServiceLinks storage to database
+		// Migration happens automatically in serviceLinks.Setup()
+		db.setVersion(ctx, expectedDBVersion)
+		Printing.Println("Database migrated to version 3")
+	} else if actualDBVersion != expectedDBVersion {
 		panic("Expected database version " + expectedDBVersion + " but got " + actualDBVersion)
 	}
 }
@@ -514,4 +522,102 @@ func (db DB) SetUserPasswordHash(ctx context.Context, hash string) {
 	if err != nil {
 		panic("Unable to set the user's password hash: " + err.Error())
 	}
+}
+
+func (db DB) getServiceLinks(ctx context.Context) (ServiceLinks, error) {
+	// Get list of all ServiceLink IDs
+	serviceIDs, err := db.basicDB.GetList(ctx, "ServiceLinks")
+	if err != nil {
+		return ServiceLinks{}, errors.New("Unable to get service links list: " + err.Error())
+	}
+
+	serviceLinks := make(ServiceLinks, 0, len(serviceIDs))
+
+	// Get each ServiceLink
+	for _, id := range serviceIDs {
+		// Get the hash for this service
+		serviceHash, err := db.basicDB.GetHash(ctx, "ServiceLink:"+id)
+		if err != nil {
+			Printing.PrintErrStr("Could not get service link " + id + ": " + err.Error())
+			continue
+		}
+
+		// Get incoming addresses list
+		incomingAddresses, err := db.basicDB.GetList(ctx, "ServiceLink:"+id+":incoming")
+		if err != nil {
+			Printing.PrintErrStr("Could not get incoming addresses for service " + id + ": " + err.Error())
+			incomingAddresses = []string{}
+		}
+
+		// Parse the port
+		port, err := strconv.Atoi(serviceHash["outgoing_port"])
+		if err != nil {
+			Printing.PrintErrStr("Invalid port for service " + id + ": " + err.Error())
+			continue
+		}
+
+		// Build the ServiceLink
+		serviceLink := ServiceLink{
+			ID:                id,
+			Title:             serviceHash["title"],
+			IncomingAddresses: incomingAddresses,
+			OutgoingAddress: ServiceAddress{
+				Protocol: serviceHash["outgoing_protocol"],
+				Domain:   serviceHash["outgoing_domain"],
+				Port:     port,
+			},
+		}
+
+		serviceLinks = append(serviceLinks, serviceLink)
+	}
+
+	return serviceLinks, nil
+}
+
+func (db DB) setServiceLinks(ctx context.Context, serviceLinks ServiceLinks) error {
+	// Get existing service IDs to track what needs to be deleted
+	existingIDs, _ := db.basicDB.GetList(ctx, "ServiceLinks")
+
+	// Build list of new IDs
+	newIDs := make([]string, 0, len(serviceLinks))
+
+	// Set each ServiceLink
+	for _, serviceLink := range serviceLinks {
+		newIDs = append(newIDs, serviceLink.ID)
+
+		// Store the service hash
+		serviceHash := map[string]string{
+			"title":             serviceLink.Title,
+			"outgoing_protocol": serviceLink.OutgoingAddress.Protocol,
+			"outgoing_domain":   serviceLink.OutgoingAddress.Domain,
+			"outgoing_port":     strconv.Itoa(serviceLink.OutgoingAddress.Port),
+		}
+
+		err := db.basicDB.SetHash(ctx, "ServiceLink:"+serviceLink.ID, serviceHash)
+		if err != nil {
+			return errors.New("Unable to set service link hash for " + serviceLink.ID + ": " + err.Error())
+		}
+
+		// Store the incoming addresses list
+		err = db.basicDB.SetList(ctx, "ServiceLink:"+serviceLink.ID+":incoming", serviceLink.IncomingAddresses)
+		if err != nil {
+			return errors.New("Unable to set incoming addresses for " + serviceLink.ID + ": " + err.Error())
+		}
+	}
+
+	// Delete ServiceLinks that are no longer in the list
+	for _, existingID := range existingIDs {
+		if !slices.Contains(newIDs, existingID) {
+			db.basicDB.DeleteHash(ctx, "ServiceLink:"+existingID)
+			db.basicDB.Delete(ctx, "ServiceLink:"+existingID+":incoming")
+		}
+	}
+
+	// Update the list of ServiceLink IDs
+	err := db.basicDB.SetList(ctx, "ServiceLinks", newIDs)
+	if err != nil {
+		return errors.New("Unable to set service links list: " + err.Error())
+	}
+
+	return nil
 }

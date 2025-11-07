@@ -12,13 +12,6 @@ import (
 )
 
 func main() {
-	var fileSystem = FileSystem{
-		BasePath: "/CheckBag",
-		UserData: "userdata.txt",
-		Services: "services.json",
-	}
-	fileSystem.Setup()
-
 	var serviceLinks = ServiceLinks{}
 
 	// Coms setup
@@ -26,25 +19,25 @@ func main() {
 	// Cache setup
 	db := SetupDB()
 	// Services setup
-	serviceLinks.Setup(fileSystem, db)
+	serviceLinks.Setup(db)
 	// JWT Setup
 	jwt := loadJWTSecret(db)
 	// Setup endpoints
-	setupEndpoints(fileSystem, &serviceLinks, db, jwt, strings.ToLower(os.Getenv("DEV_MODE")) == "true")
+	setupEndpoints(&serviceLinks, db, jwt, strings.ToLower(os.Getenv("DEV_MODE")) == "true")
 	Printing.Println("Listening on port 8080")
 	http.ListenAndServe(":8080", nil)
 }
 
-func setupEndpoints(fileSystem FileSystem, serviceLinks *ServiceLinks, db AdvancedDB, jwt JWTService, devMode bool) {
-	http.HandleFunc("GET /api/user-exists", userExists(fileSystem))                           // Check if the user already exists
-	http.HandleFunc("POST /api/user-sign-up", newUser(fileSystem, jwt))                       // Sign up with username and password
-	http.HandleFunc("POST /api/user-sign-in", userSignIn(fileSystem, jwt))                    // Sign in with username and password
-	http.HandleFunc("POST /api/user-sign-in-jwt", userJWTSignIn(jwt))                         // Sign in with JWT
-	http.HandleFunc("POST /api/services-set", servicesSet(fileSystem, serviceLinks, db, jwt)) // Setting/replacing all services
-	http.HandleFunc("GET /api/service-data", getServiceData(serviceLinks, db, jwt))           // Getting analytics
-	http.HandleFunc("/api/service/{path...}", requestForwarding(serviceLinks, db))            // Proxying requests
-	http.HandleFunc("GET /api/api-keys", APIGet(db, jwt))                                     // Getting API keys
-	http.HandleFunc("POST /api/api-keys", APISet(db, jwt))                                    // Setting API keys
+func setupEndpoints(serviceLinks *ServiceLinks, db AdvancedDB, jwt JWTService, devMode bool) {
+	http.HandleFunc("GET /api/user-exists", userExists(db))                         // Check if the user already exists
+	http.HandleFunc("POST /api/user-sign-up", newUser(db, jwt))                     // Sign up with username and password
+	http.HandleFunc("POST /api/user-sign-in", userSignIn(db, jwt))                  // Sign in with username and password
+	http.HandleFunc("POST /api/user-sign-in-jwt", userJWTSignIn(jwt))               // Sign in with JWT
+	http.HandleFunc("POST /api/services-set", servicesSet(serviceLinks, db, jwt))   // Setting/replacing all services
+	http.HandleFunc("GET /api/service-data", getServiceData(serviceLinks, db, jwt)) // Getting analytics
+	http.HandleFunc("/api/service/{path...}", requestForwarding(serviceLinks, db))  // Proxying requests
+	http.HandleFunc("GET /api/api-keys", APIGet(db, jwt))                           // Getting API keys
+	http.HandleFunc("POST /api/api-keys", APISet(db, jwt))                          // Setting API keys
 
 	http.HandleFunc("/", spaHandler(devMode)) // Serve the frontend
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -28,13 +29,34 @@ func (address ServiceAddress) String() string {
 	return fmt.Sprintf("%s://%s:%d", address.Protocol, address.Domain, address.Port)
 }
 
-func (serviceLinks *ServiceLinks) Setup(fileSystem FileSystem, db AdvancedDB) {
-	diskServices, err := fileSystem.GetServices(db)
+func (serviceLinks *ServiceLinks) Setup(db AdvancedDB) {
+	ctx := context.Background()
+
+	// Try to get services from database
+	dbServices, err := db.getServiceLinks(ctx)
 	if err != nil {
-		Printing.PrintErrStr("Could not get services: " + err.Error())
-		return
+		// If database doesn't have services, try to migrate from filesystem
+		Printing.PrintErrStr("Could not get services from database, attempting filesystem migration: " + err.Error())
+		diskServices, fsErr := db.getServiceLinks(context.Background())
+		if fsErr != nil {
+			Printing.PrintErrStr("Could not get services from filesystem: " + fsErr.Error())
+			return
+		}
+
+		// Migrate to database
+		if len(diskServices) > 0 {
+			migrateErr := db.setServiceLinks(ctx, diskServices)
+			if migrateErr != nil {
+				Printing.PrintErrStr("Could not migrate services to database: " + migrateErr.Error())
+			} else {
+				Printing.Println("Successfully migrated services from filesystem to database")
+			}
+		}
+		*serviceLinks = diskServices
+	} else {
+		*serviceLinks = dbServices
 	}
-	*serviceLinks = diskServices
+
 	Printing.Println("Loaded services: ", serviceLinks)
 }
 
@@ -48,7 +70,7 @@ func (serviceLinks *ServiceLinks) String() string {
 	return retVal
 }
 
-func servicesSet(fileSystem FileSystem, serviceLinks *ServiceLinks, db AdvancedDB, jwt JWTService) http.HandlerFunc {
+func servicesSet(serviceLinks *ServiceLinks, db AdvancedDB, jwt JWTService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Check JWT
 		newServiceLinks, err := formatUserRequest[ServiceLinks](r, jwt)
@@ -88,9 +110,9 @@ func servicesSet(fileSystem FileSystem, serviceLinks *ServiceLinks, db AdvancedD
 			(*serviceLinks)[existingServiceI].OutgoingAddress = newService.OutgoingAddress
 		}
 
-		err = fileSystem.SetServices(*serviceLinks)
+		err = db.setServiceLinks(r.Context(), *serviceLinks)
 		if err != nil {
-			Printing.PrintErrStr("Could not set services in file system: " + err.Error())
+			Printing.PrintErrStr("Could not set services in database: " + err.Error())
 			requestRespondCode(w, http.StatusInternalServerError)
 			return
 		}
